@@ -76,16 +76,25 @@ def project_summary(project):
     ]
 
 
-def read_limits(entries):
+def unread_sources(entries):
     if not isinstance(entries, list):
         raise ValueError("unread 需要数组，相关资料均已核对时传入 []")
-    notes = []
-    affected = {key: [] for key in TOPICS}
     for entry in entries:
         if not isinstance(entry, dict):
             raise ValueError("unread 的每项需要 source 和 reason")
         source = required_text(entry.get("source"), "unread.source")
         reason = required_text(entry.get("reason"), "unread.reason")
+        yield entry, source, reason
+
+
+def unread_notes(entries):
+    return [f"- {source}（{reason}）。" for _, source, reason in unread_sources(entries)]
+
+
+def read_limits(entries):
+    notes = []
+    affected = {key: [] for key in TOPICS}
+    for entry, source, reason in unread_sources(entries):
         keys = text_list(entry.get("topics", list(TOPICS)), "unread.topics")
         for key in keys:
             if key not in TOPICS:

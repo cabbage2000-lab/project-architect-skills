@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from necessary_docs import (
-    COVERED, GAP, NOT_APPLICABLE, PENDING, project_summary, required_text, table_row, text_list,
+    COVERED, GAP, NOT_APPLICABLE, PENDING, project_summary, required_text, table_row, text_list, unread_notes,
 )
 
 
@@ -47,19 +47,6 @@ def diagram_rows(diagrams):
             rows.append(table_row((source, "实现视图", claim, result, detail, evidence)))
             results.add(result)
     return rows, results
-
-
-def unread_notes(entries):
-    if not isinstance(entries, list):
-        raise ValueError("unread 需要数组，相关资料均已核对时传入 []")
-    notes = []
-    for entry in entries:
-        if not isinstance(entry, dict):
-            raise ValueError("unread 的每项需要 source 和 reason")
-        source = required_text(entry.get("source"), "unread.source")
-        reason = required_text(entry.get("reason"), "unread.reason")
-        notes.append(f"- {source}（{reason}）。")
-    return notes
 
 
 def assess_diagrams(need, results, has_diagrams, has_unread):
