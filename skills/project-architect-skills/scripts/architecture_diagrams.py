@@ -56,12 +56,12 @@ def assess_diagrams(need, results, has_diagrams, has_unread):
         return NOT_APPLICABLE, "本轮范围内无需交接模块关系，依据见适用性说明。"
     if need == PENDING:
         return PENDING, "本轮是否需要实现视图仍需核实。"
-    if PENDING in results:
-        return PENDING, "图中与本轮范围相关的关系尚未核实。"
     if OMISSION in results:
         if has_unread:
             return PENDING, "已读图件缺少关键关系，尚需核对其余相关资料。"
         return GAP, "实现视图缺少本轮交接需要的关键关系。"
+    if PENDING in results:
+        return PENDING, "图中与本轮范围相关的关系尚未核实。"
     if MATCH in results:
         return COVERED, "已核实本轮范围内的关键关系。"
     if has_unread:

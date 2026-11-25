@@ -161,7 +161,7 @@
         <mxCell id="report-file" parent="report" vertex="1" value="docs/project-architect-report.md" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=Menlo;fontSize=17;fontColor=#202522;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="150" y="9" width="455" height="32" />
         </mxCell>
-        <mxCell id="report-access" parent="report" vertex="1" value="治理获批后默认保存报告，其他情况在会话交付" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=right;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="report-access" parent="report" vertex="1" value="治理获批或明确要求时保存。只读或需保留同名报告时在会话交付" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=right;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="650" y="10" width="536" height="30" />
         </mxCell>
         <mxCell id="report-rule" parent="report" vertex="1" value="" style="rounded=0;html=1;fillColor=#D8DDD9;strokeColor=none;" connectable="0">

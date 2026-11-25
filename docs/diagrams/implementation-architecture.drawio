@@ -45,14 +45,17 @@
         <mxCell id="codex-mark" parent="codex" vertex="1" value="" style="rounded=0;fillColor=#07C05F;strokeColor=none;html=1;" connectable="0">
           <mxGeometry x="18" y="22" width="4" height="22" as="geometry" />
         </mxCell>
-        <mxCell id="codex-title" parent="codex" vertex="1" value="Codex 按 SKILL.md 编排" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=23;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
-          <mxGeometry x="36" y="14" width="500" height="37" as="geometry" />
+        <mxCell id="codex-title" parent="codex" vertex="1" value="主 Agent 按 SKILL.md 编排" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=23;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="36" y="12" width="500" height="33" as="geometry" />
         </mxCell>
-        <mxCell id="codex-role" parent="codex" vertex="1" value="主 Agent 汇总子 Agent 的分项体检结果，展示治理计划。收到「同意治理」后按获批范围修复、复核并交付报告。" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=16;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
-          <mxGeometry x="36" y="59" width="1140" height="26" as="geometry" />
+        <mxCell id="codex-role" parent="codex" vertex="1" value="汇总候选后，调用 git_change_history.py 读取热点与共变记录，辅助计划排序和维护导读。" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=16;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="36" y="47" width="1140" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="codex-review" parent="codex" vertex="1" value="治理获批后逐项修复。修改 Python 文件时，运行 python_smell_signals.py --compare 对照改前快照，再验证行为。" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=16;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="36" y="72" width="1140" height="24" as="geometry" />
         </mxCell>
         <mxCell id="check-scripts" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
-          <mxGeometry x="40" y="276" width="424" height="233" as="geometry" />
+          <mxGeometry x="40" y="276" width="424" height="205" as="geometry" />
         </mxCell>
         <mxCell id="checks-title" parent="check-scripts" vertex="1" value="子 Agent 分项体检与取证脚本" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=22;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
           <mxGeometry x="18" y="13" width="380" height="32" as="geometry" />
@@ -70,13 +73,10 @@
           <mxGeometry x="213" y="91" width="192" height="24" as="geometry" />
         </mxCell>
         <mxCell id="checks-result" parent="check-scripts" vertex="1" value="各子 Agent 回传检查章节、治理候选及出处" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
-          <mxGeometry x="18" y="129" width="380" height="23" as="geometry" />
+          <mxGeometry x="18" y="166" width="380" height="23" as="geometry" />
         </mxCell>
-        <mxCell id="script-python-signals" parent="check-scripts" vertex="1" value="python_smell_signals.py 提取信号与改前改后差异" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=13;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
-          <mxGeometry x="18" y="163" width="389" height="26" as="geometry" />
-        </mxCell>
-        <mxCell id="script-git-history" parent="check-scripts" vertex="1" value="git_change_history.py 提取热点和共变线索" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=13;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
-          <mxGeometry x="18" y="192" width="389" height="26" as="geometry" />
+        <mxCell id="script-python-signals" parent="check-scripts" vertex="1" value="python_smell_signals.py 扫描当前 Python 源码" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=13;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="18" y="124" width="389" height="26" as="geometry" />
         </mxCell>
         <mxCell id="governance-plan" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
           <mxGeometry x="532" y="276" width="258" height="132" as="geometry" />

@@ -132,6 +132,25 @@ class ArchitectureDiagramTests(unittest.TestCase):
                 self.assertIn(f"**检查结果**　{status}", report)
                 self.assertEqual("### 建议修订" in report, status == "发现问题")
 
+    def test_independent_pending_relation_preserves_a_confirmed_omission(self):
+        record = architecture_record()
+        record["diagrams"] = [implementation_diagram(
+            ("export → orders", "缺少关键关系", "源码已核实此调用，已读图中缺少对应连线。"),
+            ("orders → cache", "待确认", "缓存依赖仍需核实。"),
+        )]
+        record["repair"] = REPAIR
+        report = self.report(record)
+        self.assertIn("**检查结果**　发现问题", report)
+        self.assertIn("**资料完整性**　待确认", report)
+        self.assertIn("orders → cache | 待确认", report)
+        self.assertEqual(report.count("### 建议修订"), 1)
+        self.assertIn(REPAIR["changes"][0], report)
+
+        record["unread"] = [UNREAD_REFERENCE]
+        report = self.report(record)
+        self.assertIn("**检查结果**　待确认", report)
+        self.assertNotIn("### 建议修订", report)
+
     def test_single_entry_without_module_boundary_is_not_applicable(self):
         record = architecture_record()
         record["need"] = {"status": "不适用", "detail": "单一入口直接打印结果。", "evidence": ["hello.py:1"]}
