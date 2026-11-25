@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "skills/code-architect-skills/scripts"
+SCRIPTS = Path(__file__).resolve().parents[1] / "skills/project-architect-skills/scripts"
 KINDS = ("long_method", "deep_nested_logic", "bumpy_road", "complex_conditional", "complex_method")
 
 

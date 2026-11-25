@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 
-SKILL_DIR = Path(__file__).resolve().parents[1] / "skills/code-architect-skills"
+SKILL_DIR = Path(__file__).resolve().parents[1] / "skills/project-architect-skills"
 SCRIPT = SKILL_DIR / "scripts/necessary_docs.py"
 
 

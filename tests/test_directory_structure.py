@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "skills/code-architect-skills/scripts/directory_structure.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "skills/project-architect-skills/scripts/directory_structure.py"
 
 COLOCATED_TEST = {
     "path": "src/orders/test_export.py",

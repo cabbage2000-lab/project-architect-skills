@@ -1,20 +1,20 @@
-# code-architect-skills
+# project-architect-skills（项目治理架构师）
 
 这个 Codex Skill 帮助接手项目的人检查必要文档、架构图、目录结构和代码异味。各项是否适用取决于项目用途、交付方式和本轮维护任务。
 
 ## 使用
 
-本仓库已配置项目级 Skill 入口。在其他项目使用时，将 `skills/code-architect-skills` 整个目录复制到目标项目的 `.agents/skills/`，然后在该项目的 Codex 会话中输入
+本仓库已配置项目级 Skill 入口。在其他项目使用时，将 `skills/project-architect-skills` 整个目录复制到目标项目的 `.agents/skills/`，然后在该项目的 Codex 会话中输入
 
 ```text
-code-architect-skills
+project-architect-skills
 ```
 
-默认调用会检查四项，按维护影响生成一份[治理计划](skills/code-architect-skills/references/governance-plan.md)，并在已有授权内逐项处理至多三项。计划给出改动范围、改前基线、验收方法和回退办法。已有维护任务可以直接附上，例如「我要改订单导出的列名」。只想查看某项诊断时，可以输入「用 code-architect-skills 只读检查代码异味」或指定其他检查项。
+默认调用会检查四项，按维护影响生成一份[治理计划](skills/project-architect-skills/references/governance-plan.md)，并在已有授权内逐项处理至多三项。计划给出改动范围、改前基线、验收方法和回退办法。已有维护任务可以直接附上，例如「我要改订单导出的列名」。只想查看某项诊断时，可以输入「用 project-architect-skills 只读检查代码异味」或指定其他检查项。
 
-检查前先判断项目规模。小项目通查相关资料，中等项目分模块核对，大项目优先检查主要业务路径和跨模块依赖。判档和取证方式见[项目规模与取证范围](skills/code-architect-skills/references/project-size.md)。
+检查前先判断项目规模。小项目通查相关资料，中等项目分模块核对，大项目优先检查主要业务路径和跨模块依赖。判档和取证方式见[项目规模与取证范围](skills/project-architect-skills/references/project-size.md)。
 
-报告列出规模依据、已查范围、逐项结论、治理计划和复核结果。待确认、待验证或暂缓的事项保留证据和原因。维护导读给出下次改动的入口、受影响的调用方和自查方法。默认报告路径为目标项目的 `docs/code-architect-report.md`。只读或需要保留同名人工报告时，全文在会话交付。[执行复核与维护导读](skills/code-architect-skills/references/execution-and-handover.md)
+报告列出规模依据、已查范围、逐项结论、治理计划和复核结果。待确认、待验证或暂缓的事项保留证据和原因。维护导读给出下次改动的入口、受影响的调用方和自查方法。默认报告路径为目标项目的 `docs/project-architect-report.md`。只读或需要保留同名人工报告时，全文在会话交付。[执行复核与维护导读](skills/project-architect-skills/references/execution-and-handover.md)
 
 ## 验证模块
 
@@ -24,7 +24,7 @@ code-architect-skills
 python3 -B -m unittest discover -s tests -v
 ```
 
-测试通过时，最后一行显示 `OK`。检查记录和可运行的示例见[必要文档](skills/code-architect-skills/references/necessary-documents.md)、[架构图](skills/code-architect-skills/references/architecture-diagrams.md)、[目录结构](skills/code-architect-skills/references/directory-structure.md)和[代码异味](skills/code-architect-skills/references/code-smells.md)检查判据。
+测试通过时，最后一行显示 `OK`。检查记录和可运行的示例见[必要文档](skills/project-architect-skills/references/necessary-documents.md)、[架构图](skills/project-architect-skills/references/architecture-diagrams.md)、[目录结构](skills/project-architect-skills/references/directory-structure.md)和[代码异味](skills/project-architect-skills/references/code-smells.md)检查判据。
 
 ### 在 Codex 会话中验证只读检查
 
@@ -44,7 +44,7 @@ EOF
 printf '%s\n' "$smoke_project"
 ```
 
-在本仓库的 Codex 会话中输入「用 code-architect-skills 只读检查 `<临时目录路径>` 的必要文档」，将占位符换成终端输出的路径。会话应给出报告。复核以下三点。
+在本仓库的 Codex 会话中输入「用 project-architect-skills 只读检查 `<临时目录路径>` 的必要文档」，将占位符换成终端输出的路径。会话应给出报告。复核以下三点。
 
 - 「启动或最小使用示例」显示「范围内未发现」，依据指向临时项目的运行说明。
 - 「验证改动的方法」显示「发现问题」，缺口类型为「缺少说明」。补写建议指向临时项目的 `README.md`，可记录运行后的预期输出 `Ada, Bob`。

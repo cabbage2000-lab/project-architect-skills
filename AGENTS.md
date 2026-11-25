@@ -6,7 +6,7 @@
 
 ## 项目结构
 
-本项目提供一个 Codex Skill，用于核对交接文档、架构图、目录结构和代码异味。修改 Skill 时，请编辑 `skills/code-architect-skills/` 下的源文件。Codex 通过符号链接 `.agents/skills/code-architect-skills` 加载该目录。
+本项目提供一个 Codex Skill，用于核对交接文档、架构图、目录结构和代码异味。修改 Skill 时，请编辑 `skills/project-architect-skills/` 下的源文件。Codex 通过符号链接 `.agents/skills/project-architect-skills` 加载该目录。
 
 - `SKILL.md` 定义检查流程，包括如何收集证据和交付报告。
 - `references/necessary-documents.md` 定义文档类别、各类检查项、状态标签和 JSON 检查记录的格式。
@@ -24,9 +24,9 @@
 在仓库根目录执行以下命令。报告脚本和测试只依赖 Python 3 标准库。
 
 - `python3 -B -m unittest discover -s tests -v` 运行全部测试并显示每个用例的结果。
-- `python3 skills/code-architect-skills/scripts/necessary_docs.py record.json` 读取检查记录并将报告写到标准输出。将 `record.json` 替换为实际文件路径，省略路径则从标准输入读取。可先运行[最小示例](skills/code-architect-skills/references/necessary-documents.md#最小可运行示例)。
+- `python3 skills/project-architect-skills/scripts/necessary_docs.py record.json` 读取检查记录并将报告写到标准输出。将 `record.json` 替换为实际文件路径，省略路径则从标准输入读取。可先运行[最小示例](skills/project-architect-skills/references/necessary-documents.md#最小可运行示例)。
 
-在 Codex 会话中输入 `用 code-architect-skills 只读检查代码异味` 可查看单项诊断。直接输入 `code-architect-skills` 时，助手会检查四项，并可能在目标项目中处理已确认的发现。
+在 Codex 会话中输入 `用 project-architect-skills 只读检查代码异味` 可查看单项诊断。直接输入 `project-architect-skills` 时，助手会检查四项，并可能在目标项目中处理已确认的发现。
 
 ## 编码风格与命名
 

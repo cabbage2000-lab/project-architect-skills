@@ -17,7 +17,7 @@ PASSED = "通过"
 REGRESSION = "发现差异"
 RESOLVED = "已解决"
 CHECK_KINDS = {"structure": "结构", "behavior": "行为", "handover": "交接"}
-REPORT_PATH = Path("docs/code-architect-report.md")
+REPORT_PATH = Path("docs/project-architect-report.md")
 
 
 def records(value, field):
@@ -129,13 +129,13 @@ def render_report(record):
     plan, selected = build_plan(record.get("plan"))
     review, passed = render_reviews(record.get("reviews"), selected)
     guide = render_guide(record, passed)
-    sections = ["# 代码架构治理报告", *(item.strip() for item in audit), plan.rstrip(), review, guide]
+    sections = ["# 项目治理报告", *(item.strip() for item in audit), plan.rstrip(), review, guide]
     return "\n\n".join(section for section in sections if section) + "\n"
 
 
-def managed_report(body):
+def managed_report(body, skill_name="project-architect-skills"):
     digest = hashlib.sha256(body).hexdigest()
-    return f"<!-- code-architect-skills sha256={digest} -->\n\n".encode("ascii") + body
+    return f"<!-- {skill_name} sha256={digest} -->\n\n".encode("ascii") + body
 
 
 def publish_report(report):
@@ -148,14 +148,14 @@ def publish_report(report):
             return False
         before = path.read_bytes()
         _, _, body = before.partition(b"\n\n")
-        if before != managed_report(body):
+        if before not in (managed_report(body), managed_report(body, "code-architect-skills")):
             return False
     content = managed_report(report.encode("utf-8"))
     if before == content:
         return True
 
     path.parent.mkdir(exist_ok=True)
-    with tempfile.TemporaryDirectory(dir=path.parent, prefix=".code-architect-") as directory:
+    with tempfile.TemporaryDirectory(dir=path.parent, prefix=".project-architect-") as directory:
         staged = Path(directory) / path.name
         staged.write_bytes(content)
         if before is None:

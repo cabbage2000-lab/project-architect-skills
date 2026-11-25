@@ -23,8 +23,8 @@
 以下命令可在本 Skill 仓库根目录运行。
 
 ```sh
-python3 -B skills/code-architect-skills/scripts/python_smell_signals.py \
-  skills/code-architect-skills/scripts/necessary_docs.py
+python3 -B skills/project-architect-skills/scripts/python_smell_signals.py \
+  skills/project-architect-skills/scripts/necessary_docs.py
 ```
 
 默认试点口径如下。按目标项目的有效规则可覆盖四个阈值，将本轮实际值写入记录。
@@ -61,7 +61,7 @@ python3 -B skills/code-architect-skills/scripts/python_smell_signals.py \
 在本仓库根目录运行下列命令。样例记录同一函数的两类发现，报告保留两个标签并生成一项候选。
 
 ```sh
-python3 -B skills/code-architect-skills/scripts/code_smells.py <<'JSON'
+python3 -B skills/project-architect-skills/scripts/code_smells.py <<'JSON'
 {
   "scope": ["核对订单导出入口和本地试点的 Python AST 信号"],
   "unread": [],

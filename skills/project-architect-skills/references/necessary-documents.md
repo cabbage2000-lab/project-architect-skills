@@ -63,11 +63,11 @@
 
 ## 最小可运行示例
 
-这个[完整检查记录](examples/necessary-docs-record.json)使用虚构的订单导出工具演示输入格式。维护本 Skill 时，在 `code-architect-skills` 仓库根目录运行以下命令。
+这个[完整检查记录](examples/necessary-docs-record.json)使用虚构的订单导出工具演示输入格式。维护本 Skill 时，在 `project-architect-skills` 仓库根目录运行以下命令。
 
 ```sh
-python3 skills/code-architect-skills/scripts/necessary_docs.py \
-  skills/code-architect-skills/references/examples/necessary-docs-record.json
+python3 skills/project-architect-skills/scripts/necessary_docs.py \
+  skills/project-architect-skills/references/examples/necessary-docs-record.json
 ```
 
 标准输出以 `## 必要文档` 开头，在「架构文档」下将「模块职责与依赖」标为「缺少说明」，在「测试文档」下将「验证改动的方法」标为「内容不完整」。报告中的「建议补写」只收已确认的缺口。宿主按任务影响排序并选入治理计划，逐项另记基线、验收和回退办法。在仅检查的调用中，补写位置作为建议交给用户。

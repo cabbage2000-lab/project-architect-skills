@@ -23,40 +23,40 @@
 
 | 内容 | 状态 | 当前结论 | 核对依据 |
 | --- | --- | --- | --- |
-| 项目用途 | 范围内未发现 | README 说明项目帮助接手者检查交接文档，PRD 给出目标用户和交接场景。 | README.md:3、docs/code-architect-skills-PRD-v0.3.md:7–21 |
-| 主要流程与业务规则 | 发现问题 | **内容不完整**　README 和 Skill 入口已说明当前实现必要文档检查，PRD v0.3 评审稿第 2 节仍将架构图、目录结构和代码异味一并列为单命令会自动完成的工作，缺少当前已交付范围的提示。 | README.md:3–17、docs/code-architect-skills-PRD-v0.3.md:23–44、skills/code-architect-skills/SKILL.md:8–17 |
+| 项目用途 | 范围内未发现 | README 说明项目帮助接手者检查交接文档，PRD 给出目标用户和交接场景。 | README.md:3、docs/project-architect-skills-PRD-v0.3.md:7–21 |
+| 主要流程与业务规则 | 发现问题 | **内容不完整**　README 和 Skill 入口已说明当前实现必要文档检查，PRD v0.3 评审稿第 2 节仍将架构图、目录结构和代码异味一并列为单命令会自动完成的工作，缺少当前已交付范围的提示。 | README.md:3–17、docs/project-architect-skills-PRD-v0.3.md:23–44、skills/project-architect-skills/SKILL.md:8–17 |
 
 #### 技术文档
 
 | 内容 | 状态 | 当前结论 | 核对依据 |
 | --- | --- | --- | --- |
-| 启动或最小使用示例 | 范围内未发现 | README 给出本项目调用、跨项目复制路径和只读用法。项目级入口可解析到源文件，完整目录复制到临时项目后，随包脚本和示例可运行。 | README.md:5–17、AGENTS.md:7–13、.agents/skills/code-architect-skills/SKILL.md:8–17 |
-| 必要配置 | 不适用 | 项目级目录是 Skill 的安装位置。汇总脚本的入口只读取命令行和检查记录，沿当前流程无需设置项目环境变量或配置文件。 | README.md:7–13、skills/code-architect-skills/scripts/necessary_docs.py:193–220 |
-| API 说明 | 范围内未发现 | 汇总 CLI 的 JSON 字段、UTF-8 文件或标准输入用法、旧版记录兼容和 Markdown 输出均有说明，所附样例可直接运行。 | AGENTS.md:21–22、skills/code-architect-skills/references/necessary-documents.md:55–73、skills/code-architect-skills/scripts/necessary_docs.py:193–220 |
+| 启动或最小使用示例 | 范围内未发现 | README 给出本项目调用、跨项目复制路径和只读用法。项目级入口可解析到源文件，完整目录复制到临时项目后，随包脚本和示例可运行。 | README.md:5–17、AGENTS.md:7–13、.agents/skills/project-architect-skills/SKILL.md:8–17 |
+| 必要配置 | 不适用 | 项目级目录是 Skill 的安装位置。汇总脚本的入口只读取命令行和检查记录，沿当前流程无需设置项目环境变量或配置文件。 | README.md:7–13、skills/project-architect-skills/scripts/necessary_docs.py:193–220 |
+| API 说明 | 范围内未发现 | 汇总 CLI 的 JSON 字段、UTF-8 文件或标准输入用法、旧版记录兼容和 Markdown 输出均有说明，所附样例可直接运行。 | AGENTS.md:21–22、skills/project-architect-skills/references/necessary-documents.md:55–73、skills/project-architect-skills/scripts/necessary_docs.py:193–220 |
 
 #### 架构文档
 
 | 内容 | 状态 | 当前结论 | 核对依据 |
 | --- | --- | --- | --- |
-| 模块职责与依赖 | 范围内未发现 | AGENTS 说明源文件、规则、脚本和测试位置。Skill 入口与判据交代 Codex 负责取证和判断，Python 脚本负责校验记录并渲染报告。 | AGENTS.md:7–15、skills/code-architect-skills/SKILL.md:8–13、skills/code-architect-skills/references/necessary-documents.md:55–57 |
+| 模块职责与依赖 | 范围内未发现 | AGENTS 说明源文件、规则、脚本和测试位置。Skill 入口与判据交代 Codex 负责取证和判断，Python 脚本负责校验记录并渲染报告。 | AGENTS.md:7–15、skills/project-architect-skills/SKILL.md:8–13、skills/project-architect-skills/references/necessary-documents.md:55–57 |
 
 #### 测试文档
 
 | 内容 | 状态 | 当前结论 | 核对依据 |
 | --- | --- | --- | --- |
-| 验证改动的方法 | 发现问题 | **内容不完整**　README 的命令和样例可验证汇总脚本，PRD 提供完整治理流程的验收场景。现有验证说明缺少一例从 Codex 会话开始、对当前必要文档检查有明确预期的手工回归。 | README.md:19–27、AGENTS.md:30–34、tests/test_necessary_docs.py:43–47,142–157、docs/code-architect-skills-PRD-v0.3.md:120–134 |
+| 验证改动的方法 | 发现问题 | **内容不完整**　README 的命令和样例可验证汇总脚本，PRD 提供完整治理流程的验收场景。现有验证说明缺少一例从 Codex 会话开始、对当前必要文档检查有明确预期的手工回归。 | README.md:19–27、AGENTS.md:30–34、tests/test_necessary_docs.py:43–47,142–157、docs/project-architect-skills-PRD-v0.3.md:120–134 |
 
 #### 部署文档
 
 | 内容 | 状态 | 当前结论 | 核对依据 |
 | --- | --- | --- | --- |
-| 部署说明 | 不适用 | 项目通过复制本地 Skill 目录交付，运行在目标项目的 Codex 会话中。 | README.md:5–13、skills/code-architect-skills/SKILL.md:8 |
+| 部署说明 | 不适用 | 项目通过复制本地 Skill 目录交付，运行在目标项目的 Codex 会话中。 | README.md:5–13、skills/project-architect-skills/SKILL.md:8 |
 
 ### 初次补写建议
 
 #### 产品文档
 
-- **主要流程与业务规则**　接手者沿 PRD 第 2 节验收时，容易把未出现的架构图、目录结构和异味检查结果当作运行故障。 **补写位置**　在 docs/code-architect-skills-PRD-v0.3.md 第 2 节的命令旁注明，当前已交付必要文档模块，其他体检项属于目标范围。
+- **主要流程与业务规则**　接手者沿 PRD 第 2 节验收时，容易把未出现的架构图、目录结构和异味检查结果当作运行故障。 **补写位置**　在 docs/project-architect-skills-PRD-v0.3.md 第 2 节的命令旁注明，当前已交付必要文档模块，其他体检项属于目标范围。
 
 #### 测试文档
 
@@ -65,7 +65,7 @@
 ### 初次验证
 
 - 在 Python 3.11.9 下运行 `python3 -B -m unittest discover -s tests -v`，17 项通过。
-- 运行规模命令 `python3 skills/code-architect-skills/scripts/necessary_docs.py --project-size 1 2`，返回「小项目」。
+- 运行规模命令 `python3 skills/project-architect-skills/scripts/necessary_docs.py --project-size 1 2`，返回「小项目」。
 - 按判据运行仓库的 JSON 示例，输出以 `## 必要文档` 开头，得到预期的架构文档和测试文档缺口。在临时项目中复制 Skill 整目录后，随包脚本运行同一示例也成功。
 - 当前会话完成了本仓库的体检。独立 Codex 进程受工作区权限限制，临时项目中新会话的 Skill 发现未复验。
 

@@ -34,7 +34,7 @@
 在本仓库根目录运行以下命令，用虚构项目演示仅有产品图的报告。
 
 ```sh
-python3 -B skills/code-architect-skills/scripts/architecture_diagrams.py <<'JSON'
+python3 -B skills/project-architect-skills/scripts/architecture_diagrams.py <<'JSON'
 {
   "scope": ["通查 README、docs/ 和 src/ 的订单导出入口"],
   "need": {"status": "需要", "detail": "维护导出要定位入口和订单读取。", "evidence": ["src/export.py:8"]},

@@ -29,7 +29,7 @@
 在本仓库根目录运行下列命令，用虚构的订单模块验证同目录测试和错放模块的报告。
 
 ```sh
-python3 -B skills/code-architect-skills/scripts/directory_structure.py <<'JSON'
+python3 -B skills/project-architect-skills/scripts/directory_structure.py <<'JSON'
 {
   "scope": ["读取 AGENTS.md 并核对 src/orders/ 和 src/shared/"],
   "unread": [],

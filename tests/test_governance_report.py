@@ -6,8 +6,8 @@ import unittest
 from pathlib import Path
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "skills/code-architect-skills/scripts/governance_report.py"
-REPORT = Path("docs/code-architect-report.md")
+SCRIPT = Path(__file__).resolve().parents[1] / "skills/project-architect-skills/scripts/governance_report.py"
+REPORT = Path("docs/project-architect-report.md")
 
 
 def candidate(target, title):
@@ -144,6 +144,20 @@ class GovernanceReportTests(unittest.TestCase):
         record = report_record()
         self.assertEqual(self.report(record, "--write"), self.report(record))
         self.assertEqual(path.read_bytes(), manual)
+
+    def test_renamed_report_can_refresh_a_valid_legacy_marker(self):
+        path = self.root / REPORT
+        record = report_record()
+        self.assertEqual(self.report(record, "--write").strip(), str(REPORT))
+        original = path.read_bytes()
+        legacy = original.replace(b"<!-- project-architect-skills sha256=", b"<!-- code-architect-skills sha256=", 1)
+        edited = legacy + "人工交接备注\n".encode("utf-8")
+        path.write_bytes(edited)
+        self.assertEqual(self.report(record, "--write"), self.report(record))
+        self.assertEqual(path.read_bytes(), edited)
+        path.write_bytes(legacy)
+        self.assertEqual(self.report(record, "--write").strip(), str(REPORT))
+        self.assertEqual(path.read_bytes(), original)
 
     def test_existing_unmanaged_report_and_symlink_destination_are_preserved(self):
         docs = self.root / "docs"

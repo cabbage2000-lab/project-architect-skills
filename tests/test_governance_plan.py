@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "skills/code-architect-skills/scripts/governance_plan.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "skills/project-architect-skills/scripts/governance_plan.py"
 
 
 def candidate(title, target, **changes):

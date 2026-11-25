@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 
-SCRIPT = Path(__file__).resolve().parents[1] / "skills/code-architect-skills/scripts/architecture_diagrams.py"
+SCRIPT = Path(__file__).resolve().parents[1] / "skills/project-architect-skills/scripts/architecture_diagrams.py"
 
 
 def architecture_record():

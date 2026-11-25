@@ -22,7 +22,7 @@
 在本仓库根目录运行以下命令，样例中只纳入补写测试说明的事项。
 
 ```sh
-python3 -B skills/code-architect-skills/scripts/governance_plan.py <<'JSON'
+python3 -B skills/project-architect-skills/scripts/governance_plan.py <<'JSON'
 {
   "mode": "execute",
   "candidates": [
