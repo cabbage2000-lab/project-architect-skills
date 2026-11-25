@@ -14,7 +14,11 @@ project-architect-skills
 
 检查前先判断项目规模。小项目通查相关资料，中等项目分模块核对，大项目优先检查主要业务路径和跨模块依赖。判档和取证方式见[项目规模与取证范围](skills/project-architect-skills/references/project-size.md)。
 
+有足够的本地 Git 历史时，变更热点为影响相近的治理候选提供排序依据，共变记录帮助定位需要核实的调用方和测试。修改 Python 代码时，复核会用实际改前快照对照改后的结构信号，并记录行为验收结果。 [Git 变更证据](skills/project-architect-skills/references/git-change-history.md) · [Python 增量对照](skills/project-architect-skills/references/execution-and-handover.md#python-结构信号增量对照)
+
 报告列出规模依据、已查范围、逐项结论、治理计划和复核结果。待确认、待验证或暂缓的事项保留证据和原因。维护导读给出下次改动的入口、受影响的调用方和自查方法。治理获批后，报告默认保存到目标项目的 `docs/project-architect-report.md`。只读、没有可执行项、拒绝治理或需要保留同名人工报告时，全文在会话交付。[执行复核与维护导读](skills/project-architect-skills/references/execution-and-handover.md)
+
+需要重构时，可以输入「用 project-architect-skills 检查订单导出循环的嵌套，给出简化计划」。助手会选取能检验改动的输入，例如混合可导出和应跳过的订单，记录原入口的结果。获批后逐步重构并重放样例；涉及跨文件改名时，先核对定义、调用点和配置引用。这套做法吸收自 Claude Code 的重构专家说明。[上游 refactoring-expert](https://github.com/luanquangminh/claude-skill/blob/85ebeee29a6b32085d56e8b7022d5673b1760fe6/agents/refactoring-expert.md) · [本项目执行判据](skills/project-architect-skills/references/execution-and-handover.md#局部与跨文件重构)
 
 ## 验证模块
 

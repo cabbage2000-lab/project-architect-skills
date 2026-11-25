@@ -86,7 +86,7 @@
         <mxCell id="tickets-title" parent="tickets" vertex="1" value="治理计划与授权" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=23;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="10" width="208" height="34" />
         </mxCell>
-        <mxCell id="tickets-lead" parent="tickets" vertex="1" value="按维护影响自动排序" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="tickets-lead" parent="tickets" vertex="1" value="影响相近时参考 Git 热点" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="46" width="208" height="22" />
         </mxCell>
         <mxCell id="tickets-line" parent="tickets" vertex="1" value="" style="rounded=0;html=1;fillColor=#D8DDD9;strokeColor=none;" connectable="0">
@@ -119,7 +119,7 @@
         <mxCell id="apply-and-check-topic-1" parent="apply-and-check" vertex="1" value="完成一项，验证一项" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=17;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="92" width="224" height="24" />
         </mxCell>
-        <mxCell id="apply-and-check-detail-1" parent="apply-and-check" vertex="1" value="核对实际差异与验收证据" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="apply-and-check-detail-1" parent="apply-and-check" vertex="1" value="验收行为并对照 Python 结构变化" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="119" width="224" height="23" />
         </mxCell>
         <mxCell id="apply-and-check-topic-2" parent="apply-and-check" vertex="1" value="发现回归时" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=17;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
@@ -134,7 +134,7 @@
         <mxCell id="handover-title" parent="handover" vertex="1" value="维护导读" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=23;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="10" width="196" height="34" />
         </mxCell>
-        <mxCell id="handover-lead" parent="handover" vertex="1" value="给接手人的一份报告" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="handover-lead" parent="handover" vertex="1" value="用共变线索复查关联位置" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="46" width="196" height="22" />
         </mxCell>
         <mxCell id="handover-line" parent="handover" vertex="1" value="" style="rounded=0;html=1;fillColor=#D8DDD9;strokeColor=none;" connectable="0">

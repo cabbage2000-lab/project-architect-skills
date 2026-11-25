@@ -41,11 +41,12 @@ def finding(kind, *evidence):
 
 
 class PythonSmellSignalTests(unittest.TestCase):
-    def signals(self, files, *options):
+    def signals(self, files, *options, compare=False):
         with tempfile.TemporaryDirectory() as directory:
             for name, source in files.items():
                 (Path(directory) / name).write_text(source, encoding="utf-8")
-            result = run_script("python_smell_signals.py", *options, *files, cwd=directory)
+            paths = () if compare else files
+            result = run_script("python_smell_signals.py", *options, *paths, cwd=directory)
         self.assertEqual(result.returncode, 0, result.stderr)
         return json.loads(result.stdout)
 
@@ -141,6 +142,60 @@ class PythonSmellSignalTests(unittest.TestCase):
         self.assertEqual(result["files"], [{"path": "valid.py", "methods": 1}])
         self.assertEqual(result["unread"][0]["source"], "broken.py")
         self.assertTrue(result["unread"][0]["reason"])
+
+    def test_compare_uses_snapshot_and_reports_both_directions_without_line_noise(self):
+        before = textwrap.dedent("""\
+            def export(a, b, c, d, e):
+                if a and b and c and d:
+                    return 1
+                return 0
+
+            def legacy(a, b, c, d):
+                return 1 if a and b and c and d else 0
+
+            def unchanged(a, b, c, d):
+                return 1 if a and b and c and d else 0
+        """)
+        after = textwrap.dedent("""\
+            # The snapshot may already include edits made by the maintainer.
+            def export(a, b, c, d, e):
+                return 1 if a and b and c and d and e else 0
+
+            def added(a, b, c, d):
+                return 1 if a and b and c and d else 0
+
+            def unchanged(a, b, c, d):
+                return 1 if a and b and c and d else 0
+        """)
+        result = self.signals({"snapshot.py": before, "orders.py": after},
+                              "--min-lines", "2", "--compare", "snapshot.py", "orders.py", compare=True)
+        diff = result["comparisons"][0]
+        methods = {method["symbol"]: method for method in diff["changes"]}
+        self.assertEqual(set(methods), {"export", "legacy", "added"})
+        self.assertEqual(methods["export"]["before_lines"], [1, 4])
+        self.assertEqual(methods["export"]["after_lines"], [2, 3])
+        self.assertEqual(methods["export"]["signals"], [
+            {"kind": "complex_conditional", "status": "increased",
+             "before": {"conditions": 1, "max_terms": 4}, "after": {"conditions": 1, "max_terms": 5}},
+            {"kind": "long_method", "status": "removed", "before": {"code_lines": 3}, "after": None},
+        ])
+        self.assertEqual(methods["legacy"]["signals"][0]["status"], "removed")
+        self.assertEqual(methods["added"]["signals"][0]["status"], "added")
+
+    def test_compare_distinguishes_explicit_additions_unread_files_and_ambiguous_symbols(self):
+        complex_source = "def f(a, b, c, d):\n    return 1 if a and b and c and d else 0\n"
+        result = self.signals(
+            {"valid.py": complex_source, "broken.py": "def f(:\n", "duplicates.py": complex_source * 2},
+            "--compare", "-", "valid.py", "--compare", "valid.py", "-",
+            "--compare", "broken.py", "valid.py", "--compare", "duplicates.py", "valid.py", compare=True,
+        )
+        added, removed, broken, duplicates = result["comparisons"]
+        self.assertIsNone(added["changes"][0]["before_lines"])
+        self.assertIsNone(removed["changes"][0]["after_lines"])
+        self.assertEqual(broken["unread"][0]["side"], "before")
+        self.assertEqual(broken["changes"], [])
+        self.assertEqual(duplicates["ambiguous"], ["f"])
+        self.assertEqual(duplicates["changes"], [])
 
     @unittest.skipUnless(sys.version_info >= (3, 10), "模式匹配需要 Python 3.10")
     def test_guarded_match_counts_decisions_without_counting_the_fallback(self):

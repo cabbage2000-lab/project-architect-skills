@@ -89,6 +89,9 @@ def render_reviews(reviews, selected):
         if "preexisting" in review:
             original = required_text(review["preexisting"], f"{field}.preexisting")
             lines.extend(["", f"**改前已有差异**　{original}"])
+        if "structure_delta" in review:
+            observations = text_list(review["structure_delta"], f"{field}.structure_delta")
+            lines.extend(["", "**结构信号增量对照**", "", *(f"- {item}" for item in observations)])
         if checks:
             lines.extend([
                 "", "| 验收 | 实际操作 | 预期 | 观察结果 | 结论 |",

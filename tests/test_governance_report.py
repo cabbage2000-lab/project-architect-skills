@@ -92,6 +92,22 @@ class GovernanceReportTests(unittest.TestCase):
                   "checks": [check("structure", "核对入口", "调用新函数", "发现调用")]}
         self.invalid(report_record([code], [review]), "reviews[0].checks")
 
+    def test_structure_signal_observations_are_advisory_and_require_behavior_checks(self):
+        code = candidate("export.py::download_orders", "提取 CSV 格式化")
+        observation = "export.py::download_orders 的结构决策点由 8 增至 9。"
+        review = {
+            "target": code["target"], "status": "通过", "kind": "code", "changes": "提取了格式化。",
+            "structure_delta": [observation],
+            "checks": [check("structure", "核对入口", "调用新函数", "发现调用")],
+        }
+        record = report_record([code], [review])
+        self.invalid(record, "reviews[0].checks")
+        review["checks"].append(check("behavior", "重放样例", "CSV 不变", "两个样例一致"))
+        report = self.report(record)
+        self.assertIn(observation, report)
+        self.assertIn("两个样例一致", report)
+        self.assertIn("**结果**　通过", report)
+
     def test_regression_requires_evidence_and_disallows_rolled_back_entry(self):
         code = candidate("export.py::download_orders", "提取 CSV 格式化")
         review = {"target": code["target"], "status": "发现差异", "changes": "尝试将转义提取到 csv_format.py。",

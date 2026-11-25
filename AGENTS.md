@@ -14,6 +14,7 @@
 - `references/architecture-diagrams.md` 定义图件取证、源码对照和修订流程。`scripts/architecture_diagrams.py` 校验对照记录并汇总架构图章节。
 - `references/directory-structure.md` 定义路径归属判据。`scripts/directory_structure.py` 汇总实际路径、适用约定和调整建议。
 - `references/code-smells.md` 定义异味和模块诊断判据。`scripts/python_smell_signals.py` 提取 Python 结构信号，`scripts/code_smells.py` 汇总证据和治理候选。
+- `references/git-change-history.md` 说明怎样用 `scripts/git_change_history.py` 提取本地热点和共变线索。
 - `references/governance-plan.md` 定义候选排序与纳入条件。`scripts/governance_plan.py` 校验并汇总本轮计划。
 - `references/execution-and-handover.md` 定义复核、回退与导读。`scripts/governance_report.py` 汇总各阶段并交付报告。
 
