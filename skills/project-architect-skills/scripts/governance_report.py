@@ -46,6 +46,40 @@ def review_checks(review, field):
     return rows, results
 
 
+def rollback_summary(rollback, field):
+    if not isinstance(rollback, dict) or rollback.get("status") not in ("已回退", "部分回退", "保留现场"):
+        raise ValueError(f"{field}.rollback 需要已回退、部分回退或保留现场的记录")
+    evidence = required_text(rollback.get("evidence"), f"{field}.rollback.evidence")
+    return f"{rollback['status']}。{evidence}"
+
+
+def review_details(review, status, results, field):
+    outcomes = set().union(*results.values())
+    if REGRESSION in outcomes and status != REGRESSION:
+        raise ValueError(f"{field}.status 在验收发现差异时需要为发现差异")
+    if status == REGRESSION and REGRESSION not in outcomes:
+        raise ValueError(f"{field}.checks 需要记录实际差异及失败样例")
+
+    details = {"结果": status}
+    changes = review.get("changes")
+    if status in (PASSED, REGRESSION) or changes is not None:
+        details["实际改动"] = required_text(changes, f"{field}.changes")
+    if status == PASSED:
+        kind = review.get("kind")
+        if kind not in ("code", "handover"):
+            raise ValueError(f"{field}.kind 需要 code 或 handover")
+        required = {"structure", "behavior"} if kind == "code" else {"handover"}
+        if outcomes != {PASSED} or not required.issubset(results):
+            raise ValueError(f"{field}.checks 缺少全部通过的{kind}验收证据")
+        return details
+
+    if status != REGRESSION:
+        details["原因"] = required_text(review.get("reason"), f"{field}.reason")
+    if changes is not None:
+        details["回退复核"] = rollback_summary(review.get("rollback"), field)
+    return details
+
+
 def render_reviews(reviews, selected):
     reviews = records(reviews, "reviews")
     if len(reviews) != len(selected):
@@ -60,32 +94,12 @@ def render_reviews(reviews, selected):
         if status not in (PASSED, REGRESSION, UNVERIFIED, PENDING, DEFERRED, RESOLVED):
             raise ValueError(f"{field}.status 需要通过、发现差异、待验证、待确认、暂缓或已解决")
         checks, results = review_checks(review, field)
-        outcomes = set().union(*results.values())
-        if REGRESSION in outcomes and status != REGRESSION:
-            raise ValueError(f"{field}.status 在验收发现差异时需要为发现差异")
-        if status == REGRESSION and REGRESSION not in outcomes:
-            raise ValueError(f"{field}.checks 需要记录实际差异及失败样例")
-        changes = review.get("changes")
-        lines.extend(["", f"### {index + 1}. {title}", "", f"**结果**　{status}"])
-        if status in (PASSED, REGRESSION) or changes is not None:
-            lines.extend(["", f"**实际改动**　{required_text(changes, f'{field}.changes')}"])
+        details = review_details(review, status, results, field)
         if status == PASSED:
-            kind = review.get("kind")
-            if kind not in ("code", "handover"):
-                raise ValueError(f"{field}.kind 需要 code 或 handover")
-            required = {"structure", "behavior"} if kind == "code" else {"handover"}
-            if outcomes != {PASSED} or not required.issubset(results):
-                raise ValueError(f"{field}.checks 缺少全部通过的{kind}验收证据")
             passed.add(target)
-        else:
-            if status != REGRESSION:
-                lines.extend(["", f"**原因**　{required_text(review.get('reason'), f'{field}.reason')}"])
-            if changes is not None:
-                rollback = review.get("rollback")
-                if not isinstance(rollback, dict) or rollback.get("status") not in ("已回退", "部分回退", "保留现场"):
-                    raise ValueError(f"{field}.rollback 需要已回退、部分回退或保留现场的记录")
-                evidence = required_text(rollback.get("evidence"), f"{field}.rollback.evidence")
-                lines.extend(["", f"**回退复核**　{rollback['status']}。{evidence}"])
+        lines.extend(["", f"### {index + 1}. {title}"])
+        for label, value in details.items():
+            lines.extend(["", f"**{label}**　{value}"])
         if "preexisting" in review:
             original = required_text(review["preexisting"], f"{field}.preexisting")
             lines.extend(["", f"**改前已有差异**　{original}"])

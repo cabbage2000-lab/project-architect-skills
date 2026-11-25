@@ -24,13 +24,15 @@ project-architect-skills
 
 ## 验证模块
 
-在本仓库根目录运行以下命令。测试与报告汇总脚本均使用 Python 3 标准库。
+在本仓库根目录运行以下命令。完整运行测试需要 Python 3.10 或更高版本，并且能从 `PATH` 调用 `git`。无需安装第三方 Python 包。
 
 ```sh
 python3 -B -m unittest discover -s tests -v
 ```
 
-测试通过时，最后一行显示 `OK`。检查记录和可运行的示例见[必要文档](skills/project-architect-skills/references/necessary-documents.md)、[架构图](skills/project-architect-skills/references/architecture-diagrams.md)、[目录结构](skills/project-architect-skills/references/directory-structure.md)和[代码异味](skills/project-architect-skills/references/code-smells.md)检查判据。
+全部用例执行并通过时，最后一行显示 `OK`。`OK (skipped=N)` 表示已执行的用例通过，另有 N 项被跳过。Python 3.9 会跳过模式匹配测试；找不到 `git` 时会跳过 Git 历史测试。可在 `-v` 输出中查看具体用例和跳过原因。
+
+检查记录和可运行的示例见[必要文档](skills/project-architect-skills/references/necessary-documents.md)、[架构图](skills/project-architect-skills/references/architecture-diagrams.md)、[目录结构](skills/project-architect-skills/references/directory-structure.md)和[代码异味](skills/project-architect-skills/references/code-smells.md)检查判据。
 
 ### 在 Codex 会话中验证只读检查
 

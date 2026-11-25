@@ -22,16 +22,7 @@ PLAN_FIELDS = {
 }
 
 
-def build_plan(record, *, preview=False):
-    if not isinstance(record, dict):
-        raise ValueError("治理计划记录需要 JSON 对象")
-    mode = record.get("mode")
-    if mode not in ("execute", "inspect"):
-        raise ValueError("mode 需要 execute 或 inspect")
-    candidates = record.get("candidates")
-    if not isinstance(candidates, list):
-        raise ValueError("candidates 需要数组，无治理候选时传入 []")
-
+def select_candidates(candidates, mode):
     targets = set()
     selected = {}
     deferred = []
@@ -59,30 +50,41 @@ def build_plan(record, *, preview=False):
         elif status == NOT_RUN:
             raise ValueError(f"{field}.status 在 execute 模式下需要写明暂缓类型")
         elif status == READY:
-            details = [
-                f"- **{label}**　{required_text(candidate.get(key), f'{field}.{key}')}"
-                for key, label in PLAN_FIELDS.items()
-            ]
+            details = {
+                "优先理由": reason,
+                "维护影响": impact,
+                "核对依据": evidence,
+            }
+            for key, label in PLAN_FIELDS.items():
+                details[label] = required_text(candidate.get(key), f"{field}.{key}")
             if len(selected) < MAX_ITEMS:
-                selected[target] = (title, [
-                    f"### {len(selected) + 1}. {title}", "",
-                    f"- **优先理由**　{reason}",
-                    f"- **维护影响**　{impact}",
-                    f"- **核对依据**　{evidence}",
-                    *details,
-                ])
+                selected[target] = (title, details)
                 continue
             status, reason = DEFERRED, f"本轮已纳入 {MAX_ITEMS} 项，按维护影响顺延。"
-        deferred.append(table_row((title, status, reason, impact, evidence)))
+        deferred.append((title, status, reason, impact, evidence))
+    return selected, deferred
 
+
+def build_plan(record, *, preview=False):
+    if not isinstance(record, dict):
+        raise ValueError("治理计划记录需要 JSON 对象")
+    mode = record.get("mode")
+    if mode not in ("execute", "inspect"):
+        raise ValueError("mode 需要 execute 或 inspect")
+    candidates = record.get("candidates")
+    if not isinstance(candidates, list):
+        raise ValueError("candidates 需要数组，无治理候选时传入 []")
+
+    selected, deferred = select_candidates(candidates, mode)
     lines = ["## 治理计划", ""]
     if selected:
         if preview:
             lines.append(f"本轮拟治理 {len(selected)} 项，待授权。")
         else:
             lines.append(f"本轮按以下顺序执行 {len(selected)} 项。")
-        for _, item in selected.values():
-            lines.extend(["", *item])
+        for number, (title, details) in enumerate(selected.values(), 1):
+            lines.extend(["", f"### {number}. {title}", ""])
+            lines.extend(f"- **{label}**　{value}" for label, value in details.items())
     elif mode == "inspect" and deferred:
         lines.append("本轮仅交付治理建议。")
     else:
@@ -91,7 +93,7 @@ def build_plan(record, *, preview=False):
         lines.extend([
             "", "### 未纳入本轮执行", "",
             "| 发现 | 状态 | 原因 | 维护影响 | 核对依据 |",
-            "| --- | --- | --- | --- | --- |", *deferred,
+            "| --- | --- | --- | --- | --- |", *(table_row(row) for row in deferred),
         ])
     if preview and selected:
         lines.extend(["", "请在当前会话回复 **同意治理**，我会按以上计划逐项修复和验收。"])
