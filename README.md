@@ -10,7 +10,7 @@
 project-architect-skills
 ```
 
-默认调用先只读完成四项体检，随后展示体检摘要和至多三项拟修复事项。计划给出改动范围、改前基线、验收方法和回退办法。确认后，在同一会话回复 **同意治理**，助手会按计划逐项修复和验收。已有维护任务可以直接附上，例如「我要改订单导出的列名」。只想查看某项诊断时，可以输入「用 project-architect-skills 只读检查代码异味」或指定其他检查项。[治理计划](skills/project-architect-skills/references/governance-plan.md)
+默认调用时，主 Agent 把必要文档、架构图、目录结构和代码异味分别派给独立的只读子 Agent。各自在自己的上下文中取证，交回检查章节、候选及出处。主 Agent 合并重复发现，展示体检摘要，并按维护影响推荐本轮最值得优化的事项。计划给出改动范围、改前基线、验收方法和回退办法。确认后，在同一会话回复 **同意治理**，助手会按计划逐项修复和验收。已有维护任务可以直接附上，例如「我要改订单导出的列名」。只想查看某项诊断时，可以输入「用 project-architect-skills 只读检查代码异味」或指定其他检查项。[治理计划](skills/project-architect-skills/references/governance-plan.md)
 
 检查前先判断项目规模。小项目通查相关资料，中等项目分模块核对，大项目优先检查主要业务路径和跨模块依赖。判档和取证方式见[项目规模与取证范围](skills/project-architect-skills/references/project-size.md)。
 
@@ -99,7 +99,7 @@ git -C "$governance_project" -c user.name=Fixture -c user.email=fixture@example.
 printf '%s\n' "$governance_project"
 ```
 
-在可写的 Codex 会话中打开输出的临时目录，输入 `project-architect-skills`。先核对体检摘要和待授权计划都已展示，列出的两项分别指向 `README.md` 和 `test_names.py`。在临时仓库根目录运行 `git status --short`，应无输出。随后在同一会话回复 **同意治理**，完成后核对以下结果。
+在可写的 Codex 会话中打开输出的临时目录，输入 `project-architect-skills`。在支持子 Agent 的宿主中，核对四项体检各自有独立的派发与回传记录，计划在汇总后统一展示。核对体检摘要和待授权计划，列出的两项分别指向 `README.md` 和 `test_names.py`。在临时仓库根目录运行 `git status --short`，应无输出。随后在同一会话回复 **同意治理**，完成后核对以下结果。
 
 - `README.md` 增加验收步骤及预期输出。`test_names.py` 移到 `tests/`。
 - 在临时仓库根目录运行 `python3 -B names.py`，仍输出 `Ada, Bob`。运行 `python3 -B -m unittest discover -s tests`，1 项通过。

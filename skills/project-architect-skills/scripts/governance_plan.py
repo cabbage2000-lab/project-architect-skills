@@ -8,7 +8,6 @@ from pathlib import Path
 from necessary_docs import PENDING, required_text, table_row, text_list
 
 
-MAX_ITEMS = 3
 READY = "可执行"
 UNVERIFIED = "待验证"
 DEFERRED = "暂缓"
@@ -57,10 +56,8 @@ def select_candidates(candidates, mode):
             }
             for key, label in PLAN_FIELDS.items():
                 details[label] = required_text(candidate.get(key), f"{field}.{key}")
-            if len(selected) < MAX_ITEMS:
-                selected[target] = (title, details)
-                continue
-            status, reason = DEFERRED, f"本轮已纳入 {MAX_ITEMS} 项，按维护影响顺延。"
+            selected[target] = (title, details)
+            continue
         deferred.append((title, status, reason, impact, evidence))
     return selected, deferred
 

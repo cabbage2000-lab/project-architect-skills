@@ -53,7 +53,7 @@ class GovernancePlanTests(unittest.TestCase):
         self.assertEqual(result.stdout, "")
         self.assertIn(field, result.stderr)
 
-    def test_selects_first_three_eligible_candidates_and_retains_unselected_evidence(self):
+    def test_keeps_all_recommended_items_in_order_and_explains_other_findings(self):
         unresolved = candidate(
             "核实同名规则", "src/names.py::sort_names",
             status="待确认", reason="同名记录的业务口径尚无依据。",
@@ -62,15 +62,18 @@ class GovernancePlanTests(unittest.TestCase):
             ready("补写验证说明", "README.md#验证"),
             unresolved,
             ready("更新模块图", "docs/modules.md#依赖"),
+            candidate("统一示例排版", "docs/examples.md", status="暂缓", reason="排版不影响本轮交接。"),
             ready("补写运行示例", "README.md#运行"),
             ready("补写接口约定", "docs/api.md#导出"),
         ))
-        plan_items = [line for line in plan.splitlines() if line.startswith(("### 1.", "### 2.", "### 3.", "### 4."))]
-        self.assertEqual(plan_items, ["### 1. 补写验证说明", "### 2. 更新模块图", "### 3. 补写运行示例"])
+        selected, remaining = plan.split("### 未纳入本轮执行")
+        plan_items = [line for line in selected.splitlines() if line.startswith("### ")]
+        self.assertEqual(plan_items, [
+            "### 1. 补写验证说明", "### 2. 更新模块图", "### 3. 补写运行示例", "### 4. 补写接口约定",
+        ])
         self.assertIn("| 核实同名规则 | 待确认 | 同名记录的业务口径尚无依据。", plan)
         self.assertIn(unresolved["target"], plan)
-        self.assertIn("| 补写接口约定 | 暂缓 | 本轮已纳入 3 项", plan)
-        self.assertIn("docs/api.md#导出", plan)
+        self.assertIn("| 统一示例排版 | 暂缓 | 排版不影响本轮交接。", remaining)
 
     def test_selected_item_keeps_its_baseline_and_replay_details(self):
         selected = ready("补写验证说明", "README.md#验证")
@@ -89,7 +92,7 @@ class GovernancePlanTests(unittest.TestCase):
         plan = self.report(run_plan(*candidates))
         preview = self.report(run_plan(*candidates, preview=True))
         body, prompt = preview.rstrip().rsplit("\n\n", 1)
-        self.assertEqual(body, plan.rstrip().replace("本轮按以下顺序执行 3 项。", "本轮拟治理 3 项，待授权。"))
+        self.assertEqual(body, plan.rstrip().replace("本轮按以下顺序执行 4 项。", "本轮拟治理 4 项，待授权。"))
         self.assertEqual(prompt, "请在当前会话回复 **同意治理**，我会按以上计划逐项修复和验收。")
 
     def test_preview_without_selected_items_omits_consent_prompt(self):

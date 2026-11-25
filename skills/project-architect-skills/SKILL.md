@@ -9,12 +9,25 @@ description: 检查本地项目的必要文档、架构图、目录结构和代�
 
 用户指定重构目标时，以该目标进入代码治理流程。SOLID 评估与设计模式选型按[设计判据](references/code-smells.md#solid-原则与设计模式)取证；局部清理、跨文件重命名、常量提取和旧 API 迁移按[专项重构](references/refactoring.md)选择变换及验收方式。
 
-1. 在检查前，按[项目规模与取证范围](references/project-size.md)盘点当前仓库，判断规模，记录依据并确定本轮优先核对的入口和模块。
-2. 按所选项读取对应判据：[必要文档](references/necessary-documents.md)、[架构图](references/architecture-diagrams.md)、[目录结构](references/directory-structure.md)或[代码异味](references/code-smells.md)。核实各项是否适用，记录维护者受阻的步骤、确切出处和未核实的资料。同一图件缺口保留在「架构图」，同一函数的各类异味合为一项。
-3. 用 `python3 -B` 通过标准输入将证据交给各项的汇总脚本：[necessary_docs.py](scripts/necessary_docs.py)、[architecture_diagrams.py](scripts/architecture_diagrams.py)、[directory_structure.py](scripts/directory_structure.py) 和 [code_smells.py](scripts/code_smells.py)。合并选中项的 Markdown 章节，在首个章节记录项目规模。脚本路径相对于本 Skill，证据路径相对于目标仓库。环境无法运行 Python 时，按各项判据交付结论和建议。
-4. 在体检后按[治理计划判据](references/governance-plan.md)汇总候选并排序。对相关源码和测试按 [Git 变更证据](references/git-change-history.md)只读取证，供候选排序和导读核对使用。用 [governance_plan.py](scripts/governance_plan.py) 生成计划。默认命令用 `execute` 拟定至多三项及各自的改动范围、基线、验收和回退办法。仅检查、用户限定只读或仓库不可写时用 `inspect`。体检、基线取证和计划预览保持目标仓库只读。Python 不可用时按同一判据生成计划。
+1. 主 Agent 按[项目规模与取证范围](references/project-size.md)盘点仓库，记录规模依据和本轮重点。为每个选中的检查项派发一个独立上下文的只读子 Agent。默认四项并行，单项请求只派对应一项，并发槽位不足时分批派发。
+2. 派发时给出目标仓库、维护任务、允许检查的范围、重点入口和对应的判据与脚本，省去完整会话历史。单项涉及大量模块时，按模块或业务路径分批取证。子 Agent 在自己的上下文内取证并生成章节，按下方[体检分工与回传](#体检分工与回传)交付。
+3. 主 Agent 收齐所选项的结果，按下表顺序合并章节，仅在首个章节记录项目规模。按同一改动目标归并候选并保留各自出处；同一图件缺口归入架构图，同一函数的各类异味合为一项。结论冲突时只复查争议出处，仍无法判定的结论标为「待确认」。子任务中断时，缩小到未完成的模块或入口重新派发，保留已核实结果及剩余未查范围。
+4. 在体检后按[治理计划判据](references/governance-plan.md)汇总候选并排序。对相关源码和测试按 [Git 变更证据](references/git-change-history.md)只读取证，供候选排序和导读核对使用。用 [governance_plan.py](scripts/governance_plan.py) 生成计划。默认命令用 `execute` 列出评估后最值得本轮优化的事项，数量由评估结果决定。逐项说明推荐理由、改动范围、基线、验收和回退办法。仅检查、用户限定只读或仓库不可写时用 `inspect`。体检、基线取证和计划预览保持目标仓库只读。Python 不可用时按同一判据生成计划。
 5. 计划有可执行事项且尚未获得对应授权时，在当前会话交付体检摘要和治理计划预览，列出目标仓库、拟改位置及验收方式，提示「请回复『同意治理』，我会按以上计划逐项修复和验收。」用计划脚本的 `--preview` 生成带提示的章节。保留本轮体检、计划及范围作为会话上下文，结束本轮回复并等待确认。等待期间保持目标仓库只读。用户已明确授权计划中的具体修复时，沿用该授权。只读检查或无可执行事项时，直接进入导读。
 6. 用户在同一会话回复「同意治理」或明确批准后，沿用本轮计划继续。只处理获批的事项，按[执行复核](references/execution-and-handover.md#逐项执行与复核)重查现状、保留改前状态、逐项修复并验收。已解决的事项直接跳过，拟变更超出获批范围时先展示新范围并等待确认。部分批准时，其余已列事项记为「暂缓」，不递补。用户拒绝时按 `inspect` 交付，注明拟修复事项未获批准。收到「同意治理」时若没有可核对的待授权计划，先重新取证并展示计划。
 7. 按[维护导读与交付](references/execution-and-handover.md#导读与报告交付)重读当前入口及调用方，给出下次维护的自查步骤。用 [governance_report.py](scripts/governance_report.py) 汇总体检、计划、复核和导读。再次启动治理时从当前仓库重新判断规模并取证。
 
-作为流水线的一项检查时，返回所选检查章节和已确认的候选，交给调用方合并。治理获批或用户明确要求保存报告且仓库可写时，用 `--write` 交付到 `docs/project-architect-report.md`。其余情况以及脚本返回报告正文时，将完整 Markdown 正文原样放入最终回复。环境无法运行 Python 时，按判据汇总报告并沿用同样的交付和覆盖条件。
+治理获批或用户明确要求保存报告且仓库可写时，用 `--write` 交付到 `docs/project-architect-report.md`。其余情况以及脚本返回报告正文时，将完整 Markdown 正文原样放入最终回复。环境无法运行 Python 时，按判据汇总报告并沿用同样的交付和覆盖条件。
+
+## 体检分工与回传
+
+| 子 Agent 的检查项 | 取证判据 | 章节生成脚本 |
+| --- | --- | --- |
+| 必要文档 | [交接内容与引用](references/necessary-documents.md) | [necessary_docs.py](scripts/necessary_docs.py) |
+| 架构图 | [图件与源码对照](references/architecture-diagrams.md) | [architecture_diagrams.py](scripts/architecture_diagrams.py) |
+| 目录结构 | [目录职责与实际路径](references/directory-structure.md) | [directory_structure.py](scripts/directory_structure.py) |
+| 代码异味 | [方法与模块诊断](references/code-smells.md) | [code_smells.py](scripts/code_smells.py) |
+
+接到单项分工的子 Agent 直接读取对应判据，核实适用性、已查范围、维护影响和未读资料。用 `python3 -B` 通过标准输入把检查记录交给对应脚本；仅排在首位的检查项传入主 Agent 提供的 `project`。脚本路径相对于本 Skill，证据路径相对于目标仓库。Python 不可用时按同一判据整理章节。
+
+子 Agent 回传可合并的 Markdown 章节及治理候选。候选写清目标、影响和可定位的出处，原始源码、扫描日志和取证对话留在各自上下文。章节过长且有共享临时目录时，可将章节存到目标仓库外的本轮临时文件，回传路径、已查与未查范围及候选，供主 Agent 组装完整报告。交回结果即结束本次分工，后续计划、授权与报告由主 Agent 统一处理。宿主无法派发子 Agent 时，按同样边界逐项完成并汇总，交付时说明实际检查方式。
