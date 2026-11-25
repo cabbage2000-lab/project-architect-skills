@@ -26,7 +26,7 @@
 - `python3 -B -m unittest discover -s tests -v` 运行全部测试并显示每个用例的结果。
 - `python3 skills/project-architect-skills/scripts/necessary_docs.py record.json` 读取检查记录并将报告写到标准输出。将 `record.json` 替换为实际文件路径，省略路径则从标准输入读取。可先运行[最小示例](skills/project-architect-skills/references/necessary-documents.md#最小可运行示例)。
 
-在 Codex 会话中输入 `用 project-architect-skills 只读检查代码异味` 可查看单项诊断。直接输入 `project-architect-skills` 时，助手会检查四项，并可能在目标项目中处理已确认的发现。
+在 Codex 会话中输入 `用 project-architect-skills 只读检查代码异味` 可查看单项诊断。直接输入 `project-architect-skills` 时，助手会检查四项并展示拟修复事项。回复「同意治理」后，助手按获批范围执行和复核。
 
 ## 编码风格与命名
 

@@ -10,11 +10,11 @@
 project-architect-skills
 ```
 
-默认调用会检查四项，按维护影响生成一份[治理计划](skills/project-architect-skills/references/governance-plan.md)，并在已有授权内逐项处理至多三项。计划给出改动范围、改前基线、验收方法和回退办法。已有维护任务可以直接附上，例如「我要改订单导出的列名」。只想查看某项诊断时，可以输入「用 project-architect-skills 只读检查代码异味」或指定其他检查项。
+默认调用先只读完成四项体检，随后展示体检摘要和至多三项拟修复事项。计划给出改动范围、改前基线、验收方法和回退办法。确认后，在同一会话回复 **同意治理**，助手会按计划逐项修复和验收。已有维护任务可以直接附上，例如「我要改订单导出的列名」。只想查看某项诊断时，可以输入「用 project-architect-skills 只读检查代码异味」或指定其他检查项。[治理计划](skills/project-architect-skills/references/governance-plan.md)
 
 检查前先判断项目规模。小项目通查相关资料，中等项目分模块核对，大项目优先检查主要业务路径和跨模块依赖。判档和取证方式见[项目规模与取证范围](skills/project-architect-skills/references/project-size.md)。
 
-报告列出规模依据、已查范围、逐项结论、治理计划和复核结果。待确认、待验证或暂缓的事项保留证据和原因。维护导读给出下次改动的入口、受影响的调用方和自查方法。默认报告路径为目标项目的 `docs/project-architect-report.md`。只读或需要保留同名人工报告时，全文在会话交付。[执行复核与维护导读](skills/project-architect-skills/references/execution-and-handover.md)
+报告列出规模依据、已查范围、逐项结论、治理计划和复核结果。待确认、待验证或暂缓的事项保留证据和原因。维护导读给出下次改动的入口、受影响的调用方和自查方法。治理获批后，报告默认保存到目标项目的 `docs/project-architect-report.md`。只读、没有可执行项、拒绝治理或需要保留同名人工报告时，全文在会话交付。[执行复核与维护导读](skills/project-architect-skills/references/execution-and-handover.md)
 
 ## 验证模块
 
@@ -91,8 +91,10 @@ git -C "$governance_project" -c user.name=Fixture -c user.email=fixture@example.
 printf '%s\n' "$governance_project"
 ```
 
-在可写的 Codex 会话中打开输出的临时目录，只输入一次 `project-architect-skills`。完成后核对以下结果。
+在可写的 Codex 会话中打开输出的临时目录，输入 `project-architect-skills`。先核对体检摘要和待授权计划都已展示，列出的两项分别指向 `README.md` 和 `test_names.py`。在临时仓库根目录运行 `git status --short`，应无输出。随后在同一会话回复 **同意治理**，完成后核对以下结果。
 
 - `README.md` 增加验收步骤及预期输出。`test_names.py` 移到 `tests/`。
 - 在临时仓库根目录运行 `python3 -B names.py`，仍输出 `Ada, Bob`。运行 `python3 -B -m unittest discover -s tests`，1 项通过。
 - `docs/project-architect-report.md` 包含四项体检、两项已通过的执行复核和维护导读。两项改动都有各自的改前基线和验收证据。
+
+另建一份相同的临时仓库，收到授权提示后回复「不同意治理」。会话应交付检查结果和未执行的建议，`git status --short` 仍无输出。

@@ -48,7 +48,7 @@
         <mxCell id="codex-title" parent="codex" vertex="1" value="Codex 按 SKILL.md 编排" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=23;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
           <mxGeometry x="36" y="14" width="500" height="37" as="geometry" />
         </mxCell>
-        <mxCell id="codex-role" parent="codex" vertex="1" value="读取项目与判据，收集证据和检查章节，排序并执行获授权的改动，记录复核和维护导读。" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=16;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+        <mxCell id="codex-role" parent="codex" vertex="1" value="只读体检并展示治理计划。在同一会话收到「同意治理」后，按获批范围修复、复核并交付报告。" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=16;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
           <mxGeometry x="36" y="59" width="1140" height="26" as="geometry" />
         </mxCell>
         <mxCell id="check-scripts" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
@@ -84,7 +84,7 @@
         <mxCell id="plan-script" parent="governance-plan" vertex="1" value="governance_plan.py" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=14;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
           <mxGeometry x="18" y="57" width="222" height="24" as="geometry" />
         </mxCell>
-        <mxCell id="plan-result" parent="governance-plan" vertex="1" value="CLI 输出计划 Markdown" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+        <mxCell id="plan-result" parent="governance-plan" vertex="1" value="--preview 输出计划与授权提示" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
           <mxGeometry x="18" y="92" width="222" height="23" as="geometry" />
         </mxCell>
         <mxCell id="governance-report" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">

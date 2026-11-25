@@ -22,7 +22,7 @@ PLAN_FIELDS = {
 }
 
 
-def build_plan(record):
+def build_plan(record, *, preview=False):
     if not isinstance(record, dict):
         raise ValueError("治理计划记录需要 JSON 对象")
     mode = record.get("mode")
@@ -77,7 +77,10 @@ def build_plan(record):
 
     lines = ["## 治理计划", ""]
     if selected:
-        lines.append(f"本轮按以下顺序执行 {len(selected)} 项。")
+        if preview:
+            lines.append(f"本轮拟治理 {len(selected)} 项，待授权。")
+        else:
+            lines.append(f"本轮按以下顺序执行 {len(selected)} 项。")
         for _, item in selected.values():
             lines.extend(["", *item])
     elif mode == "inspect" and deferred:
@@ -90,23 +93,26 @@ def build_plan(record):
             "| 发现 | 状态 | 原因 | 维护影响 | 核对依据 |",
             "| --- | --- | --- | --- | --- |", *deferred,
         ])
+    if preview and selected:
+        lines.extend(["", "请在当前会话回复 **同意治理**，我会按以上计划逐项修复和验收。"])
     return "\n".join(lines) + "\n", {target: title for target, (title, _) in selected.items()}
 
 
-def render_report(record):
-    return build_plan(record)[0]
+def render_report(record, *, preview=False):
+    return build_plan(record, preview=preview)[0]
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="治理候选 JSON，默认读取标准输入")
+    parser.add_argument("--preview", action="store_true", help="预览拟治理事项并在有入选项时提示授权")
     args = parser.parse_args()
     try:
         if args.record is None:
             record = json.load(sys.stdin)
         else:
             record = json.loads(args.record.read_text(encoding="utf-8"))
-        report = render_report(record)
+        report = render_report(record, preview=args.preview)
     except (OSError, ValueError) as error:
         parser.exit(2, f"治理计划无法汇总（{error}）\n")
     sys.stdout.write(report)

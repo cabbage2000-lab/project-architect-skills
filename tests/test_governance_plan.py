@@ -31,9 +31,12 @@ def ready(title, target):
     )
 
 
-def run_plan(*candidates, mode="execute"):
+def run_plan(*candidates, mode="execute", preview=False):
+    command = [sys.executable, "-B", str(SCRIPT)]
+    if preview:
+        command.append("--preview")
     return subprocess.run(
-        [sys.executable, "-B", str(SCRIPT)],
+        command,
         input=json.dumps({"mode": mode, "candidates": candidates}, ensure_ascii=False),
         capture_output=True,
         text=True,
@@ -75,6 +78,28 @@ class GovernancePlanTests(unittest.TestCase):
         for field in ("reason", "impact", "scope", "baseline", "steps", "acceptance", "rollback"):
             with self.subTest(field=field):
                 self.assertIn(selected[field], plan)
+
+    def test_preview_preserves_plan_and_prompts_for_consent(self):
+        candidates = (
+            ready("补写验证说明", "README.md#验证"),
+            ready("更新模块图", "docs/modules.md#依赖"),
+            ready("补写运行示例", "README.md#运行"),
+            ready("补写接口约定", "docs/api.md#导出"),
+        )
+        plan = self.report(run_plan(*candidates))
+        preview = self.report(run_plan(*candidates, preview=True))
+        body, prompt = preview.rstrip().rsplit("\n\n", 1)
+        self.assertEqual(body, plan.rstrip().replace("本轮按以下顺序执行 3 项。", "本轮拟治理 3 项，待授权。"))
+        self.assertEqual(prompt, "请在当前会话回复 **同意治理**，我会按以上计划逐项修复和验收。")
+
+    def test_preview_without_selected_items_omits_consent_prompt(self):
+        selected = ready("补写验证说明", "README.md#验证")
+        blocked = candidate("整理导出路径", "src/export.py::export", status="待验证", reason="缺少输入样例。")
+        for candidates, mode in (((), "execute"), ((blocked,), "execute"), ((selected,), "inspect")):
+            with self.subTest(candidates=candidates, mode=mode):
+                plan = self.report(run_plan(*candidates, mode=mode))
+                self.assertEqual(self.report(run_plan(*candidates, mode=mode, preview=True)), plan)
+                self.assertNotIn("同意治理", plan)
 
     def test_inspect_keeps_suggestions_without_scheduling_any_write(self):
         plan = self.report(run_plan(

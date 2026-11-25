@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <mxfile host="app.diagrams.net" version="32.7.4" type="device">
-  <diagram id="governance-pipeline" name="单命令治理流水线">
+  <diagram id="governance-pipeline" name="治理流水线">
     <mxGraphModel dx="1280" dy="720" grid="0" gridSize="4" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="720" math="0" shadow="0" background="#FFFFFF">
       <root>
         <mxCell id="0" />
@@ -26,7 +26,7 @@
         <mxCell id="summarize-results" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1.0000000000;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0000000000;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;labelBackgroundColor=#FFFFFF;" edge="1" parent="canvas" source="apply-and-check" target="handover">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="direct-handover" value="无可执行项或本轮只读，跳过执行复核" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5000000000;exitY=1;exitDx=0;exitDy=0;entryX=0.2807017544;entryY=1;entryDx=0;entryDy=0;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=5 4;" edge="1" parent="canvas" source="tickets" target="handover">
+        <mxCell id="direct-handover" value="无可执行项、只读或用户拒绝时直接交付" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5000000000;exitY=1;exitDx=0;exitDy=0;entryX=0.2807017544;entryY=1;entryDx=0;entryDy=0;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=5 4;" edge="1" parent="canvas" source="tickets" target="handover">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="568" y="468" />
@@ -50,7 +50,7 @@
         <mxCell id="command-value" parent="command" vertex="1" value="project-architect-skills" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=Menlo;fontSize=23;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="150" y="10" width="400" height="44" />
         </mxCell>
-        <mxCell id="command-context" parent="command" vertex="1" value="当前仓库启动一次，自动完成可验证、可回退的本地治理" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#535C56;fontStyle=0;align=right;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="command-context" parent="command" vertex="1" value="在当前仓库启动只读体检，确认计划后修复" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#535C56;fontStyle=0;align=right;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="557" y="12" width="629" height="40" />
         </mxCell>
         <mxCell id="audit" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
@@ -83,7 +83,7 @@
         <mxCell id="tickets" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
           <mxGeometry as="geometry" x="448" y="190" width="240" height="230" />
         </mxCell>
-        <mxCell id="tickets-title" parent="tickets" vertex="1" value="治理计划" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=23;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="tickets-title" parent="tickets" vertex="1" value="治理计划与授权" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=23;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="10" width="208" height="34" />
         </mxCell>
         <mxCell id="tickets-lead" parent="tickets" vertex="1" value="按维护影响自动排序" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
@@ -95,13 +95,13 @@
         <mxCell id="tickets-topic-1" parent="tickets" vertex="1" value="本轮最多三项" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=17;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="92" width="208" height="24" />
         </mxCell>
-        <mxCell id="tickets-detail-1" parent="tickets" vertex="1" value="每项限定范围与预期结果" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="tickets-detail-1" parent="tickets" vertex="1" value="展示改动范围、验收与回退" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="119" width="208" height="23" />
         </mxCell>
-        <mxCell id="tickets-topic-2" parent="tickets" vertex="1" value="明确每项验收方式" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=17;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="tickets-topic-2" parent="tickets" vertex="1" value="等待用户确认" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=17;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="158" width="208" height="24" />
         </mxCell>
-        <mxCell id="tickets-detail-2" parent="tickets" vertex="1" value="写明基线、验收与回退办法" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="tickets-detail-2" parent="tickets" vertex="1" value="在同一会话回复「同意治理」" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=14;fontColor=#08773E;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="185" width="208" height="23" />
         </mxCell>
         <mxCell id="apply-and-check" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
@@ -110,7 +110,7 @@
         <mxCell id="apply-and-check-title" parent="apply-and-check" vertex="1" value="执行复核" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=23;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="10" width="224" height="34" />
         </mxCell>
-        <mxCell id="apply-and-check-lead" parent="apply-and-check" vertex="1" value="由现有编码助手逐项处理" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="apply-and-check-lead" parent="apply-and-check" vertex="1" value="按获批范围复查工作区并修复" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="46" width="224" height="22" />
         </mxCell>
         <mxCell id="apply-and-check-line" parent="apply-and-check" vertex="1" value="" style="rounded=0;html=1;fillColor=#D8DDD9;strokeColor=none;" connectable="0">
@@ -161,7 +161,7 @@
         <mxCell id="report-file" parent="report" vertex="1" value="docs/project-architect-report.md" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=Menlo;fontSize=17;fontColor=#202522;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="150" y="9" width="455" height="32" />
         </mxCell>
-        <mxCell id="report-access" parent="report" vertex="1" value="只读时在当前会话交付全文" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=right;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="report-access" parent="report" vertex="1" value="治理获批后默认保存报告，其他情况在会话交付" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=right;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="650" y="10" width="536" height="30" />
         </mxCell>
         <mxCell id="report-rule" parent="report" vertex="1" value="" style="rounded=0;html=1;fillColor=#D8DDD9;strokeColor=none;" connectable="0">
