@@ -108,6 +108,16 @@ class GovernanceReportTests(unittest.TestCase):
         self.assertIn("**回退复核**　已回退", report)
         self.assertIn("**当前入口**　export.py::download_orders", report)
 
+    def test_failed_check_requires_regression_status(self):
+        doc = candidate("README.md#验证", "补写验证说明")
+        for status in ("待确认", "待验证", "暂缓", "已解决"):
+            with self.subTest(status=status):
+                review = {
+                    "target": doc["target"], "status": status, "reason": "复查前的记录。",
+                    "checks": [check("handover", "重放用例", "成功", "失败", "发现差异")],
+                }
+                self.invalid(report_record([doc], [review]), "reviews[0].status")
+
     def test_reviews_follow_selection_order_and_require_skipping_reason(self):
         doc = candidate("README.md#验证", "补写验证说明")
         code = candidate("export.py::download_orders", "提取 CSV 格式化")

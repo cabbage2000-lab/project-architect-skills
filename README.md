@@ -49,3 +49,50 @@ printf '%s\n' "$smoke_project"
 - 「启动或最小使用示例」显示「范围内未发现」，依据指向临时项目的运行说明。
 - 「验证改动的方法」显示「发现问题」，缺口类型为「缺少说明」。补写建议指向临时项目的 `README.md`，可记录运行后的预期输出 `Ada, Bob`。
 - 终端执行 `ls -A "$smoke_project"`，目录清单应只有 `README.md` 和 `names.py`。
+
+### 在临时仓库验证默认治理
+
+在本仓库根目录运行以下命令。样例有两个可独立验收的问题：README 缺少验收说明，单元测试放在了仓库根目录。
+
+```sh
+governance_project=$(mktemp -d)
+mkdir -p "$governance_project/.agents/skills"
+cp -R skills/project-architect-skills "$governance_project/.agents/skills/"
+cat > "$governance_project/AGENTS.md" <<'EOF'
+# 样例仓库约定
+
+本项目只维护 `names.py` 及其测试。`names.py` 是仓库根目录的命令行入口，单元测试固定放在 `tests/`。`.agents/skills/` 存放已安装的工具。
+EOF
+cat > "$governance_project/README.md" <<'EOF'
+# 姓名整理
+
+对内置姓名去重并按字母顺序排列。在仓库根目录运行 `python3 -B names.py`。
+EOF
+cat > "$governance_project/names.py" <<'EOF'
+names = ["Bob", "Ada", "Bob"]
+print(", ".join(sorted(set(names))))
+EOF
+cat > "$governance_project/test_names.py" <<'EOF'
+import subprocess
+import sys
+import unittest
+
+
+class NamesTests(unittest.TestCase):
+    def test_names(self):
+        output = subprocess.check_output([sys.executable, "-B", "names.py"], text=True)
+        self.assertEqual(output.strip(), "Ada, Bob")
+EOF
+git -C "$governance_project" init -q
+git -C "$governance_project" add .
+git -C "$governance_project" -c user.name=Fixture -c user.email=fixture@example.invalid \
+  commit -qm '保存样例基线'
+(cd "$governance_project" && python3 -B names.py && python3 -B -m unittest discover -s . -p test_names.py)
+printf '%s\n' "$governance_project"
+```
+
+在可写的 Codex 会话中打开输出的临时目录，只输入一次 `project-architect-skills`。完成后核对以下结果。
+
+- `README.md` 增加验收步骤及预期输出。`test_names.py` 移到 `tests/`。
+- 在临时仓库根目录运行 `python3 -B names.py`，仍输出 `Ada, Bob`。运行 `python3 -B -m unittest discover -s tests`，1 项通过。
+- `docs/project-architect-report.md` 包含四项体检、两项已通过的执行复核和维护导读。两项改动都有各自的改前基线和验收证据。

@@ -120,17 +120,19 @@ def assess_topic(key, item, unread_sources):
 
     label = TOPICS[key]
     candidate = None
-    if status == GAP and unread_sources:
+    gap_kind = None
+    if status == GAP and "gap_kind" in item:
+        gap_kind = required_text(item["gap_kind"], f"{key}.gap_kind")
+        if gap_kind not in GAP_KINDS:
+            raise ValueError(f"{key}.gap_kind 含未知缺口类型 {gap_kind}")
+    if status == GAP and unread_sources and gap_kind != "stale":
         status = PENDING
         detail = f"已查范围内的记录为「{detail}」。仍需核对{'、'.join(unread_sources)}。"
     elif status == GAP:
         impact = required_text(item.get("impact"), f"{key}.impact")
         placement = required_text(item.get("placement"), f"{key}.placement")
-        if "gap_kind" in item:
-            kind = required_text(item["gap_kind"], f"{key}.gap_kind")
-            if kind not in GAP_KINDS:
-                raise ValueError(f"{key}.gap_kind 含未知缺口类型 {kind}")
-            detail = f"**{GAP_KINDS[kind]}**　{detail}"
+        if gap_kind is not None:
+            detail = f"**{GAP_KINDS[gap_kind]}**　{detail}"
         candidate = f"- **{label}**　{impact} **补写位置**　{placement}"
     return status, table_row((label, status, detail, "、".join(evidence))), candidate
 

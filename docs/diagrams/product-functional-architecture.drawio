@@ -26,10 +26,10 @@
         <mxCell id="summarize-results" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1.0000000000;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0000000000;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;labelBackgroundColor=#FFFFFF;" edge="1" parent="canvas" source="apply-and-check" target="handover">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="direct-handover" value="没有可执行项或本轮只读，直接交付" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5000000000;exitY=1;exitDx=0;exitDy=0;entryX=0.2807017544;entryY=1;entryDx=0;entryDy=0;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=5 4;" edge="1" parent="canvas" source="audit" target="handover">
+        <mxCell id="direct-handover" value="无可执行项或本轮只读，跳过执行复核" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5000000000;exitY=1;exitDx=0;exitDy=0;entryX=0.2807017544;entryY=1;entryDx=0;entryDy=0;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;labelBackgroundColor=#FFFFFF;dashed=1;dashPattern=5 4;" edge="1" parent="canvas" source="tickets" target="handover">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="224" y="468" />
+              <mxPoint x="568" y="468" />
               <mxPoint x="1080" y="468" />
             </Array>
             <mxPoint as="offset" x="0" y="-14" />

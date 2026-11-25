@@ -61,6 +61,10 @@ def render_reviews(reviews, selected):
             raise ValueError(f"{field}.status 需要通过、发现差异、待验证、待确认、暂缓或已解决")
         checks, results = review_checks(review, field)
         outcomes = set().union(*results.values())
+        if REGRESSION in outcomes and status != REGRESSION:
+            raise ValueError(f"{field}.status 在验收发现差异时需要为发现差异")
+        if status == REGRESSION and REGRESSION not in outcomes:
+            raise ValueError(f"{field}.checks 需要记录实际差异及失败样例")
         changes = review.get("changes")
         lines.extend(["", f"### {index + 1}. {title}", "", f"**结果**　{status}"])
         if status in (PASSED, REGRESSION) or changes is not None:
@@ -74,8 +78,6 @@ def render_reviews(reviews, selected):
                 raise ValueError(f"{field}.checks 缺少全部通过的{kind}验收证据")
             passed.add(target)
         else:
-            if status == REGRESSION and REGRESSION not in outcomes:
-                raise ValueError(f"{field}.checks 需要记录实际差异及失败样例")
             if status != REGRESSION:
                 lines.extend(["", f"**原因**　{required_text(review.get('reason'), f'{field}.reason')}"])
             if changes is not None:

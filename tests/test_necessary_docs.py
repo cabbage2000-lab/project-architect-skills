@@ -224,6 +224,25 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertNotIn(verification_gap()["placement"], report)
         self.assertIn(record["topics"]["api"]["placement"], report)
 
+    def test_unread_reference_preserves_proven_stale_gap_in_same_topic(self):
+        record = local_tool()
+        record["topics"]["verification"] = {
+            **verification_gap(),
+            "gap_kind": "stale",
+            "detail": "README 中的 make check 已从 Makefile 移除。",
+            "evidence": ["README.md:10", "Makefile:1"],
+            "placement": "更新 README 中失效的 make check 命令。",
+        }
+        record["unread"] = [{
+            "source": "独立的验收手册", "reason": "本轮无法访问", "topics": ["verification"],
+        }]
+        report = self.report(record)
+        self.assertIn("**检查结果**　发现问题", report)
+        self.assertIn("**项目资料完整性**　待确认", report)
+        self.assertIn("| 验证改动的方法 | 发现问题 | **与实现不符**", report)
+        self.assertIn("独立的验收手册（本轮无法访问）", report)
+        self.assertIn("更新 README 中失效的 make check 命令。", report.split("### 建议补写\n")[1])
+
     def test_partial_repository_cannot_prove_project_wide_absence(self):
         record = local_tool()
         record["project"] = {

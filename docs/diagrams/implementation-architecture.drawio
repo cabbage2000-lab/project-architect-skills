@@ -1,0 +1,129 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="app.diagrams.net" version="32.7.4" type="device">
+  <diagram id="implementation-architecture" name="治理流程实现视图">
+    <mxGraphModel dx="1280" dy="704" page="1" pageWidth="1280" pageHeight="704" background="#FFFFFF">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="canvas" parent="1" vertex="1" value="" style="rounded=0;fillColor=#FFFFFF;strokeColor=none;html=1;container=1;collapsible=0;movable=0;resizable=0;pointerEvents=0;" connectable="0">
+          <mxGeometry x="0" y="0" width="1280" height="704" as="geometry" />
+        </mxCell>
+        <mxCell id="title" parent="canvas" vertex="1" value="project-architect-skills 实现视图" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=30;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="40" y="25" width="800" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" parent="canvas" vertex="1" value="实线为调用与数据流，虚线为 Python 导入" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=right;" connectable="0">
+          <mxGeometry x="840" y="30" width="400" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="call-checks" parent="canvas" edge="1" source="codex" target="check-scripts" value="四项检查记录 JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jettySize=auto;html=1;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;labelBackgroundColor=#FFFFFF;exitX=0.176666667;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="call-plan" parent="canvas" edge="1" source="codex" target="governance-plan" value="治理候选 JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jettySize=auto;html=1;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;labelBackgroundColor=#FFFFFF;exitX=0.5175;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="call-report" parent="canvas" edge="1" source="codex" target="governance-report" value="体检章节、计划、复核与导读" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jettySize=auto;html=1;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;labelBackgroundColor=#FFFFFF;exitX=0.8575;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="import-build-plan" parent="canvas" edge="1" source="governance-report" target="governance-plan" value="build_plan" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jettySize=auto;html=1;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;labelBackgroundColor=#FFFFFF;exitX=0;exitY=0.37;entryX=1;entryY=0.5;dashed=1;dashPattern=5 4;fontFamily=Menlo;fontSize=13;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="deliver-markdown" parent="canvas" edge="1" source="governance-report" target="report-output" value="Markdown" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jettySize=auto;html=1;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;labelBackgroundColor=#FFFFFF;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="0" y="0" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="codex" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#F9F9F9;strokeColor=#D8DDD9;container=1;collapsible=0;">
+          <mxGeometry x="40" y="92" width="1200" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="codex-mark" parent="codex" vertex="1" value="" style="rounded=0;fillColor=#07C05F;strokeColor=none;html=1;" connectable="0">
+          <mxGeometry x="18" y="22" width="4" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="codex-title" parent="codex" vertex="1" value="Codex 按 SKILL.md 编排" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=23;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="36" y="14" width="500" height="37" as="geometry" />
+        </mxCell>
+        <mxCell id="codex-role" parent="codex" vertex="1" value="读取项目与判据，收集证据和检查章节，排序并执行获授权的改动，记录复核和维护导读。" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=16;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="36" y="59" width="1140" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="check-scripts" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
+          <mxGeometry x="40" y="276" width="424" height="219" as="geometry" />
+        </mxCell>
+        <mxCell id="checks-title" parent="check-scripts" vertex="1" value="四项体检汇总" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=22;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="13" width="380" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="script-necessary-docs" parent="check-scripts" vertex="1" value="necessary_docs.py" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=13;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="60" width="182" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="script-architecture" parent="check-scripts" vertex="1" value="architecture_diagrams.py" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=13;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="213" y="60" width="200" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="script-directory" parent="check-scripts" vertex="1" value="directory_structure.py" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=13;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="91" width="182" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="script-smells" parent="check-scripts" vertex="1" value="code_smells.py" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=13;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="213" y="91" width="192" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="checks-result" parent="check-scripts" vertex="1" value="向 Codex 返回 Markdown 检查章节" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="18" y="129" width="380" height="23" as="geometry" />
+        </mxCell>
+        <mxCell id="script-python-signals" parent="check-scripts" vertex="1" value="python_smell_signals.py 供取证使用，输出 JSON 信号" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=13;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="18" y="166" width="389" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="governance-plan" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
+          <mxGeometry x="532" y="276" width="258" height="132" as="geometry" />
+        </mxCell>
+        <mxCell id="plan-title" parent="governance-plan" vertex="1" value="治理计划" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=22;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="13" width="222" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="plan-script" parent="governance-plan" vertex="1" value="governance_plan.py" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=14;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="57" width="222" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="plan-result" parent="governance-plan" vertex="1" value="CLI 输出计划 Markdown" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="18" y="92" width="222" height="23" as="geometry" />
+        </mxCell>
+        <mxCell id="governance-report" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
+          <mxGeometry x="900" y="276" width="340" height="178" as="geometry" />
+        </mxCell>
+        <mxCell id="report-title" parent="governance-report" vertex="1" value="报告汇总" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=22;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="13" width="300" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="report-script" parent="governance-report" vertex="1" value="governance_report.py" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=14;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="57" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="report-rule" parent="governance-report" vertex="1" value="按计划入选顺序校验复核" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="18" y="92" width="300" height="23" as="geometry" />
+        </mxCell>
+        <mxCell id="report-content" parent="governance-report" vertex="1" value="合并体检、计划、复核和维护导读" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="18" y="125" width="300" height="23" as="geometry" />
+        </mxCell>
+        <mxCell id="report-output" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#F9F9F9;strokeColor=#D8DDD9;container=1;collapsible=0;">
+          <mxGeometry x="900" y="548" width="340" height="112" as="geometry" />
+        </mxCell>
+        <mxCell id="output-title" parent="report-output" vertex="1" value="交付" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=22;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="10" width="304" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="output-file" parent="report-output" vertex="1" value="docs/project-architect-report.md" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=13;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="46" width="304" height="23" as="geometry" />
+        </mxCell>
+        <mxCell id="output-fallback" parent="report-output" vertex="1" value="只读或需保留已有报告时在会话交付" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="18" y="76" width="304" height="23" as="geometry" />
+        </mxCell>
+        <mxCell id="shared-helpers" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#F9F9F9;strokeColor=#D8DDD9;container=1;collapsible=0;">
+          <mxGeometry x="40" y="548" width="750" height="112" as="geometry" />
+        </mxCell>
+        <mxCell id="shared-title" parent="shared-helpers" vertex="1" value="共用校验与格式" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=22;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="10" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="shared-explanation" parent="shared-helpers" vertex="1" value="其他五个汇总脚本从 necessary_docs.py 导入状态、校验或 Markdown 格式函数。" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=16;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+          <mxGeometry x="18" y="51" width="710" height="27" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

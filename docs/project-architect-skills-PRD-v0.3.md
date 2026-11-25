@@ -32,7 +32,7 @@ project-architect-skills
 
 目标流程默认检查当前仓库。如果会话里已经提到某个维护任务，流水线用它来排列优先级。启动即委托现有编码助手在已有权限内执行本轮可验证、可回退的本地治理。项目体检、治理计划、执行复核、维护导读自动衔接。
 
-![单命令治理的目标流程。项目体检后自动生成治理计划，逐项执行并复核，最后交付包含维护导读的报告。没有可执行项时直接交付。](diagrams/product-functional-architecture.png)
+![单命令治理的目标流程。项目体检后生成治理计划。有可执行项时逐项复核，无可执行项时从治理计划进入导读。](diagrams/product-functional-architecture.png)
 
 [查看高清图](diagrams/product-functional-architecture.png) · [打开可编辑源图（draw.io）](diagrams/product-functional-architecture.drawio)
 
@@ -43,7 +43,15 @@ project-architect-skills
 | 执行复核 | 现有编码助手按顺序补文档、补图或调整代码。每项执行前核对当前工作区，执行后立即核对实际差异和验收结果，再处理下一项。 |
 | 维护导读 | 汇总发现、实际改动、验证证据和待确认事项。给新手指出当前可用的业务入口、受影响的调用方和下次修改的自查方法。 |
 
-本轮没有可执行项时，体检结束后直接交付结果和导读。默认报告写入 `docs/project-architect-report.md`，会话中给出摘要和路径。仓库只读或同名报告含有需保留的人工内容时，直接在会话交付全文。
+本轮没有可执行项时，治理计划生成后直接进入维护导读。默认报告写入 `docs/project-architect-report.md`，会话中给出摘要和路径。仓库只读或同名报告含有需保留的人工内容时，直接在会话交付全文。
+
+### 实现视图
+
+Codex 按 [SKILL.md](../skills/project-architect-skills/SKILL.md) 取证、排序并在授权内执行。四个检查脚本接收 JSON，输出 Markdown 章节。`governance_report.py` 复用 `governance_plan.py` 的 `build_plan`，按入选顺序校验复核记录，再合并检查章节、计划、复核与导读。
+
+![实现视图。Codex 分别调用体检、计划和报告脚本。报告脚本导入 build_plan，并交付 Markdown。](diagrams/implementation-architecture.png)
+
+[打开实现视图源图（draw.io）](diagrams/implementation-architecture.drawio)
 
 ## 3. 项目体检的检查范围与判据
 
