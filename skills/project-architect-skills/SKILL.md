@@ -1,11 +1,13 @@
 ---
 name: project-architect-skills
-description: 检查本地项目的必要文档、架构图、目录结构和代码异味，展示治理计划并在用户确认后修复。适用于 project-architect-skills 命令、基于项目证据的检查与修订，以及回复「同意治理」继续本轮计划。
+description: 检查本地项目的必要文档、架构图、目录结构和代码异味，展示治理计划并在用户确认后修复。适用于 project-architect-skills 命令、基于项目证据的检查与修订，局部或批量重构、SOLID 诊断与设计模式应用，以及回复「同意治理」继续本轮计划。
 ---
 
 # 项目治理架构师
 
 在目标项目的编码助手会话中输入 `project-architect-skills` 默认检查必要文档、架构图、目录结构和代码异味。用户指定某一项时，在选定范围内执行该项。以当前仓库和会话中已有的维护任务为准，遵守用户限定的目录和读写权限。
+
+用户指定重构目标时，以该目标进入代码治理流程。SOLID 评估与设计模式选型按[设计判据](references/code-smells.md#solid-原则与设计模式)取证；局部清理、跨文件重命名、常量提取和旧 API 迁移按[专项重构](references/refactoring.md)选择变换及验收方式。
 
 1. 在检查前，按[项目规模与取证范围](references/project-size.md)盘点当前仓库，判断规模，记录依据并确定本轮优先核对的入口和模块。
 2. 按所选项读取对应判据：[必要文档](references/necessary-documents.md)、[架构图](references/architecture-diagrams.md)、[目录结构](references/directory-structure.md)或[代码异味](references/code-smells.md)。核实各项是否适用，记录维护者受阻的步骤、确切出处和未核实的资料。同一图件缺口保留在「架构图」，同一函数的各类异味合为一项。

@@ -20,6 +20,8 @@ project-architect-skills
 
 需要重构时，可以输入「用 project-architect-skills 检查订单导出循环的嵌套，给出简化计划」。助手会选取能检验改动的输入，例如混合可导出和应跳过的订单，记录原入口的结果。获批后逐步重构并重放样例；涉及跨文件改名时，先核对定义、调用点和配置引用。这套做法吸收自 Claude Code 的重构专家说明。[上游 refactoring-expert](https://github.com/luanquangminh/claude-skill/blob/85ebeee29a6b32085d56e8b7022d5673b1760fe6/agents/refactoring-expert.md) · [本项目执行判据](skills/project-architect-skills/references/execution-and-handover.md#局部与跨文件重构)
 
+也可以指定重构任务，例如「只读评估运费模块是否适合策略模式」或「把导出模块迁移到新版 SDK，先预览所有受影响的调用」。Skill 会对照现有契约和调用方选择手法，获批后执行并在报告中交付结构与行为验证。[SOLID 取证](skills/project-architect-skills/references/code-smells.md#solid-原则与设计模式) · [支持的重构与迁移](skills/project-architect-skills/references/refactoring.md)
+
 ## 验证模块
 
 在本仓库根目录运行以下命令。测试与报告汇总脚本均使用 Python 3 标准库。

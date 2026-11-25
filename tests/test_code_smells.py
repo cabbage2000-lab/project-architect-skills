@@ -262,6 +262,23 @@ class CodeSmellReportTests(unittest.TestCase):
         self.assertIn("历史与当前订单**　范围内未发现", report)
         self.assertNotIn("合并两个实现", report)
 
+    def test_substitution_finding_preserves_both_contract_and_implementation_evidence(self):
+        record = report_record()
+        record["modules"] = [{
+            "kind": "lsp", "title": "只读存储的写操作", "status": "发现问题",
+            "detail": "父类允许保存空值，子类拒绝相同输入。",
+            "evidence": ["src/store.py:8", "src/cache.py:19"],
+            "impact": "同一调用方更换实现后会收到异常。",
+            "suggestion": "分别使用两个实现重放空值样例。",
+        }]
+        report = self.report(record)
+        for expected in ("LSP", "src/store.py:8", "src/cache.py:19", "重放空值样例"):
+            self.assertIn(expected, report)
+        record["modules"][0]["evidence"].pop()
+        result = run_script("code_smells.py", input=json.dumps(record))
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+
     def test_invalid_findings_cannot_emit_a_partial_report(self):
         one_region = report_record(method_record(finding("bumpy_road")))
         method = method_record(finding("complex_method"))
