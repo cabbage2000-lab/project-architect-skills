@@ -45,7 +45,11 @@ Pick one question for a focused assessment. In Codex or WorkBuddy, replace the l
 | --- | --- |
 | All four reviewers | `/project-architect-skills Run a full project health check` |
 | Engineering documentation | `/project-architect-skills Find missing handover steps and duplicated instructions` |
+| Recommend documentation | `/project-architect-skills Which handover documents should a newcomer have for a project this size?` |
+| Write a specific document | `/project-architect-skills Write a local setup guide for a newcomer in docs/getting-started.md` |
 | Software architecture | `/project-architect-skills Check the architecture diagram against the actual calls in the code` |
+| Recommend architecture diagrams | `/project-architect-skills Which diagrams would help a newcomer understand a project this size?` |
+| Draw a specific view | `/project-architect-skills Draw the order export sequence in Mermaid in docs/order-export.md` |
 | Repository structure | `/project-architect-skills Check source and test locations against this project's conventions` |
 | Code quality | `/project-architect-skills Identify the function most worth refactoring and give me a test case` |
 
@@ -58,6 +62,8 @@ AI rarely takes the initiative to maintain a project's architecture. It seldom r
 Software professionals build these engineering and architecture skills on a strong foundation in computer engineering. Developers without that background may find it hard to do this work on their own. This project helps bridge that gap by giving AI a structured way to carry out these tasks, so vibe coding stays smooth and efficient as projects grow.
 
 ## Reading the report
+
+When a project keeps confidential documents or diagrams at Git-ignored paths, their absence from the checkout carries no penalty. Independently verified errors in public instructions still count.
 
 Start with the operation you need to complete. If a README tells a new maintainer to run a deleted file, the report identifies the failing command and the step it blocks.
 

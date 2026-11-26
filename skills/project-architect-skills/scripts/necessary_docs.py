@@ -2,7 +2,10 @@
 
 import argparse
 import json
+import os
 import re
+import shlex
+import subprocess
 import sys
 from pathlib import Path
 
@@ -131,6 +134,27 @@ def needs_unread_sources(status, gap_kind, evidence, unread_sources):
     return True
 
 
+def ignored_document_absence(record):
+    """只核对专家定位的文档路径。由 Git 处理已跟踪路径、嵌套规则和反选。"""
+    if "expected_path" not in record:
+        return None
+    path = required_text(record["expected_path"], "expected_path")
+    relative = Path(path)
+    if relative.is_absolute() or not relative.parts or ".." in relative.parts:
+        raise ValueError("expected_path 需要目标仓库内的相对路径")
+    # 整个目录可作为私有资料的交付边界，即使本机已有其中一部分。
+    if os.path.lexists(path) and not relative.is_dir():
+        return None
+    command = ["git", "check-ignore", "-q", "--", f"./{path}"]
+    try:
+        result = subprocess.run(command, capture_output=True)
+    except FileNotFoundError:
+        return None
+    if result.returncode == 0:
+        return f"命令观察：{shlex.join(command)} 返回 0"
+    return None
+
+
 def assess_topic(key, item, unread_sources, tool=None):
     status, detail, evidence = assessment_fields(key, item)
     label = f"{tool} 项目指引" if tool else TOPICS[key]
@@ -140,6 +164,12 @@ def assess_topic(key, item, unread_sources, tool=None):
         gap_kind = required_text(item["gap_kind"], f"{key}.gap_kind")
         if gap_kind not in GAP_KINDS:
             raise ValueError(f"{key}.gap_kind 含未知缺口类型 {gap_kind}")
+    if gap_kind == "missing":
+        ignored = ignored_document_absence(item)
+        if ignored:
+            status = NOT_APPLICABLE
+            detail = "约定文档路径被 Git 忽略，免查其仓库交付情况。"
+            evidence = [ignored]
     if needs_unread_sources(status, gap_kind, evidence, unread_sources):
         status = PENDING
         detail = f"仍需核对{'、'.join(unread_sources)}。原记录为「{detail}」"

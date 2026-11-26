@@ -7,7 +7,8 @@ from pathlib import Path
 
 from inspection_coverage import assessment, inspection_output, selected_checks
 from necessary_docs import (
-    COVERED, GAP, NOT_APPLICABLE, PENDING, project_summary, required_text, table_row, text_list, unread_notes,
+    COVERED, GAP, NOT_APPLICABLE, PENDING, ignored_document_absence, project_summary, required_text,
+    table_row, text_list, unread_sources,
 )
 
 
@@ -101,18 +102,27 @@ def render_report(record, *, as_json=False):
     if not isinstance(need, dict) or need.get("status") not in (REQUIRED, NOT_APPLICABLE, PENDING):
         raise ValueError("need.status 需要为需要、不适用或待确认")
     detail = required_text(need.get("detail"), "need.detail")
-    evidence = "、".join(text_list(need.get("evidence"), "need.evidence"))
+    evidence = text_list(need.get("evidence"), "need.evidence")
     rows, comparisons = diagram_rows(record.get("diagrams"))
     results = {item[0] for item in comparisons}
-    notes = unread_notes(record.get("unread"))
+    ignored = ignored_document_absence(need) if need["status"] == REQUIRED else None
+    private_path = Path(need["expected_path"]) if ignored else None
+    if ignored:
+        evidence.append(ignored)
+    notes = [f"- {source}（{reason}）。" for _, source, reason in unread_sources(record.get("unread"))
+             if Path(source) != private_path]
     status, conclusion = assess_diagrams(need["status"], results, bool(rows), bool(notes))
+    if ignored and status == GAP and not comparisons:
+        status = NOT_APPLICABLE
+        conclusion = "约定图件路径被 Git 忽略，免查其仓库交付情况。"
+        need = {**need, "evidence": evidence, "detail": f"{detail} {conclusion}"}
     completeness = PENDING if notes or PENDING in results or status == PENDING else "已核对本轮相关资料"
 
     lines = [
         "## 架构图", "", *summary,
         f"**检查结果**　{status}。{conclusion}",
         "", f"**资料完整性**　{completeness}",
-        "", f"**适用性**　{need['status']}。{detail}（{evidence}）",
+        "", f"**适用性**　{need['status']}。{detail}（{'、'.join(evidence)}）",
         "", "### 已查范围", "", *(f"- {item}" for item in scope),
     ]
     if rows:

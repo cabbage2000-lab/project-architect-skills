@@ -3,7 +3,7 @@ name: project-architect-skills
 license: MIT
 metadata:
   version: "0.0.1"
-description: 帮接手者定位改动入口、受影响的调用方和验证方法。按用户问题检查文档缺口与冗余、架构依赖与图件、目录、代码异味与重构，支持 SOLID 和设计模式评估。输入「项目评估」或 project-architect-skills 可做四项体检并评分，回复「同意治理」可继续修复并复评。
+description: 帮接手者定位改动入口、受影响的调用方和验证方法。按项目大小推荐关键文档和架构图，也可为新手补写指定文档、绘制或更新指定架构图。按需检查文档缺口与冗余、架构依赖与图件、目录、代码异味与重构，支持 SOLID 和设计模式评估。输入「项目评估」或 project-architect-skills 可做四项体检并评分，回复「同意治理」可继续修复并复评。
 ---
 
 # 项目治理架构师
@@ -11,6 +11,8 @@ description: 帮接手者定位改动入口、受影响的调用方和验证方�
 ## 根据用户意图分派
 
 主 Agent 先结合当前会话判断目标、范围和读写限制。用户回答选择题时，接着处理该题对应的事项。对已展示计划的明确批准、部分批准或拒绝直接转到治理流程第 6 步。
+
+「补文档」或指定编写手册，走[工程文档专家](agents/engineering-documentation-expert.md)的[补文档流程](references/necessary-documents.md#补文档)。「该补哪些架构图」「帮我补架构图」或点名绘制某个视图，走[软件架构专家](agents/software-architecture-expert.md)的[补架构图流程](references/architecture-diagrams.md#补架构图)。同时请求图文时分别取证，共用同一份图源。专家只读取证和拟稿，主 Agent 按用户选择写入并验证。单独请求推荐或补全时，直接交付清单或选定的产物。体检时，各专家先核对[保密文档的 Git 忽略范围](references/necessary-documents.md#保密文档)，将边界传给涉及同一路径的检查项。
 
 用户只问「从哪里改、影响谁、怎么验」时，主 Agent 沿当前业务入口取证，跨模块调用按需交给[软件架构专家](agents/software-architecture-expert.md)追踪。按[独立维护导读](references/execution-and-handover.md#独立维护导读)用 `governance_report.py --guide-only` 在会话直接交付。问「现有说明够不够」属于文档检查。同时要求诊断或修复时按下表分派，维护定位的结果并入同一份治理报告。
 

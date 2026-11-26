@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -147,6 +148,74 @@ class HealthScoreTests(unittest.TestCase):
         self.assertTrue((self.root / path).read_text(encoding="utf-8").endswith(report))
         del record["reassessment"]
         self.assertIn("尚未收到原范围的复查记录", self.cli("governance_report", record))
+
+    @unittest.skipUnless(shutil.which("git"), "Git is required to verify ignore rules")
+    def test_ignored_handover_docs_and_diagrams_do_not_reduce_or_block_score(self):
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        (self.root / ".gitignore").write_text("/docs/\n", encoding="utf-8")
+        missing = {**problem("private-test-guide"), "gap_kind": "missing", "expected_path": "docs/"}
+        records = project_records(verification=missing)
+        records["architecture_diagrams"]["need"] = {
+            **conclusion("需要"), "expected_path": "docs/architecture.drawio",
+        }
+        plan, audit = self.inspect(records)
+        preview = self.preview(plan)["markdown"]
+        self.assertIn("100/100", preview)
+        self.assertIn("| 工程文档 | 25/25 |", preview)
+        self.assertIn("| 软件架构 | 不适用 |", preview)
+        self.assertIn("check-ignore", audit[0])
+        self.assertNotIn("### 建议补写", audit[0])
+        self.assertNotIn("### 建议修订", audit[1])
+        (self.root / "docs").mkdir()
+        (self.root / "docs" / "local-notes.md").write_text("本地笔记\n", encoding="utf-8")
+        records["necessary_docs"]["topics"]["usage"] = {**problem(), "gap_kind": "stale"}
+        plan, _ = self.inspect(records)
+        preview = self.preview(plan)["markdown"]
+        self.assertIn("| 工程文档 | 20/25 |", preview)
+        self.assertNotIn("private-test-guide", preview)
+
+    @unittest.skipUnless(shutil.which("git"), "Git is required to verify ignore rules")
+    def test_private_diagram_in_unread_does_not_hide_independent_diagram_results(self):
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        (self.root / ".gitignore").write_text("private.drawio\n", encoding="utf-8")
+        records = project_records()
+        diagrams = records["architecture_diagrams"]
+        diagrams.update(need={**conclusion("需要"), "expected_path": "private.drawio"},
+                        unread=[{"source": "./private.drawio", "reason": "保密图未随仓库交付"}])
+        plan, _ = self.inspect(records)
+        self.assertIn("100/100", self.preview(plan)["markdown"])
+
+        (self.root / "public.md").write_text("tool → cache\n", encoding="utf-8")
+        diagrams.update(diagrams=[{"source": "public.md:1", "kind": "implementation", "checks": [{
+            "claim": "tool → cache", "result": "与实现不符", "detail": "入口只返回姓名。",
+            "evidence": ["tool.py:1"],
+        }]}], repair={**problem("wrong-public-edge", "轻微"), "changes": ["移除不存在的缓存调用。"]})
+        plan, _ = self.inspect(records)
+        self.assertIn("| 软件架构 | 23/25 |", self.preview(plan)["markdown"])
+
+        diagrams["unread"].append({"source": "部署手册", "reason": "外部链接不可访问"})
+        plan, _ = self.inspect(records)
+        preview = self.preview(plan)["markdown"]
+        self.assertIn("| 软件架构 | 待补查 |", preview)
+        self.assertIn("wrong-public-edge", preview)
+
+    @unittest.skipUnless(shutil.which("git"), "Git is required to verify ignore rules")
+    def test_ignore_exemption_uses_the_effective_rule_for_the_missing_file(self):
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        directory = self.root / "docs"
+        directory.mkdir()
+        tracked = directory / "tracked.md"
+        tracked.write_text("验收\n", encoding="utf-8")
+        subprocess.run(["git", "add", "--", "docs/tracked.md"], cwd=self.root, check=True)
+        tracked.unlink()
+        (directory / ".gitignore").write_text("*.md\n!public.md\n", encoding="utf-8")
+        for name, expected in (("保密手册.md", NA), ("tracked.md", "发现问题"), ("public.md", "发现问题")):
+            with self.subTest(name=name):
+                topic = {**problem(), "gap_kind": "missing", "expected_path": f"docs/{name}"}
+                record = expert_record("verification", topics={"verification": topic})
+                packet = self.cli("necessary_docs", record, "--json")
+                self.assertEqual(packet["assessments"][0]["status"], expected)
+                self.assertEqual("### 建议补写" in packet["markdown"], expected != NA)
 
     def test_one_blocker_and_cross_expert_duplicates_charge_the_owner_once(self):
         records = project_records()

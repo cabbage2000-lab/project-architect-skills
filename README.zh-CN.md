@@ -51,7 +51,11 @@ WorkBuddy 使用 `.codebuddy/` 项目级代码开发配置时，复制到 `.code
 | --- | --- |
 | 四位专家一起评估 | `/project-architect-skills 项目体检` |
 | 工程文档专家 | `/project-architect-skills 检查交接文档缺了什么、哪些说明重复` |
+| 推荐关键文档 | `/project-architect-skills 项目做完了，按项目大小推荐新人接手最需要补的文档` |
+| 补全指定文档 | `/project-architect-skills 帮我补一份本地启动指南，写到 docs/入门.md` |
 | 软件架构专家 | `/project-architect-skills 核对架构图和代码里的实际调用是否一致` |
+| 推荐架构图 | `/project-architect-skills 新人要接手这个项目，按项目大小推荐最值得补的架构图` |
+| 补指定架构图 | `/project-architect-skills 画一张订单导出的调用时序图，用 Mermaid 写到 docs/订单导出.md` |
 | 仓库结构专家 | `/project-architect-skills 按项目约定检查源码和测试有没有放错目录` |
 | 代码质量专家 | `/project-architect-skills 找出最值得重构的函数，给出验证用例` |
 
@@ -60,6 +64,8 @@ WorkBuddy 使用 `.codebuddy/` 项目级代码开发配置时，复制到 `.code
 先看**哪些问题会影响你手头的事**。比如，README 里的启动命令指向一个已删除的文件，报告会标出是哪一条命令、它会让新人卡在哪一步。
 
 再看分数。全面体检分为工程文档、软件架构、仓库结构和代码质量四项，每项满分 25 分，按适用项折算为百分制。只问一个问题时，只给相关部分打分。「待补查」表示现有资料还不足以判断。[评分规则](skills/project-architect-skills/references/health-score.md)
+
+项目用 Git 忽略规则管理保密文档时，因该规则未随仓库交付的文档和图件免扣分。公开资料里的失效步骤仍会列出。
 
 报告会显示在对话里。想留一份，可以说「请保存这次报告」。同意修复后，报告默认保存在项目的 `docs/project-architect-report.md`。[查看一份报告示例](docs/project-architect-report.md)
 
