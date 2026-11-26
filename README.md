@@ -47,20 +47,13 @@ Pick one question for a focused assessment. In Codex or WorkBuddy, replace the l
 | Repository structure | `/project-architect-skills Check source and test locations against this project's conventions` |
 | Code quality | `/project-architect-skills Identify the function most worth refactoring and give me a test case` |
 
-## When a health check helps
+## Project background
 
-Suppose you’ve been vibe coding an order management tool. Adding a “refund amount” column to an export sounds like a one-file change. After a few releases, the same calculation might also feed a dashboard and the month-end statement. The review follows those connections before you edit.
+As AI coding tools become widely available, anyone can write code, and projects can quickly move from an idea to active development. As a project goes through more iterations and its codebase grows, AI starts to struggle. For complex features, AI often needs several rounds of clarifying questions to understand the context, and the logic or implementation can easily drift from the original intent.
 
-| What you run into | What to check |
-| --- | --- |
-| A handover guide points to a file that moved. | Follow its links and run its documented command from the stated directory. |
-| The dashboard and statement disagree on a refund. | Compare the calculations and check each caller's rounding rules before combining them. |
-| A diagram still shows the old refund flow. | Trace the request or event to its handler and identify the arrow that needs updating. |
-| Someone requests a second refund export. | Check what the existing export already covers and which requirement is missing. |
-| The rationale for partial refunds lives in a past conversation. | Look for a documented rule or a test that the next maintainer can use. |
-| A shared calculation changes. | Trace its callers, including reconciliation jobs outside the order module. |
-| The new column looks right for new orders. | Replay an older order to check the existing billing behavior too. |
-| Every small change takes several rounds of prompting. | Use the handover notes to revisit the entry point, its callers, and a repeatable check. |
+AI rarely takes the initiative to maintain a project's architecture. It seldom refactors code, revisits architectural decisions, cleans up code smells, or checks for missing documentation and references on its own. These repetitive, time-consuming engineering tasks often become bottlenecks as a project evolves. Given clear instructions, AI can handle them well.
+
+Software professionals build these engineering and architecture skills on a strong foundation in computer engineering. Developers without that background may find it hard to do this work on their own. This project helps bridge that gap by giving AI a structured way to carry out these tasks, so vibe coding stays smooth and efficient as projects grow.
 
 ## Reading the report
 
