@@ -2,10 +2,11 @@
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
-from inspection_coverage import inspection_output, selected_checks
+from inspection_coverage import assessment, inspection_output, selected_checks
 from report_fields import required_text, table_row, text_list
 
 DOCUMENT_TOPICS = {
@@ -111,6 +112,23 @@ def assessment_fields(key, item):
     return status, detail, evidence
 
 
+def needs_unread_sources(status, gap_kind, evidence, unread_sources):
+    if not unread_sources or status == PENDING:
+        return False
+    if status == GAP and gap_kind != "stale":
+        return True
+    # 整份资料未读时，指向其中行号、符号和章节的引用也属于未读。
+    unread = {source.strip("`").removeprefix("./") for source in unread_sources}
+    for source in evidence:
+        location = source.strip("`").removeprefix("./")
+        document = location.partition("#")[0]
+        if "://" not in document:
+            document = re.sub(r"::.*$|:\d+(?:[-–]\d+)?$", "", document)
+        if location not in unread and document.rstrip("`") not in unread:
+            return False
+    return True
+
+
 def assess_topic(key, item, unread_sources):
     status, detail, evidence = assessment_fields(key, item)
     label = TOPICS[key]
@@ -120,16 +138,20 @@ def assess_topic(key, item, unread_sources):
         gap_kind = required_text(item["gap_kind"], f"{key}.gap_kind")
         if gap_kind not in GAP_KINDS:
             raise ValueError(f"{key}.gap_kind 含未知缺口类型 {gap_kind}")
-    if status == GAP and unread_sources and gap_kind != "stale":
+    if needs_unread_sources(status, gap_kind, evidence, unread_sources):
         status = PENDING
-        detail = f"已查范围内的记录为「{detail}」。仍需核对{'、'.join(unread_sources)}。"
-    elif status == GAP:
+        detail = f"仍需核对{'、'.join(unread_sources)}。原记录为「{detail}」"
+    reason = detail if status == PENDING else ""
+    if unread_sources:
+        reason = "待核对" + "、".join(unread_sources)
+    if status == GAP:
         impact = required_text(item.get("impact"), f"{key}.impact")
         placement = required_text(item.get("placement"), f"{key}.placement")
         if gap_kind is not None:
             detail = f"**{GAP_KINDS[gap_kind]}**　{detail}"
         candidate = f"- **{label}**　{impact} **补写位置**　{placement}"
-    return status, table_row((label, status, detail, "、".join(evidence))), candidate
+    observation = assessment(key, status, detail, evidence, item)
+    return observation, table_row((label, status, detail, "、".join(evidence))), candidate, reason
 
 
 def redundancy_section(comparisons, unread):
@@ -140,11 +162,16 @@ def redundancy_section(comparisons, unread):
         "| 状态 | 对照内容与维护影响 | 核对依据 | 合并建议 |",
         "| --- | --- | --- | --- |",
     ]
-    states = set()
+    observations = []
     pending = ["待核对" + "、".join(unread)] if unread else []
     for comparison in comparisons:
         status, detail, evidence = assessment_fields("redundancy", comparison)
         suggestion = "—"
+        unread_refs = [ref for ref in evidence if needs_unread_sources(COVERED, None, [ref], unread)]
+        if unread_refs and (status == GAP or len(unread_refs) == len(evidence)):
+            status = PENDING
+            detail = f"{detail}（仍需核对{'、'.join(unread_refs)}）"
+        observation_detail = detail
         if status == GAP:
             if len(evidence) < 2 or len(set(evidence)) != len(evidence):
                 raise ValueError("redundancy.evidence 需要至少两处互不重复的正文位置")
@@ -154,9 +181,9 @@ def redundancy_section(comparisons, unread):
             suggestion = f"保留 {evidence[0]}。{placement}"
         elif status == PENDING:
             pending.append(detail)
-        states.add(status)
+        observations.append(assessment("redundancy", status, observation_detail, evidence, comparison))
         lines.append(table_row((status, detail, "、".join(evidence), suggestion)))
-    return lines, states, " ".join(pending)
+    return lines, observations, " ".join(pending)
 
 
 def overall_status(states, incomplete):
@@ -176,7 +203,8 @@ def render_report(record, *, as_json=False):
         raise ValueError("检查记录需要 JSON 对象")
     summary = project_summary(record["project"]) if "project" in record else []
     scope = text_list(record.get("scope"), "scope")
-    selected = selected_checks(record, TOPICS)
+    dispatched = selected_checks(record, TOPICS, "必要文档")
+    selected = {} if "必要文档" in dispatched else dispatched
     notes, affected = read_limits(record.get("unread"), selected)
     topics = record.get("topics", {})
     if not isinstance(topics, dict) or topics.keys() - TOPICS.keys():
@@ -188,6 +216,7 @@ def render_report(record, *, as_json=False):
     suggestions = []
     states = set()
     answers = {}
+    observations = []
     for category, checks in DOCUMENT_TOPICS.items():
         rows = []
         candidates = []
@@ -195,13 +224,13 @@ def render_report(record, *, as_json=False):
             if selected and (key not in selected or key not in topics):
                 continue
             if key in topics:
-                status, row, candidate = assess_topic(key, topics[key], affected[key])
-                reason = "待核对" + "、".join(affected[key]) if affected[key] else ""
-                if status == PENDING and not reason:
-                    reason = topics[key]["detail"]
+                observation, row, candidate, reason = assess_topic(key, topics[key], affected[key])
+                observations.append(observation)
+                status = observation["status"]
                 answers[key] = reason
             else:
                 status = PENDING
+                answers[key] = f"旧版记录需补查{label}"
                 row = table_row((label, status, "旧版记录未包含此项，需补查。", "—"))
                 candidate = None
             states.add(status)
@@ -221,11 +250,13 @@ def render_report(record, *, as_json=False):
 
     redundancy = []
     if "redundancy" in topics and (not selected or "redundancy" in selected):
-        redundancy, group_states, reason = redundancy_section(topics["redundancy"], affected["redundancy"])
-        states.update(group_states)
+        redundancy, comparisons, reason = redundancy_section(topics["redundancy"], affected["redundancy"])
+        observations.extend(comparisons)
+        states.update(item["status"] for item in comparisons)
         answers["redundancy"] = reason
     elif not selected:
         states.add(PENDING)
+        answers["redundancy"] = "旧版记录需补查文档冗余"
         redundancy = ["", "### 文档冗余", "", f"**{PENDING}**　旧版记录未包含文档冗余检查，需补查。"]
 
     if selected.keys() - answers.keys():
@@ -246,13 +277,13 @@ def render_report(record, *, as_json=False):
         lines.extend(["", "### 未核实的资料", "", *(f"- {note}" for note in notes)])
     if suggestions:
         lines.extend(["", "### 建议补写", *suggestions])
-    return inspection_output(lines, selected, answers, as_json)
+    return inspection_output(lines, dispatched, answers, as_json, "必要文档", observations)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="检查记录 JSON，默认读取标准输入")
-    parser.add_argument("--json", action="store_true", help="返回章节和经核对的专项覆盖记录")
+    parser.add_argument("--json", action="store_true", help="返回章节、覆盖记录和评分依据")
     parser.add_argument(
         "--project-size", nargs=2, metavar=("UNITS", "FILES"),
         help="按独立维护单元数和自维护文件数判断规模，未知值用 -",

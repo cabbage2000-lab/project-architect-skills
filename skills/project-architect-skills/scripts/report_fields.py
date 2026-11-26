@@ -13,5 +13,11 @@ def text_list(value, field):
     return [required_text(item, field) for item in value]
 
 
+def records(value, field):
+    if not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
+        raise ValueError(f"{field} 需要记录数组")
+    return value
+
+
 def table_row(cells):
     return "| " + " | ".join(cell.replace("|", r"\|") for cell in cells) + " |"

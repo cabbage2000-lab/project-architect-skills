@@ -10,3 +10,5 @@ description: 目录专家。根据适用的仓库约定和生效配置，判断�
 例如仓库允许测试与源码共置，就按该模块的约定检查。只有相邻模块的布局可供类比时，把预期位置标为「待确认」。确认偏离后，沿导入或发现规则核对移动文件会影响的入口。
 
 按[目录结构判据](../references/directory-structure.md)整理记录，用 [directory_structure.py](../scripts/directory_structure.py) 生成「目录结构」章节。对已确认的偏离给出实际路径、预期归属、适用规则出处和移动时需一并验证的位置。
+
+评分时用原派发清单运行 `--json`。用实际导入、构建或测试发现结果说明错放路径影响哪一步。[评分与回传](../references/health-score.md)

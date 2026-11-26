@@ -53,10 +53,10 @@ def repeated_configuration():
     }
 
 
-def run_report(record, *args):
+def run_report(record, *args, cwd=None):
     return subprocess.run(
         [sys.executable, "-B", str(SCRIPT), *args], input=json.dumps(record, ensure_ascii=False),
-        text=True, capture_output=True,
+        text=True, capture_output=True, cwd=cwd,
     )
 
 
@@ -323,6 +323,34 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertEqual(result.stdout, "")
         self.assertIn("verification.gap_kind", result.stderr)
+
+    def test_unread_manual_cannot_be_the_only_evidence_for_verification(self):
+        manual = "docs/验收手册.md"
+        task = {"check": "verification", "unit": "订单导出"}
+        record = local_tool()
+        record["selected"] = [task]
+        record["unread"] = [{"source": manual, "reason": "链接目标不存在", "topics": ["verification"]}]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "orders.csv").write_text("order_id\nA1\n", encoding="utf-8")
+            command = "from pathlib import Path; print(Path('orders.csv').read_text().splitlines()[0])"
+            (root / "README.md").write_text(f'运行 python3 -B -c "{command}"，应输出 order_id。\n', encoding="utf-8")
+            self.assertEqual(subprocess.check_output([sys.executable, "-B", "-c", command], cwd=root, text=True),
+                             "order_id\n")
+            self.assertFalse((root / manual).exists())
+            cases = [
+                ([manual], "待确认"),
+                ([f"{manual}:7–9", f"`{manual}`#验收"], "待确认"),
+                ([f"{manual}#验收", "README.md:1"], "范围内未发现"),
+            ]
+            for evidence, status in cases:
+                with self.subTest(evidence=evidence):
+                    record["topics"]["verification"]["evidence"] = evidence
+                    result = run_report(record, "--json", cwd=root)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    packet = json.loads(result.stdout)
+                    self.assertIn(f"| 验证改动的方法 | {status} |", packet["markdown"])
+                    self.assertEqual(packet["results"], [{**task, "status": "部分已查", "reason": f"待核对{manual}"}])
 
     def test_unread_reference_only_affects_its_topic(self):
         record = local_tool()

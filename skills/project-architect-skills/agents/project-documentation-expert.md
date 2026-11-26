@@ -12,3 +12,5 @@ description: 项目文档专家。检查交接说明能否支持实际维护任�
 完整检查以及用户单问文档是否重复时，按[文档冗余判据](../references/necessary-documents.md#文档冗余)比对正文。每组已确认的重复都要能定位到保留正文和其余入口，并说明哪些独有步骤需要留下。
 
 按[必要文档判据](../references/necessary-documents.md)整理记录，用 [necessary_docs.py](../scripts/necessary_docs.py) 生成「必要文档」章节，回传有出处和维护影响的补写或合并建议。
+
+评分时用原派发清单运行 `--json`。若手册步骤失效，实测约定入口及可用的替代步骤，供主 Agent 判定影响档位。[评分与回传](../references/health-score.md)

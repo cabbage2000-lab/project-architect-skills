@@ -5,6 +5,7 @@ import json
 import sys
 from pathlib import Path
 
+from inspection_coverage import assessment, inspection_output, selected_checks
 from necessary_docs import (
     COVERED, GAP, NOT_APPLICABLE, PENDING, overall_status, project_summary, required_text,
     table_row, text_list, unread_notes,
@@ -28,7 +29,7 @@ def assess_path(check):
     if basis not in BASIS_LABELS:
         raise ValueError(f"checks.basis 含未知类型 {basis}")
     detail = required_text(check.get("detail"), "checks.detail")
-    evidence = "、".join(text_list(check.get("evidence"), "checks.evidence"))
+    evidence = text_list(check.get("evidence"), "checks.evidence")
     expected = check.get("expected")
     if basis in ("rule", "convention") or expected is not None:
         expected = required_text(expected, "checks.expected")
@@ -45,34 +46,36 @@ def assess_path(check):
     placement = expected or "—"
     if status == PENDING:
         placement = f"{expected}（待确认）" if expected else PENDING
-    row = table_row((path, placement, STATUS_LABELS[status], f"{BASIS_LABELS[basis]}。{detail}", evidence))
+    row = table_row((path, placement, STATUS_LABELS[status], f"{BASIS_LABELS[basis]}。{detail}", "、".join(evidence)))
     suggestion = None
     if status == GAP:
         impact = required_text(check.get("impact"), "checks.impact")
         suggestion = f"- **{path} → {expected}**　{impact}"
-    return status, row, suggestion
+    return assessment("目录结构", status, f"{path}：{detail}", evidence, check), row, suggestion
 
 
-def render_report(record):
+def render_report(record, *, as_json=False):
     if not isinstance(record, dict):
         raise ValueError("检查记录需要 JSON 对象")
     summary = project_summary(record["project"]) if "project" in record else []
+    selected = selected_checks(record, (), "目录结构")
     scope = text_list(record.get("scope"), "scope")
     notes = unread_notes(record.get("unread"))
     checks = record.get("checks")
     if not isinstance(checks, list) or not (checks or notes):
         raise ValueError("checks 需要路径对照数组，尚无可核对路径时须提供 unread")
 
-    states = set()
+    observations = []
     rows = []
     suggestions = []
     for check in checks:
-        status, row, suggestion = assess_path(check)
-        states.add(status)
+        observation, row, suggestion = assess_path(check)
+        observations.append(observation)
         rows.append(row)
         if suggestion:
             suggestions.append(suggestion)
 
+    states = {item["status"] for item in observations}
     status = overall_status(states, bool(notes) or PENDING in states)
     lines = [
         "## 目录结构", "", *summary,
@@ -89,19 +92,21 @@ def render_report(record):
         lines.extend(["", "### 未核实的资料", "", *notes])
     if suggestions:
         lines.extend(["", "### 建议调整", "", *suggestions])
-    return "\n".join(lines) + "\n"
+    gaps = [*notes, *(item["detail"] for item in observations if item["status"] == PENDING)]
+    return inspection_output(lines, selected, {"目录结构": "、".join(gaps)}, as_json, "目录结构", observations)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="检查记录 JSON，默认读取标准输入")
+    parser.add_argument("--json", action="store_true", help="返回章节、覆盖记录和评分依据")
     args = parser.parse_args()
     try:
         if args.record is None:
             record = json.load(sys.stdin)
         else:
             record = json.loads(args.record.read_text(encoding="utf-8"))
-        report = render_report(record)
+        report = render_report(record, as_json=args.json)
     except (OSError, ValueError) as error:
         parser.exit(2, f"目录结构记录无法汇总（{error}）\n")
     sys.stdout.write(report)

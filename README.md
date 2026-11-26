@@ -21,6 +21,10 @@ project-architect-skills
 
 主 Agent 合并重复发现，按维护影响推荐本轮修复事项。计划列出改动范围、基线、验收方法和回退办法。在同一会话回复 **同意治理** 后，助手按计划逐项修复和验收。[治理计划](skills/project-architect-skills/references/governance-plan.md)
 
+**体检评分**随计划预览或只读报告一起交付。也可以输入「给项目打分」或「只给订单的测试说明打分」。全面体检展示四项各 25 分的明细及总分，专项只展示所查范围的维度分。每笔扣分可追到具体操作和出处，证据不足的维度标为「待补查」。[评分规则与可运行的专项示例](skills/project-architect-skills/references/health-score.md)
+
+例如，一个姓名工具经核实无需架构图，README 里的验收命令失效，但直接使用测试入口可以跑通。预览列出文档 20/25、目录 25/25、代码 25/25，实得 **70/75，折算 93.3/100**。回复「同意治理」后，助手补正命令，从手册跑通测试并复查原范围，最终报告在同一根因下给出新出处，显示 **93.3 → 100，提升 6.7 分**。在本仓库运行 `python3 -B -m unittest discover -s tests -p test_health_score.py -v` 可重放该场景。
+
 例如，输入「README 里的订单调用图和代码对得上吗？」会交给架构专家。输入「新人能照说明跑通测试吗？订单测试放的位置也帮我看一下」会分别交给项目文档专家和目录专家。也可以直接限定范围，例如「用 project-architect-skills 请目录专家只读检查 tests/ 的归属」。
 
 输入「用 project-architect-skills 只读检查 README 和 docs/ 的文档冗余」，会得到每组重复的具体章节、维护影响、建议保留的正文和其他入口的调整方式。默认体检也包含这项检查。[文档冗余判据](skills/project-architect-skills/references/necessary-documents.md#文档冗余)

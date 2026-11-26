@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from inspection_coverage import inspection_output, selected_checks
+from inspection_coverage import assessment, inspection_output, selected_checks
 from necessary_docs import (
     COVERED, GAP, NOT_APPLICABLE, PENDING, overall_status, project_summary, required_text,
     table_row, text_list, unread_sources,
@@ -44,6 +44,7 @@ def method_findings(methods, selected):
     if not isinstance(methods, list):
         raise ValueError("methods 需要数组，无已确认的方法级发现时传入 []")
     lines, known_methods, found = [], set(), set()
+    observations = []
     for method in methods:
         if not isinstance(method, dict):
             raise ValueError("methods 的每项需要函数记录")
@@ -74,6 +75,8 @@ def method_findings(methods, selected):
             if kind == "bumpy_road" and len(set(evidence)) < 2:
                 raise ValueError("多段嵌套逻辑需要至少两处独立代码位置")
             found.add(kind)
+            observations.append(assessment(kind, GAP, f"{path}::{symbol}。{detail}",
+                                           [f"{path}:{start}–{end}", *evidence], {**method, **finding}))
             method_lines.append(f"  - **{SMELLS[kind]}**　{detail}（{'、'.join(evidence)}）")
         if not method_lines:
             continue
@@ -81,7 +84,7 @@ def method_findings(methods, selected):
         if "suggestion" in method:
             suggestion = required_text(method["suggestion"], "methods.suggestion")
             lines.append(f"  - 建议　{suggestion}")
-    return lines, found
+    return lines, found, observations
 
 
 def check_rows(checks, found, selected):
@@ -92,6 +95,7 @@ def check_rows(checks, found, selected):
     if found - checks.keys():
         raise ValueError("checks 缺少已提交函数级证据对应的检查状态")
     rows, states, answers = [], set(), {}
+    observations = []
     for kind, label in SMELLS.items():
         if selected and (kind not in selected or kind not in checks):
             continue
@@ -105,13 +109,17 @@ def check_rows(checks, found, selected):
         rows.append(table_row((label, status, detail)))
         states.add(status)
         answers[kind] = detail if status == PENDING else ""
-    return rows, states, answers
+        if status != GAP:
+            evidence = text_list(check["evidence"], f"checks.{kind}.evidence") if "evidence" in check else []
+            observations.append(assessment(kind, status, detail, evidence, check))
+    return rows, states, answers, observations
 
 
 def module_findings(entries, selected):
     if not isinstance(entries, list):
         raise ValueError("modules 需要数组")
     lines, states, answers = [], set(), {}
+    observations = []
     for item in entries:
         if not isinstance(item, dict) or item.get("status") not in STATUSES:
             raise ValueError("modules 的每项需要有效的检查状态")
@@ -126,11 +134,12 @@ def module_findings(entries, selected):
         evidence = text_list(item.get("evidence"), "modules.evidence")
         if status == GAP and len(set(evidence)) < 2:
             raise ValueError("已确认的模块诊断需要至少两处依据")
+        display_evidence = evidence
         if status == GAP and selected and kind == "architecture_drift":
             if evidence[0] == evidence[1]:
                 raise ValueError("架构漂移需要分别给出分层约定和实际调用的出处")
-            evidence[:2] = [f"分层约定 {evidence[0]}", f"实际调用 {evidence[1]}"]
-        lines.append(f"- **{MODULE_ISSUES[kind]} · {title}**　{status}。{detail}（{'、'.join(evidence)}）")
+            display_evidence = [f"分层约定 {evidence[0]}", f"实际调用 {evidence[1]}", *evidence[2:]]
+        lines.append(f"- **{MODULE_ISSUES[kind]} · {title}**　{status}。{detail}（{'、'.join(display_evidence)}）")
         if status == GAP:
             impact = required_text(item.get("impact"), "modules.impact")
             lines.append(f"  - 维护影响　{impact}")
@@ -141,7 +150,8 @@ def module_findings(entries, selected):
         answers.setdefault(kind, "")
         if status == PENDING:
             answers[kind] = detail
-    return lines, states, answers
+        observations.append(assessment(kind, status, f"{title}。{detail}", evidence, item))
+    return lines, states, answers, observations
 
 
 def render_report(record, *, as_json=False):
@@ -150,13 +160,14 @@ def render_report(record, *, as_json=False):
     summary = project_summary(record["project"]) if "project" in record else []
     scope = text_list(record.get("scope"), "scope")
     notes = [f"{source}（{reason}）" for _, source, reason in unread_sources(record.get("unread"))]
-    selected = selected_checks(record, SMELLS | MODULE_ISSUES)
-    methods, found = method_findings(record.get("methods", [] if selected else None), selected)
-    rows, states, answers = check_rows(record.get("checks", {}), found, selected)
-    modules, module_states, module_answers = module_findings(record.get("modules", []), selected)
+    dispatched = selected_checks(record, SMELLS | MODULE_ISSUES, "代码异味")
+    selected = {} if "代码异味" in dispatched else dispatched
+    methods, found, method_facts = method_findings(record.get("methods", [] if selected else None), selected)
+    rows, states, answers, check_facts = check_rows(record.get("checks", {}), found, selected)
+    modules, module_states, module_answers, module_facts = module_findings(record.get("modules", []), selected)
     answers.update(module_answers)
     states.update(module_states)
-    if selected and notes:
+    if dispatched and notes:
         for kind, reason in answers.items():
             answers[kind] = reason or "尚未核对" + "、".join(notes)
     if selected.keys() - answers.keys():
@@ -178,13 +189,14 @@ def render_report(record, *, as_json=False):
         lines.extend(["", "### 模块层面关联诊断", "", *modules])
     if notes:
         lines.extend(["", "### 未核实的资料", "", *(f"- {note}。" for note in notes)])
-    return inspection_output(lines, selected, answers, as_json)
+    return inspection_output(lines, dispatched, answers, as_json, "代码异味",
+                             [*method_facts, *check_facts, *module_facts])
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="检查记录 JSON，默认读取标准输入")
-    parser.add_argument("--json", action="store_true", help="返回章节和经核对的专项覆盖记录")
+    parser.add_argument("--json", action="store_true", help="返回章节、覆盖记录和评分依据")
     args = parser.parse_args()
     try:
         if args.record is None:

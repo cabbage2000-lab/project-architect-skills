@@ -19,7 +19,7 @@ def indexed_units(rows, field):
     return units
 
 
-def selected_checks(record, supported):
+def selected_checks(record, supported, basic):
     """一份专家取证记录对应一个模块，复用派发清单中的原始键。"""
     if "selected" not in record:
         return {}
@@ -27,14 +27,30 @@ def selected_checks(record, supported):
     if len({unit for check, unit in pairs}) != 1:
         raise ValueError("selected 需要同一模块或入口的非空清单，不同模块分别提交记录")
     selected = {check: unit for check, unit in pairs}
-    unknown = selected.keys() - supported.keys()
+    unknown = selected.keys() - {basic} - set(supported)
     if unknown:
         raise ValueError(f"selected 含不支持的专项检查：{'、'.join(sorted(unknown))}")
     return selected
 
 
-def inspection_output(lines, selected, answers, as_json):
+def assessment(criterion, status, detail, evidence, source, *, impact=None):
+    """保留专家已核实的结论，主 Agent 可以在汇总时补上根因和影响档位。"""
+    row = {"criterion": criterion, "status": status, "detail": detail, "evidence": list(evidence)}
+    if status == "发现问题":
+        row["impact"] = required_text(impact if impact is not None else source.get("impact"), "impact")
+        for field in ("root_id", "severity", "owner"):
+            if field in source:
+                row[field] = source[field]
+    if "resolves" in source and status in ("范围内未发现", "不适用"):
+        row["resolves"] = source["resolves"]
+    return row
+
+
+def inspection_output(lines, selected, answers, as_json, basic, observations):
     results = []
+    assessments = []
+    if basic in selected and basic not in answers and answers:
+        answers[basic] = "、".join(dict.fromkeys(reason for reason in answers.values() if reason))
     for check, unit in selected.items():
         row = {"check": check, "unit": unit}
         if check not in answers:
@@ -44,16 +60,22 @@ def inspection_output(lines, selected, answers, as_json):
         else:
             row["status"] = "已查"
         results.append(row)
+        if as_json:
+            assessments.extend(
+                {"check": check, "unit": unit, **item} for item in observations
+                if check == basic or check == item["criterion"]
+            )
     if selected:
         scope = [{"check": check, "unit": unit} for check, unit in selected.items()]
         lines.extend(["", "### 专项核对", "", *coverage_lines({"selected": scope, "results": results})])
     markdown = "\n".join(lines).rstrip("\n") + "\n"
     if as_json:
-        return json.dumps({"markdown": markdown, "results": results}, ensure_ascii=False) + "\n"
+        return json.dumps({"markdown": markdown, "results": results, "assessments": assessments},
+                          ensure_ascii=False) + "\n"
     return markdown
 
 
-def coverage_lines(coverage):
+def coverage_units(coverage):
     if not isinstance(coverage, dict):
         raise ValueError("coverage 需要范围记录")
     selected = indexed_units(coverage.get("selected"), "selected")
@@ -63,7 +85,19 @@ def coverage_lines(coverage):
         raise ValueError("coverage.results 含选定范围以外的回传")
     if excluded.keys() & selected.keys():
         raise ValueError("coverage.excluded 与选定范围重叠")
+    for result in results.values():
+        status = result.get("status")
+        if status not in ("已查", "部分已查", "未查"):
+            raise ValueError("coverage.results.status 需要已查、部分已查或未查")
+        if status != "已查":
+            required_text(result.get("reason"), "coverage.results.reason")
+    for item in excluded.values():
+        required_text(item.get("reason"), "coverage.excluded.reason")
+    return selected, results, excluded
 
+
+def coverage_lines(coverage):
+    selected, results, excluded = coverage_units(coverage)
     rows = []
     completed = 0
     for check, unit in selected:
@@ -72,8 +106,6 @@ def coverage_lines(coverage):
             status, reason = "未查", "未收到该范围的检查结果"
         else:
             status = result.get("status")
-            if status not in ("已查", "部分已查", "未查"):
-                raise ValueError("coverage.results.status 需要已查、部分已查或未查")
             reason = "" if status == "已查" else required_text(result.get("reason"), "coverage.results.reason")
         completed += status == "已查"
         rows.append(table_row((check, unit, status, reason)))
