@@ -1,4 +1,4 @@
-# 项目体检评分 v1
+# 项目体检评分 v2
 
 ## 评分规则
 
@@ -19,9 +19,9 @@
 ## 专家回传与预览
 
 1. 把派发清单中同一入口的 `selected` 传给检查脚本，运行 `--json`。基础检查名为「必要文档」「架构图」「目录结构」「代码异味」，专项沿用 `verification`、`architecture_drift` 等原有标识。保留每份回传的 `markdown`，按原 `(check, unit)` 合并 `results` 和 `assessments`。重试同一范围时替换上次回传。
-2. 每条 `assessment` 包含 `check`、`unit`、`criterion`（具体判据）、`status`、`detail` 和 `evidence`。基础文档检查覆盖现行九个主题，基础代码异味检查覆盖五类方法异味。代码专家附带核对的架构漂移计入架构维度。方法检查中，将「范围内未发现」和「不适用」的依据写入 `checks.<判据>.evidence`。每条记录的出处共同支撑该条结论。首次预览和复评会核对本地路径与行号，失效的出处会显示在所影响的结论旁。[可定位的引用与命令观察](governance-plan.md#纳入计划前核对出处与反例)
+2. 每条 `assessment` 包含 `check`、`unit`、`criterion`（具体判据）、`status`、`detail` 和 `evidence`。基础文档检查覆盖[全部文档主题](necessary-documents.md)，其中 AI 编程工具项目指引按工具逐条回传。基础代码异味检查覆盖五类方法异味。代码专家附带核对的架构漂移计入架构维度。方法检查中，将「范围内未发现」和「不适用」的依据写入 `checks.<判据>.evidence`。每条记录的出处共同支撑该条结论。首次预览和复评会核对本地路径与行号，失效的出处会显示在所影响的结论旁。[可定位的引用与命令观察](governance-plan.md#纳入计划前核对出处与反例)
 3. 已确认的问题含 `impact`，说明哪项操作受影响。主 Agent 按根因统一 `root_id`、`severity` 和 `owner`，其中 `owner` 默认来自判据。跨专家的同一根因填写相同的主责维度。专家可在文档主题或冗余项、图件对照项或 `repair`、路径对照项、方法或模块发现上预填这些字段。根因标识采用可跨文件移动复用的业务描述。
-4. 在计划的 `coverage` 保留原始 `selected` 和真实 `results`，在 `scoring` 填入 `version: 1`、`scope`（`full` 或 `scoped`）、合并的 `assessments`。在目标仓库运行 `governance_plan.py --preview --json`，展示返回的 Markdown，保存同次返回的 `plan` 供最终报告使用。没有评分字段的历史计划仍可生成原报告。
+4. 在计划的 `coverage` 保留原始 `selected` 和真实 `results`，在 `scoring` 填入 `version: 2`、`scope`（`full` 或 `scoped`）、合并的 `assessments`。在目标仓库运行 `governance_plan.py --preview --json`，展示返回的 Markdown，保存同次返回的 `plan` 供最终报告使用。v1 计划仍按原九个文档主题重现基线。没有评分字段的历史计划仍可生成原报告。
 
 例如，在本仓库根目录运行下面的专项预览。样例用 README 的测试说明演示带出处的核对，预期显示「必要文档 25/25」。
 
@@ -33,7 +33,7 @@ python3 -B skills/project-architect-skills/scripts/governance_plan.py --preview 
     "selected": [{"check": "verification", "unit": "仓库测试"}],
     "results": [{"check": "verification", "unit": "仓库测试", "status": "已查"}]
   },
-  "scoring": {"version": 1, "scope": "scoped", "assessments": [{
+  "scoring": {"version": 2, "scope": "scoped", "assessments": [{
     "check": "verification", "unit": "仓库测试", "status": "范围内未发现",
     "detail": "README 给出完整的测试命令和成功标志。", "evidence": ["README.md#验证模块"]
   }]}

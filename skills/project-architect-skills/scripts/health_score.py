@@ -5,19 +5,22 @@ from dataclasses import dataclass, field
 
 from code_smells import MODULE_ISSUES, SMELLS
 from inspection_coverage import coverage_units
-from necessary_docs import COVERED, GAP, NOT_APPLICABLE, PENDING, TOPICS
+from necessary_docs import COVERED, GAP, NOT_APPLICABLE, PENDING, TOPICS, V1_DOCUMENT_TOPICS
 from plan_evidence import check_sources
 from report_fields import records, required_text, table_row, text_list
 
 
-VERSION = 1
+VERSION = 2
 BASIC = {"必要文档": "必要文档", "架构图": "架构", "目录结构": "目录结构", "代码异味": "代码异味"}
 DIMENSIONS = tuple(BASIC.values())
 CHECK_DIMENSION = {
     **BASIC, **dict.fromkeys(TOPICS, "必要文档"), **dict.fromkeys(SMELLS | MODULE_ISSUES, "代码异味"),
     "architecture_drift": "架构",
 }
-FULL_CRITERIA = {"必要文档": TOPICS.keys(), "代码异味": SMELLS.keys()}
+FULL_CRITERIA_BY_VERSION = {
+    1: {"必要文档": V1_DOCUMENT_TOPICS, "代码异味": SMELLS.keys()},
+    VERSION: {"必要文档": TOPICS.keys(), "代码异味": SMELLS.keys()},
+}
 PENALTIES = {"轻微": 2, "需要绕行": 5, "阻断": 15}
 MAX_POINTS = 25
 
@@ -49,6 +52,7 @@ class Finding:
 
 @dataclass
 class Snapshot:
+    version: int
     scope: str
     selected: set
     excluded: set
@@ -113,7 +117,7 @@ def checked_assessment(item, selected, results, root):
     return row
 
 
-def assess_unit(key, result, rows, dim, groups, resolutions):
+def assess_unit(key, result, rows, dim, groups, resolutions, required_criteria):
     check, unit = key
     label = f"{check} / {unit}"
     dim.units.append(label)
@@ -124,7 +128,7 @@ def assess_unit(key, result, rows, dim, groups, resolutions):
         if result.get("status") == "已查":
             dim.gaps.append(f"{label} 缺少评分依据")
         return
-    missing = FULL_CRITERIA.get(check, set()) - {row["criterion"] for row in rows}
+    missing = required_criteria - {row["criterion"] for row in rows}
     if missing:
         dim.gaps.append(f"{label} 缺少判据 {'、'.join(sorted(missing))}")
     for row in rows:
@@ -158,8 +162,9 @@ def merge_finding(root_id, rows):
 
 def prepare_score(scoring, coverage, *, root=None):
     """初次取证传 root 验证出处，重放时只使用计划已冻结的结论。"""
-    if not isinstance(scoring, dict) or type(scoring.get("version")) is not int or scoring["version"] != VERSION:
-        raise ValueError("scoring.version 需要支持的规则版本 1")
+    version = scoring.get("version") if isinstance(scoring, dict) else None
+    if type(version) is not int or version not in FULL_CRITERIA_BY_VERSION:
+        raise ValueError("scoring.version 需要支持的规则版本 1 或 2")
     scope = scoring.get("scope")
     if scope not in ("full", "scoped"):
         raise ValueError("scoring.scope 需要 full 或 scoped")
@@ -192,7 +197,8 @@ def prepare_score(scoring, coverage, *, root=None):
         for name, observations in by_dimension.items():
             # 基础代码检查也能回传架构漂移，保留原派发键，按具体判据归属分项。
             label = check if name == primary else "、".join(dict.fromkeys(row["criterion"] for row in observations))
-            assess_unit((label, unit), results.get(key, {}), observations, dimensions[name], groups, resolutions)
+            assess_unit((label, unit), results.get(key, {}), observations, dimensions[name], groups, resolutions,
+                        FULL_CRITERIA_BY_VERSION[version].get(label, set()))
     for row in rows:
         owner = row.get("owner")
         if owner in dimensions and owner != CHECK_DIMENSION[row["criterion"]]:
@@ -206,8 +212,8 @@ def prepare_score(scoring, coverage, *, root=None):
         if not dim.applicable and not dim.gaps:
             raise ValueError(f"根因 {root_id} 的主责维度 {finding.owner} 已全部判为不适用")
         dim.deductions += PENALTIES[finding.severity]
-    snapshot = Snapshot(scope, set(selected), set(excluded), module_checks, dimensions, findings, resolutions)
-    return {"version": VERSION, "scope": scope, "assessments": rows}, snapshot
+    snapshot = Snapshot(version, scope, set(selected), set(excluded), module_checks, dimensions, findings, resolutions)
+    return {"version": version, "scope": scope, "assessments": rows}, snapshot
 
 
 def render_snapshot(score, heading):
@@ -298,8 +304,8 @@ def score_section(before, reassessment=None, *, root=None, expected=False):
         return "\n".join(lines)
     if not isinstance(reassessment, dict) or type(reassessment.get("version")) is not int:
         raise ValueError("reassessment.version 需要评分规则版本")
-    if reassessment["version"] != VERSION:
-        lines.extend(["", f"**治理后复评**　规则版本已变化（v{VERSION} → v{reassessment['version']}），本次无法按 v{VERSION} 计分。"])
+    if reassessment["version"] != before.version:
+        lines.extend(["", f"**治理后复评**　规则版本已变化（v{before.version} → v{reassessment['version']}），本次无法按 v{before.version} 计分。"])
         return "\n".join(lines)
     _, after = prepare_score(reassessment, reassessment.get("coverage"), root=root)
     changes = compare_findings(before, after)

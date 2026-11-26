@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 from inspection_coverage import assessment, inspection_output, selected_checks
-from report_fields import required_text, table_row, text_list
+from report_fields import records, required_text, table_row, text_list
 
 DOCUMENT_TOPICS = {
     "产品文档": {
@@ -18,6 +18,7 @@ DOCUMENT_TOPICS = {
         "usage": "启动或最小使用示例",
         "configuration": "必要配置",
         "api": "API 说明",
+        "agent_instructions": "AI 编程工具项目指引",
     },
     "架构文档": {"architecture": "模块职责与依赖"},
     "测试文档": {"verification": "验证改动的方法"},
@@ -26,6 +27,7 @@ DOCUMENT_TOPICS = {
 HANDOFF_TOPICS = {key: label for topics in DOCUMENT_TOPICS.values() for key, label in topics.items()}
 TOPICS = {**HANDOFF_TOPICS, "redundancy": "文档冗余"}
 LEGACY_TOPICS = {"purpose", "usage", "configuration", "verification", "deployment", "api"}
+V1_DOCUMENT_TOPICS = LEGACY_TOPICS | {"requirements", "architecture", "redundancy"}
 COVERED = "范围内未发现"
 GAP = "发现问题"
 PENDING = "待确认"
@@ -129,9 +131,9 @@ def needs_unread_sources(status, gap_kind, evidence, unread_sources):
     return True
 
 
-def assess_topic(key, item, unread_sources):
+def assess_topic(key, item, unread_sources, tool=None):
     status, detail, evidence = assessment_fields(key, item)
-    label = TOPICS[key]
+    label = f"{tool} 项目指引" if tool else TOPICS[key]
     candidate = None
     gap_kind = None
     if status == GAP and "gap_kind" in item:
@@ -150,8 +152,26 @@ def assess_topic(key, item, unread_sources):
         if gap_kind is not None:
             detail = f"**{GAP_KINDS[gap_kind]}**　{detail}"
         candidate = f"- **{label}**　{impact} **补写位置**　{placement}"
-    observation = assessment(key, status, detail, evidence, item)
+    observation = assessment(key, status, f"【{tool}】{detail}" if tool else detail, evidence, item)
     return observation, table_row((label, status, detail, "、".join(evidence))), candidate, reason
+
+
+def topic_assessments(key, value, unread, notes):
+    if key != "agent_instructions":
+        yield assess_topic(key, value, unread)
+        return
+    instructions = records(value, "topics.agent_instructions")
+    if not instructions:
+        raise ValueError("topics.agent_instructions 需要非空检查记录数组")
+    for item in instructions:
+        tool = None
+        if "tool" in item or item.get("status") in (COVERED, GAP):
+            tool = required_text(item.get("tool"), "agent_instructions.tool")
+        sources = list(unread)
+        for _, source, reason in unread_sources(item.get("unread", [])):
+            sources.append(source)
+            notes.append(f"{source}（{reason}）。涉及{tool or TOPICS[key]}。")
+        yield assess_topic(key, item, sources, tool)
 
 
 def redundancy_section(comparisons, unread):
@@ -209,8 +229,10 @@ def render_report(record, *, as_json=False):
     topics = record.get("topics", {})
     if not isinstance(topics, dict) or topics.keys() - TOPICS.keys():
         raise ValueError("topics 需要由已知文档主题组成的对象")
-    if not selected and topics.keys() not in (TOPICS.keys(), HANDOFF_TOPICS.keys(), LEGACY_TOPICS):
-        raise ValueError(f"topics 需要完整的检查项 {'、'.join(TOPICS)}，也兼容旧版六项和八项记录")
+    if not selected and topics.keys() not in (
+        TOPICS.keys(), V1_DOCUMENT_TOPICS, V1_DOCUMENT_TOPICS - {"redundancy"}, LEGACY_TOPICS,
+    ):
+        raise ValueError(f"topics 需要完整的检查项 {'、'.join(TOPICS)}，也兼容旧版六项、八项和九项记录")
 
     sections = []
     suggestions = []
@@ -223,20 +245,21 @@ def render_report(record, *, as_json=False):
         for key, label in checks.items():
             if selected and (key not in selected or key not in topics):
                 continue
-            if key in topics:
-                observation, row, candidate, reason = assess_topic(key, topics[key], affected[key])
-                observations.append(observation)
-                status = observation["status"]
-                answers[key] = reason
-            else:
-                status = PENDING
+            if key not in topics:
+                states.add(PENDING)
                 answers[key] = f"旧版记录需补查{label}"
-                row = table_row((label, status, "旧版记录未包含此项，需补查。", "—"))
-                candidate = None
-            states.add(status)
-            rows.append(row)
-            if candidate:
-                candidates.append(candidate)
+                rows.append(table_row((label, PENDING, "旧版记录未包含此项，需补查。", "—")))
+                continue
+            reasons = []
+            for observation, row, candidate, reason in topic_assessments(key, topics[key], affected[key], notes):
+                observations.append(observation)
+                states.add(observation["status"])
+                rows.append(row)
+                if candidate:
+                    candidates.append(candidate)
+                if reason:
+                    reasons.append(reason)
+            answers[key] = "、".join(dict.fromkeys(reasons))
 
         if rows:
             sections.extend([

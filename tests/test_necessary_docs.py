@@ -23,6 +23,7 @@ def local_tool():
             "usage": entry("范围内未发现", "从根目录执行 make export。", "docs/交接.md:8"),
             "configuration": entry("不适用", "命令直接使用内置默认值。", "export.py:12"),
             "api": entry("不适用", "仅提供本地命令。", "docs/交接.md:3"),
+            "agent_instructions": [entry("不适用", "已查开发流程未见使用 AI 编程工具。", "docs/交接.md:8")],
             "architecture": entry("不适用", "一个脚本直接生成 CSV，无其他模块依赖。", "export.py:12"),
             "verification": entry("范围内未发现", "重放订单样例并核对表头。", "docs/样例.md:4"),
             "deployment": entry("不适用", "源码交付，仅在终端运行。", "docs/交接.md:3"),
@@ -99,6 +100,7 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertIn("**检查结果**　范围内未发现", report)
         self.assertIn("| 验证改动的方法 | 范围内未发现 | 重放订单样例并核对表头。 | docs/样例.md:4 |", report)
         self.assertIn("| 必要配置 | 不适用 | 命令直接使用内置默认值。 | export.py:12 |", report)
+        self.assertIn("| AI 编程工具项目指引 | 不适用 |", report)
         self.assertNotIn("项目规模", report)
         self.assertNotIn("建议补写", report)
 
@@ -195,11 +197,48 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertIn("| 验证改动的方法 | 发现问题 | **内容不完整**", testing)
         self.assertIn("#### 架构文档\n\n- **模块职责与依赖**", suggestions)
         self.assertIn("#### 测试文档\n\n- **验证改动的方法**", suggestions)
-        self.assertEqual(suggestions.count("#### "), 2)
+        self.assertIn("| Claude Code 项目指引 | 范围内未发现 |", checklist)
+        self.assertIn("| Codex 项目指引 | 发现问题 | **缺少说明**", checklist)
+        self.assertIn("在仓库根补建 AGENTS.md", suggestions)
+        self.assertNotIn("Claude Code", suggestions)
+        self.assertEqual(suggestions.count("#### "), 3)
         redundancy = checklist.split("### 文档冗余\n")[1]
         self.assertIn("README.md#导出规则、docs/操作手册.md#CSV 格式", redundancy)
         self.assertIn("保留 README.md#导出规则", redundancy)
         self.assertIn("手册独有的对账示例", redundancy)
+
+    def test_focused_agent_instructions_keep_independent_tool_findings(self):
+        task = {"check": "agent_instructions", "unit": "仓库根的开发工具"}
+        gaps = [{
+            "tool": tool, "status": "发现问题", "gap_kind": "missing",
+            "detail": f"开发约定指定的 {path} 缺失。", "evidence": ["README.md#开发协作", "命令观察：已枚举根目录"],
+            "impact": "启动时无法取得仓库的测试约定。", "placement": f"补建 {path}，引用测试手册。",
+        } for tool, path in (("Claude Code", "CLAUDE.md"), ("Codex", "AGENTS.md"))]
+        record = {"selected": [task], "scope": ["仓库根和开发约定"], "unread": [],
+                  "topics": {"agent_instructions": gaps}}
+        for unread in ([], [{"source": ".claude/", "reason": "无权列出目录"}]):
+            with self.subTest(unread=unread):
+                gaps[0]["unread"] = unread
+                result = run_report(record, "--json")
+                self.assertEqual(result.returncode, 0, result.stderr)
+                packet = json.loads(result.stdout)
+                expected = ["待确认" if unread else "发现问题", "发现问题"]
+                self.assertEqual([item["status"] for item in packet["assessments"]], expected)
+                self.assertEqual(packet["results"][0]["status"], "部分已查" if unread else "已查")
+                self.assertNotIn("验证改动的方法", packet["markdown"])
+                suggestions = packet["markdown"].split("### 建议补写")[1]
+                self.assertEqual(gaps[0]["placement"] in suggestions, not unread)
+                self.assertIn(gaps[1]["placement"], suggestions)
+
+    def test_agent_instructions_reject_empty_results_and_unattributed_findings(self):
+        task = {"check": "agent_instructions", "unit": "仓库根"}
+        for value in ([], {}, [None], [verification_gap()]):
+            with self.subTest(value=value):
+                result = run_report({"selected": [task], "scope": ["仓库根"], "unread": [],
+                                     "topics": {"agent_instructions": value}}, "--json")
+                self.assertEqual(result.returncode, 2)
+                self.assertEqual(result.stdout, "")
+                self.assertIn("agent_instructions", result.stderr)
 
     def test_focused_redundancy_reports_cross_document_and_same_document_groups(self):
         task = {"check": "redundancy", "unit": "部署说明"}
@@ -265,8 +304,18 @@ class NecessaryDocsTests(unittest.TestCase):
                 self.assertEqual(result.stdout, "")
                 self.assertIn(field, result.stderr)
 
+    def test_previous_full_record_reports_agent_instructions_as_pending(self):
+        record = local_tool()
+        del record["topics"]["agent_instructions"]
+        record["selected"] = [{"check": "必要文档", "unit": "订单导出"}]
+        report = self.report(record)
+        self.assertIn("| AI 编程工具项目指引 | 待确认 |", report)
+        self.assertIn("| 必要文档 | 订单导出 | 部分已查 |", report)
+        self.assertNotIn("建议补写", report)
+
     def test_old_eight_topic_record_and_missing_focused_result_do_not_claim_coverage(self):
         record = local_tool()
+        del record["topics"]["agent_instructions"]
         del record["topics"]["redundancy"]
         report = self.report(record)
         self.assertIn("**检查结果**　待确认", report)
@@ -279,6 +328,7 @@ class NecessaryDocsTests(unittest.TestCase):
 
     def test_legacy_record_marks_new_checks_pending(self):
         record = local_tool()
+        del record["topics"]["agent_instructions"]
         del record["topics"]["redundancy"]
         del record["topics"]["requirements"]
         del record["topics"]["architecture"]

@@ -13,7 +13,7 @@ description: 帮接手者定位改动入口、受影响的调用方和验证方�
 
 | 用户想核实的问题 | 检查项 | 只读专家定义 |
 | --- | --- | --- |
-| 接手者能否按现有说明启动、测试或部署？哪些文档或章节在重复维护，可以合并？ | 必要文档 | [项目文档专家](agents/project-documentation-expert.md) |
+| 接手者能否按现有说明启动、测试或部署？项目使用的 Claude Code、Codex 等工具有项目指引吗？哪些文档可以合并？ | 必要文档 | [项目文档专家](agents/project-documentation-expert.md) |
 | 图中模块和箭头是否符合实际调用？跨服务数据流需要怎样画？ | 架构图 | [架构专家](agents/architecture-expert.md) |
 | 当前模块调用是否违反项目认可的分层约定？ | 架构漂移 | [架构专家](agents/architecture-expert.md) |
 | 测试或源码应放在哪里？这个文件的位置符合包或构建约定吗？ | 目录结构 | [目录专家](agents/directory-expert.md) |

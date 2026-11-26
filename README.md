@@ -35,6 +35,8 @@ project-architect-skills
 
 输入「用 project-architect-skills 只读检查 README 和 docs/ 的文档冗余」，会得到每组重复的具体章节、维护影响、建议保留的正文和其他入口的调整方式。默认体检也包含这项检查。[文档冗余判据](skills/project-architect-skills/references/necessary-documents.md#文档冗余)
 
+默认体检会检查项目实际使用的 AI 编程工具是否有项目指引。也可以输入「只检查 Claude Code 的 `CLAUDE.md` 和 Codex 的 `AGENTS.md` 是否缺失」。报告逐个列出使用依据、生效的指引或应补建的路径。[AI 编程工具项目指引判据](skills/project-architect-skills/references/necessary-documents.md#ai-编程工具项目指引)
+
 输入「只核对订单和退款有没有违反分层约定」，会分别登记两个模块的架构漂移检查。报告对每项给出结论，缺少约定时列为「待确认」，某个模块未回传时列为「未查」。只问测试说明或某一种代码异味时，也可按点名的主题交付。[专项检查记录](skills/project-architect-skills/references/governance-plan.md#检查范围记录)
 
 输入「改订单 CSV 表头应该从哪里入手、会影响哪个页面、改完怎么验」，助手会直接给出只读维护导读，列出当前符号、真实调用方、源码出处和可重放的核对步骤。如果还要求检查或重构，导读随治理报告一起交付。[独立维护导读](skills/project-architect-skills/references/execution-and-handover.md#独立维护导读)

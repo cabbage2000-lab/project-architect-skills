@@ -34,6 +34,7 @@ def expert_record(check, **fields):
 
 def project_records(manual="README.md", verification=None):
     topics = {name: conclusion(evidence=f"{manual}:1") for name in DOC_KEYS}
+    topics["agent_instructions"] = [{"tool": "Codex", **conclusion(evidence="AGENTS.md:1")}]
     topics["redundancy"] = [conclusion(NA, f"{manual}:1", "只有一本手册。")]
     if verification is not None:
         topics["verification"] = verification
@@ -55,7 +56,7 @@ def assessment(check, entry, unit=UNIT):
 def from_rows(keys, rows, scope="scoped"):
     return {"mode": "inspect", "candidates": [],
             "coverage": {"selected": keys, "results": [{**key, "status": "已查"} for key in keys]},
-            "scoring": {"version": 1, "scope": scope, "assessments": rows}}
+            "scoring": {"version": 2, "scope": scope, "assessments": rows}}
 
 
 class HealthScoreTests(unittest.TestCase):
@@ -65,7 +66,7 @@ class HealthScoreTests(unittest.TestCase):
         self.root = Path(temp.name)
         (self.root / "tests").mkdir()
         for name, body in {
-            "README.md": "姓名工具\npython missing.py\n", "AGENTS.md": "测试固定放在 tests/。\n",
+            "README.md": "姓名工具\npython missing.py\n", "AGENTS.md": "用 Codex 维护姓名工具时，测试固定放在 tests/。\n",
             "tool.py": "def name():\n    return 'Ada'\n",
             "tests/test_tool.py": "import unittest\nfrom tool import name\n"
                                   "class Names(unittest.TestCase):\n"
@@ -311,10 +312,21 @@ class HealthScoreTests(unittest.TestCase):
         scoped = from_rows([dispatched("purpose")], [assessment("purpose", conclusion())])
         report = self.cli("governance_report", self.final_record(baseline, scoped))
         self.assertIn("检查范围已变化", report)
-        after["scoring"]["version"] = 2
+        after["scoring"]["version"] = 1
         report = self.cli("governance_report", self.final_record(baseline, after))
         self.assertIn("规则版本已变化", report)
         self.assertNotIn("**总分变化**", report)
+
+    def test_new_full_check_requires_tool_instructions_and_replays_original_v1_score(self):
+        plan, _ = self.inspect(project_records())
+        plan["scoring"]["assessments"] = [
+            item for item in plan["scoring"]["assessments"] if item["criterion"] != "agent_instructions"
+        ]
+        self.assertIn("缺少判据 agent_instructions", self.preview(plan)["markdown"])
+        plan["scoring"]["version"] = 1
+        baseline = self.preview(plan)
+        self.assertIn("100/100", baseline["markdown"])
+        self.assertIn("100/100", self.cli("governance_report", self.final_record(baseline)))
 
     def test_invalid_records_and_conflicting_roots_reject_the_whole_report(self):
         key = dispatched("verification")
