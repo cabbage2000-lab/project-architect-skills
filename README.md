@@ -2,6 +2,8 @@
 
 **English** | [简体中文](README.zh-CN.md)
 
+Keep your codebase under control and easy to maintain as your AI-assisted development (vibe coding) project grows more complex.
+
 Project Architect is a skill for **Codex, Claude Code, and WorkBuddy**. It checks documentation, architecture diagrams, repository layout, and code quality against the source. Before a handover or a change, it helps you find where to start, which callers depend on the current behavior, and how to verify the result.
 
 ## Quick start
