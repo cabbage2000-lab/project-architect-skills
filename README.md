@@ -12,11 +12,11 @@ project-architect-skills
 
 默认调用时，主 Agent 把必要文档、架构图、目录结构和代码异味分别派给独立的只读子 Agent。各自在自己的上下文中取证，交回检查章节、候选及出处。主 Agent 合并重复发现，展示体检摘要，并按维护影响推荐本轮最值得优化的事项。计划给出改动范围、改前基线、验收方法和回退办法。确认后，在同一会话回复 **同意治理**，助手会按计划逐项修复和验收。已有维护任务可以直接附上，例如「我要改订单导出的列名」。只想查看某项诊断时，可以输入「用 project-architect-skills 只读检查代码异味」或指定其他检查项。[治理计划](skills/project-architect-skills/references/governance-plan.md)
 
-检查前先判断项目规模。小项目通查相关资料，中等项目分模块核对，大项目优先检查主要业务路径和跨模块依赖。判档和取证方式见[项目规模与取证范围](skills/project-architect-skills/references/project-size.md)。
+检查前先判断项目规模。小项目通查相关资料，中等项目分模块核对，大项目优先检查主要业务路径和跨模块依赖。预览和最终报告按检查项列出选定的模块或入口，漏交的范围标为「未查」。判档和取证方式见[项目规模与取证范围](skills/project-architect-skills/references/project-size.md)。
 
 有足够的本地 Git 历史时，变更热点为影响相近的治理候选提供排序依据，共变记录帮助定位需要核实的调用方和测试。修改 Python 代码时，复核会用实际改前快照对照改后的结构信号，并记录行为验收结果。 [Git 变更证据](skills/project-architect-skills/references/git-change-history.md) · [Python 增量对照](skills/project-architect-skills/references/execution-and-handover.md#python-结构信号增量对照)
 
-报告列出规模依据、已查范围、逐项结论、治理计划和复核结果。待确认、待验证或暂缓的事项保留证据和原因。维护导读给出下次改动的入口、受影响的调用方和自查方法。治理获批后，报告默认保存到目标项目的 `docs/project-architect-report.md`。只做检查、没有可执行项或拒绝治理时，默认在会话交付全文。用户也可以单独要求保存本次报告。写入受限或已有同名人工报告时，助手在会话交付全文。[执行复核与维护导读](skills/project-architect-skills/references/execution-and-handover.md)
+报告列出规模依据、已查范围、逐项结论、治理计划和复核结果。拟执行项会核对本地引用的位置，唯一出处越界时标为「待确认」。建议合并、删除或替换既有行为时，先用相关调用方、契约或测试查找反例。维护导读给出下次改动的入口、受影响的调用方和自查方法。治理获批后，报告默认保存到目标项目的 `docs/project-architect-report.md`。只做检查、没有可执行项或拒绝治理时，默认在会话交付全文。用户也可以单独要求保存本次报告。写入受限或已有同名人工报告时，助手在会话交付全文。[执行复核与维护导读](skills/project-architect-skills/references/execution-and-handover.md)
 
 需要重构时，可以输入「用 project-architect-skills 检查订单导出循环的嵌套，给出简化计划」。助手会选取能检验改动的输入，例如混合可导出和应跳过的订单，记录原入口的结果。获批后逐步重构并重放样例；涉及跨文件改名时，先核对定义、调用点和配置引用。这套做法吸收自 Claude Code 的重构专家说明。[上游 refactoring-expert](https://github.com/luanquangminh/claude-skill/blob/85ebeee29a6b32085d56e8b7022d5673b1760fe6/agents/refactoring-expert.md) · [本项目执行判据](skills/project-architect-skills/references/execution-and-handover.md#局部与跨文件重构)
 

@@ -31,7 +31,7 @@
 
 用 `python3 -B <本 Skill 目录>/scripts/governance_report.py` 从标准输入读取 UTF-8 JSON，也可传入记录文件。以目标仓库为工作目录。报告合并初次体检、改动前的计划、逐项复核和当前导读。必要时在复核中补充修订后的覆盖结论。
 
-- `audit` 为非空 Markdown 章节数组，可传体检脚本的完整输出。`plan` 为[治理计划记录](governance-plan.md)原件。
+- `audit` 为 Markdown 章节数组，可传体检脚本的完整输出。若本轮所有选定范围均未查且已记录在 `coverage`，可传空数组。`plan` 使用计划脚本 `--json` 同次返回的[校验后记录](governance-plan.md#生成报告章节)，其中保留改前证据和本轮范围。
 - `reviews` 按计划顺序覆盖每一项执行事项，使用各项的 `target` 对应。没有执行事项时传 `[]`。每项含 `status`。
   - `通过` 记录 `changes`（实际位置与差异）和 `kind`（`code` 或 `handover`）。`checks` 的每项含 `kind`、`operation`、`expected`、`observed`、`result`，结果为「通过」「发现差异」或「待验证」。代码项同时有通过的 `structure` 与 `behavior`，文档与图件有通过的 `handover`。
   - `发现差异` 记录 `changes`、含失败样例的 `checks` 以及 `rollback`。当前验收中任一 `checks` 结果为「发现差异」时，事项状态也须为「发现差异」。`rollback.status` 为「已回退」「部分回退」或「保留现场」，`rollback.evidence` 写明实际恢复或保留的位置与验证结果。

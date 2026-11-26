@@ -143,9 +143,13 @@ def render_report(record):
     if not isinstance(record, dict):
         raise ValueError("治理报告记录需要 JSON 对象")
     audit = record.get("audit")
-    if not isinstance(audit, list) or not audit or any(not isinstance(item, str) or not item.strip() for item in audit):
-        raise ValueError("audit 需要非空体检章节数组")
-    plan, selected = build_plan(record.get("plan"))
+    if not isinstance(audit, list) or any(not isinstance(item, str) or not item.strip() for item in audit):
+        raise ValueError("audit 需要体检章节数组")
+    plan, selected = build_plan(record.get("plan"), replay=True)
+    if not audit:
+        coverage = record["plan"].get("coverage", {})
+        if not coverage.get("selected") or any(result["status"] != "未查" for result in coverage["results"]):
+            raise ValueError("audit 缺少已查范围的体检章节")
     review, passed = render_reviews(record.get("reviews"), selected)
     guide = render_guide(record, passed)
     sections = ["# 项目治理报告", *(item.strip() for item in audit), plan.rstrip(), review, guide]

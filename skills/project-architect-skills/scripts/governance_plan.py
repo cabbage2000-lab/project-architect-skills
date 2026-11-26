@@ -5,7 +5,9 @@ import json
 import sys
 from pathlib import Path
 
+from inspection_coverage import coverage_lines
 from necessary_docs import PENDING, required_text, table_row, text_list
+from plan_evidence import check_sources
 
 
 READY = "可执行"
@@ -21,10 +23,11 @@ PLAN_FIELDS = {
 }
 
 
-def select_candidates(candidates, mode):
+def select_candidates(candidates, mode, root=None):
     targets = set()
     selected = {}
     deferred = []
+    checked = []
     for index, candidate in enumerate(candidates):
         field = f"candidates[{index}]"
         if not isinstance(candidate, dict):
@@ -35,7 +38,7 @@ def select_candidates(candidates, mode):
         targets.add(target)
 
         title = required_text(candidate.get("title"), f"{field}.title")
-        evidence = "、".join(text_list(candidate.get("evidence"), f"{field}.evidence"))
+        sources = text_list(candidate.get("evidence"), f"{field}.evidence")
         impact = required_text(candidate.get("impact"), f"{field}.impact")
         reason = required_text(candidate.get("reason"), f"{field}.reason")
         status = candidate.get("status")
@@ -49,20 +52,33 @@ def select_candidates(candidates, mode):
         elif status == NOT_RUN:
             raise ValueError(f"{field}.status 在 execute 模式下需要写明暂缓类型")
         elif status == READY:
+            requirements = {
+                label: required_text(candidate.get(key), f"{field}.{key}") for key, label in PLAN_FIELDS.items()
+            }
+            if root is not None:
+                usable, issues = check_sources(sources, root)
+                if issues:
+                    reason += " 待核实出处：" + "、".join(issues) + "。"
+                    if usable:
+                        sources = usable
+                    else:
+                        status = PENDING
+        checked.append({**candidate, "status": status, "evidence": sources, "reason": reason})
+        evidence = "、".join(sources)
+        if status == READY:
             details = {
                 "优先理由": reason,
                 "维护影响": impact,
                 "核对依据": evidence,
+                **requirements,
             }
-            for key, label in PLAN_FIELDS.items():
-                details[label] = required_text(candidate.get(key), f"{field}.{key}")
             selected[target] = (title, details)
             continue
         deferred.append((title, status, reason, impact, evidence))
-    return selected, deferred
+    return selected, deferred, checked
 
 
-def build_plan(record, *, preview=False):
+def prepare_plan(record, *, preview=False, root=None):
     if not isinstance(record, dict):
         raise ValueError("治理计划记录需要 JSON 对象")
     mode = record.get("mode")
@@ -72,8 +88,10 @@ def build_plan(record, *, preview=False):
     if not isinstance(candidates, list):
         raise ValueError("candidates 需要数组，无治理候选时传入 []")
 
-    selected, deferred = select_candidates(candidates, mode)
+    selected, deferred, checked = select_candidates(candidates, mode, root)
     lines = ["## 治理计划", ""]
+    if "coverage" in record:
+        lines.extend(coverage_lines(record["coverage"]))
     if selected:
         if preview:
             lines.append(f"本轮拟治理 {len(selected)} 项，待授权。")
@@ -94,7 +112,14 @@ def build_plan(record, *, preview=False):
         ])
     if preview and selected:
         lines.extend(["", "请在当前会话回复 **同意治理**，我会按以上计划逐项修复和验收。"])
-    return "\n".join(lines) + "\n", {target: title for target, (title, _) in selected.items()}
+    titles = {target: title for target, (title, _) in selected.items()}
+    return "\n".join(lines) + "\n", titles, {**record, "candidates": checked}
+
+
+def build_plan(record, *, preview=False, replay=False):
+    root = None if replay else Path.cwd()
+    report, titles, _ = prepare_plan(record, preview=preview, root=root)
+    return report, titles
 
 
 def render_report(record, *, preview=False):
@@ -105,13 +130,16 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="治理候选 JSON，默认读取标准输入")
     parser.add_argument("--preview", action="store_true", help="预览拟治理事项并在有入选项时提示授权")
+    parser.add_argument("--json", action="store_true", help="同时返回 Markdown 和本次检查后的 plan 记录")
     args = parser.parse_args()
     try:
         if args.record is None:
             record = json.load(sys.stdin)
         else:
             record = json.loads(args.record.read_text(encoding="utf-8"))
-        report = render_report(record, preview=args.preview)
+        report, _, checked = prepare_plan(record, preview=args.preview, root=Path.cwd())
+        if args.json:
+            report = json.dumps({"markdown": report, "plan": checked}, ensure_ascii=False) + "\n"
     except (OSError, ValueError) as error:
         parser.exit(2, f"治理计划无法汇总（{error}）\n")
     sys.stdout.write(report)

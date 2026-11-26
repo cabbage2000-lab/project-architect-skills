@@ -156,6 +156,44 @@ class GovernanceReportTests(unittest.TestCase):
         record["guide_limit"] = "只读到 docs/，调用方需在源码开放后核对。"
         self.assertIn(record["guide_limit"], self.report(record))
 
+    def test_coverage_accounts_for_missing_returns_separately_from_exclusions(self):
+        units = [{"check": "代码异味", "unit": name} for name in ("订单", "支付", "退款")]
+        docs = {"check": "必要文档", "unit": "订单"}
+        coverage = {
+            "selected": [*units, docs],
+            "results": [{**units[0], "status": "已查"}, {**units[1], "status": "部分已查", "reason": "回调未读"},
+                        {**docs, "status": "未查", "reason": "未取得手册"}],
+            "excluded": [{"check": "代码异味", "unit": "归档", "reason": "本轮只查现役入口"}],
+        }
+        record = report_record(mode="inspect")
+        record["plan"]["coverage"] = coverage
+        report = self.report(record)
+        self.assertIn("选定 4 项检查范围，完整核对 1 项", report)
+        self.assertIn("| 代码异味 | 退款 | 未查 | 未收到", report)
+        self.assertIn("| 代码异味 | 支付 | 部分已查 | 回调未读 |", report)
+        self.assertIn("| 必要文档 | 订单 | 未查 | 未取得手册 |", report)
+        self.assertIn("| 代码异味 | 归档 | 范围外 |", report)
+        for field, value in [
+            ("selected", [docs, docs]), ("results", [coverage["results"][0]] * 2),
+            ("results", [{**docs, "status": "未查"}]),
+            ("results", [{"check": "目录结构", "unit": "退款", "status": "已查"}]),
+            ("excluded", [{**docs, "reason": "范围冲突"}]),
+        ]:
+            with self.subTest(field=field, value=value):
+                record["plan"]["coverage"] = {**coverage, field: value}
+                self.invalid(record, "coverage")
+
+    def test_all_returns_missing_can_report_the_gaps_without_a_fabricated_section(self):
+        record = report_record(mode="inspect", entries=[])
+        record.update(audit=[], guide_limit="尚未取得取证结果。")
+        unit = {"check": "代码异味", "unit": "退款"}
+        record["plan"]["coverage"] = {"selected": [unit], "results": []}
+        report = self.report(record)
+        self.assertIn("| 代码异味 | 退款 | 未查 | 未收到", report)
+        self.assertNotIn("范围内未发现", report)
+        record["plan"]["coverage"]["results"].append({**unit, "status": "已查"})
+        self.invalid(record, "audit")
+
     def test_managed_report_updates_but_manual_changes_are_preserved(self):
         path = self.root / REPORT
         self.assertEqual(self.report(report_record(), "--write").strip(), str(REPORT))
