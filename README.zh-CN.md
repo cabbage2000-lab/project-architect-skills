@@ -45,20 +45,19 @@ WorkBuddy 使用 `.codebuddy/` 项目级代码开发配置时，复制到 `.code
 
 ## 使用示例
 
-在 Claude Code 中任选一行即可开始评估。在 Codex 或 WorkBuddy 中，把开头的 `/project-architect-skills` 换成「用 project-architect-skills」即可。
+按手头的任务选一条提示词。在 Codex 或 WorkBuddy 中，把开头的 `/project-architect-skills` 换成「用 project-architect-skills」。
 
-| 专家 | 可以直接输入 |
+| 使用场景 | Claude Code 提示词 |
 | --- | --- |
-| 四位专家一起评估 | `/project-architect-skills 项目体检` |
-| 工程文档专家 | `/project-architect-skills 检查交接文档缺了什么、哪些说明重复` |
-| 检查架构决策记录 | `/project-architect-skills 检查订单存储选型的理由和影响是否有记录` |
-| 推荐关键文档 | `/project-architect-skills 项目做完了，按项目大小推荐新人接手最需要补的文档` |
-| 补全指定文档 | `/project-architect-skills 帮我补一份本地启动指南，写到 docs/入门.md` |
-| 软件架构专家 | `/project-architect-skills 核对架构图和代码里的实际调用是否一致` |
-| 推荐架构图 | `/project-architect-skills 新人要接手这个项目，按项目大小推荐最值得补的架构图` |
-| 补指定架构图 | `/project-architect-skills 画一张订单导出的调用时序图，用 Mermaid 写到 docs/订单导出.md` |
-| 仓库结构专家 | `/project-architect-skills 按项目约定检查源码和测试有没有放错目录` |
-| 代码质量专家 | `/project-architect-skills 找出最值得重构的函数，给出验证用例` |
+| 全面体检 | `/project-architect-skills 全面体检` |
+| 文档体检 | `/project-architect-skills 文档体检` |
+| 本项目缺失文档检查 | `/project-architect-skills 本项目缺哪些必要文档，列出建议补写项和依据` |
+| 补文档 | `/project-architect-skills 补一份本地启动指南，写清启动和验证步骤` |
+| 架构图体检 | `/project-architect-skills 架构图体检` |
+| 本项目缺失架构图检查 | `/project-architect-skills 本项目缺哪些必要架构图，列出建议补画的图和依据` |
+| 补架构图 | `/project-architect-skills 根据源码补一张架构图，画清主要模块及调用关系` |
+| 项目结构检查 | `/project-architect-skills 项目结构体检` |
+| 代码重构检查 | `/project-architect-skills 找出值得重构的代码，给出理由和验证方法` |
 
 ## 怎样读体检报告
 

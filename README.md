@@ -39,20 +39,19 @@ For a WorkBuddy project using `.codebuddy/` configuration, copy the skill into `
 
 ## Usage examples
 
-Pick one question for a focused assessment. In Codex or WorkBuddy, replace the leading `/project-architect-skills` with `Use project-architect-skills to`.
+Choose a prompt that matches what you need to do. In Codex or WorkBuddy, replace the leading `/project-architect-skills` with `Use project-architect-skills to`.
 
-| Reviewer | Claude Code prompt |
+| When to use it | Claude Code prompt |
 | --- | --- |
-| All four reviewers | `/project-architect-skills Run a full project health check` |
-| Engineering documentation | `/project-architect-skills Find missing handover steps and duplicated instructions` |
-| Architecture decision records | `/project-architect-skills Check whether the order storage choice and its trade-offs are documented` |
-| Recommend documentation | `/project-architect-skills Which handover documents should a newcomer have for a project this size?` |
-| Write a specific document | `/project-architect-skills Write a local setup guide for a newcomer in docs/getting-started.md` |
-| Software architecture | `/project-architect-skills Check the architecture diagram against the actual calls in the code` |
-| Recommend architecture diagrams | `/project-architect-skills Which diagrams would help a newcomer understand a project this size?` |
-| Draw a specific view | `/project-architect-skills Draw the order export sequence in Mermaid in docs/order-export.md` |
-| Repository structure | `/project-architect-skills Check source and test locations against this project's conventions` |
-| Code quality | `/project-architect-skills Identify the function most worth refactoring and give me a test case` |
+| Full project health check | `/project-architect-skills Run a full project health check` |
+| Documentation health check | `/project-architect-skills Run a documentation health check` |
+| Check for missing documentation | `/project-architect-skills List the essential documents this project is missing and explain why each should be added` |
+| Add documentation | `/project-architect-skills Write a local setup guide with steps to start the project and verify it works` |
+| Architecture diagram health check | `/project-architect-skills Run an architecture diagram health check` |
+| Check for missing architecture diagrams | `/project-architect-skills List the essential architecture diagrams this project is missing and explain why each should be added` |
+| Add an architecture diagram | `/project-architect-skills Use the source code to draw an architecture diagram showing the main modules and how they call one another` |
+| Project structure check | `/project-architect-skills Run a project structure check` |
+| Refactoring review | `/project-architect-skills Identify code worth refactoring, explain why, and suggest how to verify the changes` |
 
 ## Project background
 
