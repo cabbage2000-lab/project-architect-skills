@@ -23,7 +23,10 @@ DOCUMENT_TOPICS = {
         "api": "API 说明",
         "agent_instructions": "AI 编程工具项目指引",
     },
-    "架构文档": {"architecture": "模块职责与依赖"},
+    "架构文档": {
+        "architecture": "模块职责与依赖",
+        "architecture_decision": "架构决策记录（ADR）",
+    },
     "测试文档": {"verification": "验证改动的方法"},
     "部署文档": {"deployment": "部署说明"},
 }
@@ -31,6 +34,7 @@ HANDOFF_TOPICS = {key: label for topics in DOCUMENT_TOPICS.values() for key, lab
 TOPICS = {**HANDOFF_TOPICS, "redundancy": "文档冗余"}
 LEGACY_TOPICS = {"purpose", "usage", "configuration", "verification", "deployment", "api"}
 V1_DOCUMENT_TOPICS = LEGACY_TOPICS | {"requirements", "architecture", "redundancy"}
+V2_DOCUMENT_TOPICS = V1_DOCUMENT_TOPICS | {"agent_instructions"}
 COVERED = "范围内未发现"
 GAP = "发现问题"
 PENDING = "待确认"
@@ -260,9 +264,9 @@ def render_report(record, *, as_json=False):
     if not isinstance(topics, dict) or topics.keys() - TOPICS.keys():
         raise ValueError("topics 需要由已知文档主题组成的对象")
     if not selected and topics.keys() not in (
-        TOPICS.keys(), V1_DOCUMENT_TOPICS, V1_DOCUMENT_TOPICS - {"redundancy"}, LEGACY_TOPICS,
+        TOPICS.keys(), V2_DOCUMENT_TOPICS, V1_DOCUMENT_TOPICS, V1_DOCUMENT_TOPICS - {"redundancy"}, LEGACY_TOPICS,
     ):
-        raise ValueError(f"topics 需要完整的检查项 {'、'.join(TOPICS)}，也兼容旧版六项、八项和九项记录")
+        raise ValueError(f"topics 需要完整的检查项 {'、'.join(TOPICS)}，也兼容旧版六项、八项、九项和十项记录")
 
     sections = []
     suggestions = []

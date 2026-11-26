@@ -36,6 +36,7 @@ def expert_record(check, **fields):
 def project_records(manual="README.md", verification=None):
     topics = {name: conclusion(evidence=f"{manual}:1") for name in DOC_KEYS}
     topics["agent_instructions"] = [{"tool": "Codex", **conclusion(evidence="AGENTS.md:1")}]
+    topics["architecture_decision"] = conclusion(NA, detail="工具直接返回姓名，无外部依赖或交付契约。")
     topics["redundancy"] = [conclusion(NA, f"{manual}:1", "只有一本手册。")]
     if verification is not None:
         topics["verification"] = verification
@@ -57,7 +58,7 @@ def assessment(check, entry, unit=UNIT):
 def from_rows(keys, rows, scope="scoped"):
     return {"mode": "inspect", "candidates": [],
             "coverage": {"selected": keys, "results": [{**key, "status": "已查"} for key in keys]},
-            "scoring": {"version": 2, "scope": scope, "assessments": rows}}
+            "scoring": {"version": 3, "scope": scope, "assessments": rows}}
 
 
 class HealthScoreTests(unittest.TestCase):
@@ -386,16 +387,18 @@ class HealthScoreTests(unittest.TestCase):
         self.assertIn("规则版本已变化", report)
         self.assertNotIn("**总分变化**", report)
 
-    def test_new_full_check_requires_tool_instructions_and_replays_original_v1_score(self):
+    def test_full_check_requires_new_criteria_and_replays_older_scores(self):
         plan, _ = self.inspect(project_records())
-        plan["scoring"]["assessments"] = [
-            item for item in plan["scoring"]["assessments"] if item["criterion"] != "agent_instructions"
-        ]
-        self.assertIn("缺少判据 agent_instructions", self.preview(plan)["markdown"])
-        plan["scoring"]["version"] = 1
-        baseline = self.preview(plan)
-        self.assertIn("100/100", baseline["markdown"])
-        self.assertIn("100/100", self.cli("governance_report", self.final_record(baseline)))
+        for version, criterion in ((2, "architecture_decision"), (1, "agent_instructions")):
+            with self.subTest(version=version):
+                plan["scoring"]["assessments"] = [
+                    item for item in plan["scoring"]["assessments"] if item["criterion"] != criterion
+                ]
+                self.assertIn(f"缺少判据 {criterion}", self.preview(plan)["markdown"])
+                plan["scoring"]["version"] = version
+                baseline = self.preview(plan)
+                self.assertIn("100/100", baseline["markdown"])
+                self.assertIn("100/100", self.cli("governance_report", self.final_record(baseline)))
 
     def test_invalid_records_and_conflicting_roots_reject_the_whole_report(self):
         key = dispatched("verification")

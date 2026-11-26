@@ -51,6 +51,7 @@ WorkBuddy 使用 `.codebuddy/` 项目级代码开发配置时，复制到 `.code
 | --- | --- |
 | 四位专家一起评估 | `/project-architect-skills 项目体检` |
 | 工程文档专家 | `/project-architect-skills 检查交接文档缺了什么、哪些说明重复` |
+| 检查架构决策记录 | `/project-architect-skills 检查订单存储选型的理由和影响是否有记录` |
 | 推荐关键文档 | `/project-architect-skills 项目做完了，按项目大小推荐新人接手最需要补的文档` |
 | 补全指定文档 | `/project-architect-skills 帮我补一份本地启动指南，写到 docs/入门.md` |
 | 软件架构专家 | `/project-architect-skills 核对架构图和代码里的实际调用是否一致` |

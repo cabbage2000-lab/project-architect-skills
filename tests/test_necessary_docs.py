@@ -25,6 +25,7 @@ def local_tool():
             "api": entry("不适用", "仅提供本地命令。", "docs/交接.md:3"),
             "agent_instructions": [entry("不适用", "已查开发流程未见使用 AI 编程工具。", "docs/交接.md:8")],
             "architecture": entry("不适用", "一个脚本直接生成 CSV，无其他模块依赖。", "export.py:12"),
+            "architecture_decision": entry("不适用", "脚本直接转换内置样例，未引入外部依赖或交付契约。", "export.py:12"),
             "verification": entry("范围内未发现", "重放订单样例并核对表头。", "docs/样例.md:4"),
             "deployment": entry("不适用", "源码交付，仅在终端运行。", "docs/交接.md:3"),
             "redundancy": [{
@@ -101,6 +102,7 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertIn("| 验证改动的方法 | 范围内未发现 | 重放订单样例并核对表头。 | docs/样例.md:4 |", report)
         self.assertIn("| 必要配置 | 不适用 | 命令直接使用内置默认值。 | export.py:12 |", report)
         self.assertIn("| AI 编程工具项目指引 | 不适用 |", report)
+        self.assertIn("| 架构决策记录（ADR） | 不适用 |", report)
         self.assertNotIn("项目规模", report)
         self.assertNotIn("建议补写", report)
 
@@ -194,6 +196,8 @@ class NecessaryDocsTests(unittest.TestCase):
         ])
         architecture, testing = checklist.split("#### 架构文档\n")[1].split("#### 测试文档\n")
         self.assertIn("| 模块职责与依赖 | 发现问题 | **缺少说明**", architecture)
+        self.assertIn("| 架构决策记录（ADR） | 范围内未发现 |", architecture)
+        self.assertIn("docs/导出设计.md#交换格式选型", architecture)
         self.assertIn("| 验证改动的方法 | 发现问题 | **内容不完整**", testing)
         self.assertIn("#### 架构文档\n\n- **模块职责与依赖**", suggestions)
         self.assertIn("#### 测试文档\n\n- **验证改动的方法**", suggestions)
@@ -201,11 +205,40 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertIn("| Codex 项目指引 | 发现问题 | **缺少说明**", checklist)
         self.assertIn("在仓库根补建 AGENTS.md", suggestions)
         self.assertNotIn("Claude Code", suggestions)
+        self.assertNotIn("架构决策记录", suggestions)
         self.assertEqual(suggestions.count("#### "), 3)
         redundancy = checklist.split("### 文档冗余\n")[1]
         self.assertIn("README.md#导出规则、docs/操作手册.md#CSV 格式", redundancy)
         self.assertIn("保留 README.md#导出规则", redundancy)
         self.assertIn("手册独有的对账示例", redundancy)
+
+    def test_focused_adr_suggests_writing_only_for_a_confirmed_gap(self):
+        task = {"check": "architecture_decision", "unit": "订单存储"}
+        gap = {
+            "status": "发现问题", "gap_kind": "missing",
+            "detail": "已核实订单存储使用 SQLite，仓库文档没有记录选择理由。",
+            "evidence": ["storage.py:4", "命令观察：已检索 README、docs/ 和相关变更记录"],
+            "impact": "接手人评估迁移时无法核对原选型约束。",
+            "placement": "在 docs/adr/ 记录订单存储选型。",
+        }
+        record = {"selected": [task], "scope": ["订单存储及设计资料"], "unread": [],
+                  "topics": {"architecture_decision": gap}}
+        result = run_report(record, "--json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        packet = json.loads(result.stdout)
+        self.assertEqual(packet["results"], [{**task, "status": "已查"}])
+        self.assertEqual(packet["assessments"][0]["criterion"], "architecture_decision")
+        self.assertIn("| 架构决策记录（ADR） | 发现问题 |", packet["markdown"])
+        self.assertIn(gap["placement"], packet["markdown"].split("### 建议补写\n")[1])
+        self.assertNotIn("模块职责与依赖", packet["markdown"])
+
+        record["unread"] = [{"source": "旧存储选型纪要", "reason": "本轮无法访问", "topics": [task["check"]]}]
+        result = run_report(record, "--json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        packet = json.loads(result.stdout)
+        self.assertEqual(packet["results"][0]["status"], "部分已查")
+        self.assertEqual(packet["assessments"][0]["status"], "待确认")
+        self.assertNotIn("### 建议补写", packet["markdown"])
 
     def test_focused_agent_instructions_keep_independent_tool_findings(self):
         task = {"check": "agent_instructions", "unit": "仓库根的开发工具"}
@@ -304,9 +337,19 @@ class NecessaryDocsTests(unittest.TestCase):
                 self.assertEqual(result.stdout, "")
                 self.assertIn(field, result.stderr)
 
-    def test_previous_full_record_reports_agent_instructions_as_pending(self):
+    def test_previous_full_record_marks_adr_pending(self):
+        record = local_tool()
+        del record["topics"]["architecture_decision"]
+        record["selected"] = [{"check": "必要文档", "unit": "订单导出"}]
+        report = self.report(record)
+        self.assertIn("| 架构决策记录（ADR） | 待确认 |", report)
+        self.assertIn("| 必要文档 | 订单导出 | 部分已查 |", report)
+        self.assertNotIn("建议补写", report)
+
+    def test_nine_topic_record_reports_agent_instructions_as_pending(self):
         record = local_tool()
         del record["topics"]["agent_instructions"]
+        del record["topics"]["architecture_decision"]
         record["selected"] = [{"check": "必要文档", "unit": "订单导出"}]
         report = self.report(record)
         self.assertIn("| AI 编程工具项目指引 | 待确认 |", report)
@@ -316,6 +359,7 @@ class NecessaryDocsTests(unittest.TestCase):
     def test_old_eight_topic_record_and_missing_focused_result_do_not_claim_coverage(self):
         record = local_tool()
         del record["topics"]["agent_instructions"]
+        del record["topics"]["architecture_decision"]
         del record["topics"]["redundancy"]
         report = self.report(record)
         self.assertIn("**检查结果**　待确认", report)
@@ -329,6 +373,7 @@ class NecessaryDocsTests(unittest.TestCase):
     def test_legacy_record_marks_new_checks_pending(self):
         record = local_tool()
         del record["topics"]["agent_instructions"]
+        del record["topics"]["architecture_decision"]
         del record["topics"]["redundancy"]
         del record["topics"]["requirements"]
         del record["topics"]["architecture"]

@@ -5,12 +5,12 @@ from dataclasses import dataclass, field
 
 from code_smells import MODULE_ISSUES, SMELLS
 from inspection_coverage import coverage_units
-from necessary_docs import COVERED, GAP, NOT_APPLICABLE, PENDING, TOPICS, V1_DOCUMENT_TOPICS
+from necessary_docs import COVERED, GAP, NOT_APPLICABLE, PENDING, TOPICS, V1_DOCUMENT_TOPICS, V2_DOCUMENT_TOPICS
 from plan_evidence import check_sources
 from report_fields import records, required_text, table_row, text_list
 
 
-VERSION = 2
+VERSION = 3
 BASIC = {"必要文档": "必要文档", "架构图": "架构", "目录结构": "目录结构", "代码异味": "代码异味"}
 DIMENSIONS = tuple(BASIC.values())
 DIMENSION_LABELS = {"必要文档": "工程文档", "架构": "软件架构", "目录结构": "仓库结构", "代码异味": "代码质量"}
@@ -20,6 +20,7 @@ CHECK_DIMENSION = {
 }
 FULL_CRITERIA_BY_VERSION = {
     1: {"必要文档": V1_DOCUMENT_TOPICS, "代码异味": SMELLS.keys()},
+    2: {"必要文档": V2_DOCUMENT_TOPICS, "代码异味": SMELLS.keys()},
     VERSION: {"必要文档": TOPICS.keys(), "代码异味": SMELLS.keys()},
 }
 PENALTIES = {"轻微": 2, "需要绕行": 5, "阻断": 15}
@@ -165,7 +166,7 @@ def prepare_score(scoring, coverage, *, root=None):
     """初次取证传 root 验证出处，重放时只使用计划已冻结的结论。"""
     version = scoring.get("version") if isinstance(scoring, dict) else None
     if type(version) is not int or version not in FULL_CRITERIA_BY_VERSION:
-        raise ValueError("scoring.version 需要支持的规则版本 1 或 2")
+        raise ValueError("scoring.version 需要支持的规则版本 1、2 或 3")
     scope = scoring.get("scope")
     if scope not in ("full", "scoped"):
         raise ValueError("scoring.scope 需要 full 或 scoped")

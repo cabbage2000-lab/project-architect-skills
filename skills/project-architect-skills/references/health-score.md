@@ -1,10 +1,10 @@
-# 项目体检评分 v2
+# 项目体检评分 v3
 
 ## 评分规则
 
 按[保密文档规则](necessary-documents.md#保密文档)确认被 Git 忽略的文档或图件，仅因未随仓库交付而涉及的检查记为「已查 / 不适用」。其余检查正常计分。
 
-评分表按工程文档、软件架构、仓库结构、代码质量四个领域展示，各 25 分。检查记录的 `owner` 依次使用 `必要文档`、`架构`、`目录结构`、`代码异味`。文字中的模块职责归工程文档，图件与已查的架构漂移归软件架构。以本轮维护操作的实际影响定档，每个独立根因只在主责维度扣一次。只读、暂缓和未获批的已确认问题都参与评分。
+评分表按工程文档、软件架构、仓库结构、代码质量四个领域展示，各 25 分。检查记录的 `owner` 依次使用 `必要文档`、`架构`、`目录结构`、`代码异味`。模块职责说明和架构决策记录归工程文档，图件与已查的架构漂移归软件架构。以本轮维护操作的实际影响定档，每个独立根因只在主责维度扣一次。只读、暂缓和未获批的已确认问题都参与评分。
 
 | 影响档位 | 扣分 | 需要的证据 |
 | --- | ---: | --- |
@@ -23,7 +23,7 @@
 1. 把派发清单中同一入口的 `selected` 传给检查脚本，运行 `--json`。基础检查名为「必要文档」「架构图」「目录结构」「代码异味」，专项沿用 `verification`、`architecture_drift` 等原有标识。保留每份回传的 `markdown`，按原 `(check, unit)` 合并 `results` 和 `assessments`。重试同一范围时替换上次回传。
 2. 每条 `assessment` 包含 `check`、`unit`、`criterion`（具体判据）、`status`、`detail` 和 `evidence`。基础文档检查覆盖[全部文档主题](necessary-documents.md)，其中 AI 编程工具项目指引按工具逐条回传。基础代码异味检查覆盖五类方法异味。代码质量专家附带核对的架构漂移计入架构维度。方法检查中，将「范围内未发现」和「不适用」的依据写入 `checks.<判据>.evidence`。每条记录的出处共同支撑该条结论。首次预览和复评会核对本地路径与行号，失效的出处会显示在所影响的结论旁。[可定位的引用与命令观察](governance-plan.md#纳入计划前核对出处与反例)
 3. 已确认的问题含 `impact`，说明哪项操作受影响。主 Agent 按根因统一 `root_id`、`severity` 和 `owner`，其中 `owner` 默认来自判据。跨专家的同一根因填写相同的主责维度。专家可在文档主题或冗余项、图件对照项或 `repair`、路径对照项、方法或模块发现上预填这些字段。根因标识采用可跨文件移动复用的业务描述。
-4. 在计划的 `coverage` 保留原始 `selected` 和真实 `results`，在 `scoring` 填入 `version: 2`、`scope`（`full` 或 `scoped`）、合并的 `assessments`。在目标仓库运行 `governance_plan.py --preview --json`，展示返回的 Markdown，保存同次返回的 `plan` 供最终报告使用。v1 计划仍按原九个文档主题重现基线。没有评分字段的历史计划仍可生成原报告。
+4. 在计划的 `coverage` 保留原始 `selected` 和真实 `results`，在 `scoring` 填入 `version: 3`、`scope`（`full` 或 `scoped`）、合并的 `assessments`。在目标仓库运行 `governance_plan.py --preview --json`，展示返回的 Markdown，保存同次返回的 `plan` 供最终报告使用。v1 和 v2 计划分别按原九项和十项文档判据重现基线。没有评分字段的历史计划仍可生成原报告。
 
 例如，在本仓库根目录运行下面的专项预览。样例用 README 的测试说明演示带出处的核对，预期显示「工程文档 25/25」。
 
@@ -35,7 +35,7 @@ python3 -B skills/project-architect-skills/scripts/governance_plan.py --preview 
     "selected": [{"check": "verification", "unit": "仓库测试"}],
     "results": [{"check": "verification", "unit": "仓库测试", "status": "已查"}]
   },
-  "scoring": {"version": 2, "scope": "scoped", "assessments": [{
+  "scoring": {"version": 3, "scope": "scoped", "assessments": [{
     "check": "verification", "unit": "仓库测试", "status": "范围内未发现",
     "detail": "README 给出完整的测试命令和成功标志。", "evidence": ["README.md#testing"]
   }]}
@@ -45,7 +45,7 @@ JSON
 
 ## 治理后复评
 
-最终报告使用校验后的 `plan` 重现基线。治理后重新派发原范围，收集新回传，在报告顶层附上 `reassessment`。它与基线使用相同的 `version`、`scope` 和 `assessments` 字段，并带本次复查的 `coverage`。发生移动时，保留原业务入口的 `unit` 和根因标识，证据指向当前文件。
+最终报告使用校验后的 `plan` 重现基线。治理后按基线的范围和判据重新派发，收集新回传，在报告顶层附上 `reassessment`。它与基线使用相同的 `version`、`scope` 和 `assessments` 字段，并带本次复查的 `coverage`。发生移动时，保留原业务入口的 `unit` 和根因标识，证据指向当前文件。
 
 - 原问题仍存在时，回传原 `root_id` 及当前影响。已减轻或加重时填写复核后的档位。新问题使用新的根因标识。
 - 原问题已消除时，在原入口和判据下有证据的「范围内未发现」或「不适用」记录中填写 `"resolves": ["原根因标识"]`，用 `detail` 和 `evidence` 记录实际复查。原扣分仅从回传中消失时，该维度显示待补查。

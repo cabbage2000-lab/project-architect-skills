@@ -45,6 +45,7 @@ Pick one question for a focused assessment. In Codex or WorkBuddy, replace the l
 | --- | --- |
 | All four reviewers | `/project-architect-skills Run a full project health check` |
 | Engineering documentation | `/project-architect-skills Find missing handover steps and duplicated instructions` |
+| Architecture decision records | `/project-architect-skills Check whether the order storage choice and its trade-offs are documented` |
 | Recommend documentation | `/project-architect-skills Which handover documents should a newcomer have for a project this size?` |
 | Write a specific document | `/project-architect-skills Write a local setup guide for a newcomer in docs/getting-started.md` |
 | Software architecture | `/project-architect-skills Check the architecture diagram against the actual calls in the code` |

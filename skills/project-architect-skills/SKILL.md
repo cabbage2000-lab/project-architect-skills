@@ -12,13 +12,13 @@ description: 帮接手者定位改动入口、受影响的调用方和验证方�
 
 主 Agent 先结合当前会话判断目标、范围和读写限制。用户回答选择题时，接着处理该题对应的事项。对已展示计划的明确批准、部分批准或拒绝直接转到治理流程第 6 步。
 
-「补文档」或指定编写手册，走[工程文档专家](agents/engineering-documentation-expert.md)的[补文档流程](references/necessary-documents.md#补文档)。「该补哪些架构图」「帮我补架构图」或点名绘制某个视图，走[软件架构专家](agents/software-architecture-expert.md)的[补架构图流程](references/architecture-diagrams.md#补架构图)。同时请求图文时分别取证，共用同一份图源。专家只读取证和拟稿，主 Agent 按用户选择写入并验证。单独请求推荐或补全时，直接交付清单或选定的产物。体检时，各专家先核对[保密文档的 Git 忽略范围](references/necessary-documents.md#保密文档)，将边界传给涉及同一路径的检查项。
+「补文档」「补 ADR」或指定编写手册，走[工程文档专家](agents/engineering-documentation-expert.md)的[补文档流程](references/necessary-documents.md#补文档)。「该补哪些架构图」「帮我补架构图」或点名绘制某个视图，走[软件架构专家](agents/software-architecture-expert.md)的[补架构图流程](references/architecture-diagrams.md#补架构图)。同时请求图文时分别取证，共用同一份图源。专家只读取证和拟稿，主 Agent 按用户选择写入并验证。单独请求推荐或补全时，直接交付清单或选定的产物。体检时，各专家先核对[保密文档的 Git 忽略范围](references/necessary-documents.md#保密文档)，将边界传给涉及同一路径的检查项。
 
 用户只问「从哪里改、影响谁、怎么验」时，主 Agent 沿当前业务入口取证，跨模块调用按需交给[软件架构专家](agents/software-architecture-expert.md)追踪。按[独立维护导读](references/execution-and-handover.md#独立维护导读)用 `governance_report.py --guide-only` 在会话直接交付。问「现有说明够不够」属于文档检查。同时要求诊断或修复时按下表分派，维护定位的结果并入同一份治理报告。
 
 | 用户想核实的问题 | 检查项 | 只读专家定义 |
 | --- | --- | --- |
-| 接手者能否按现有说明启动、测试或部署？项目使用的 Codex、Claude Code 或 WorkBuddy 有项目指引吗？哪些文档可以合并？ | 必要文档 | [工程文档专家](agents/engineering-documentation-expert.md) |
+| 接手者能否按现有说明启动、测试或部署？能否查到重大架构决策的理由？项目使用的 Codex、Claude Code 或 WorkBuddy 有项目指引吗？哪些文档可以合并？ | 必要文档 | [工程文档专家](agents/engineering-documentation-expert.md) |
 | 图中模块和箭头是否符合实际调用？跨服务数据流需要怎样画？ | 架构图 | [软件架构专家](agents/software-architecture-expert.md) |
 | 当前模块调用是否违反项目认可的分层约定？ | 架构漂移 | [软件架构专家](agents/software-architecture-expert.md) |
 | 测试或源码应放在哪里？这个文件的位置符合包或构建约定吗？ | 目录结构 | [仓库结构专家](agents/repository-structure-expert.md) |
