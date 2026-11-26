@@ -40,9 +40,9 @@ def verification_gap():
     }
 
 
-def run_report(record):
+def run_report(record, *args):
     return subprocess.run(
-        [sys.executable, str(SCRIPT)], input=json.dumps(record, ensure_ascii=False),
+        [sys.executable, "-B", str(SCRIPT), *args], input=json.dumps(record, ensure_ascii=False),
         text=True, capture_output=True,
     )
 
@@ -52,6 +52,33 @@ class NecessaryDocsTests(unittest.TestCase):
         result = run_report(record)
         self.assertEqual(result.returncode, 0, result.stderr)
         return result.stdout
+
+    def test_focused_document_only_renders_the_requested_theme(self):
+        item = {"check": "verification", "unit": "订单导出"}
+        record = {"selected": [item], "scope": ["README.md 和导出样例"], "unread": [],
+                  "topics": {"verification": verification_gap()}}
+        result = run_report(record, "--json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        packet = json.loads(result.stdout)
+        self.assertEqual(packet["results"], [{**item, "status": "已查"}])
+        self.assertIn(verification_gap()["placement"], packet["markdown"])
+        self.assertNotIn("#### 技术文档", packet["markdown"])
+        record["unread"] = [{"source": "测试手册", "reason": "无法读取", "topics": ["verification"]}]
+        result = run_report(record, "--json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        packet = json.loads(result.stdout)
+        self.assertIn("| 验证改动的方法 | 待确认 |", packet["markdown"])
+        self.assertIn("测试手册", packet["results"][0]["reason"])
+        self.assertNotIn("### 建议补写", packet["markdown"])
+
+    def test_missing_document_topic_is_unchecked_even_when_another_is_answered(self):
+        record = local_tool()
+        record["selected"] = [{"check": kind, "unit": "订单"} for kind in ("verification", "usage")]
+        del record["topics"]["verification"]
+        report = self.report(record)
+        self.assertIn("| verification | 订单 | 未查 |", report)
+        self.assertIn("| 启动或最小使用示例 | 范围内未发现 |", report)
+        self.assertIn("**检查结果**　部分已查", report)
 
     def test_manual_and_linked_example_cover_handoff_without_readme(self):
         report = self.report(local_tool())

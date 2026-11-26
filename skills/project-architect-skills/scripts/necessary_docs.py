@@ -5,6 +5,8 @@ import json
 import sys
 from pathlib import Path
 
+from inspection_coverage import inspection_output, selected_checks
+from report_fields import required_text, table_row, text_list
 
 DOCUMENT_TOPICS = {
     "产品文档": {
@@ -31,18 +33,6 @@ GAP_KINDS = {
     "incomplete": "内容不完整",
     "stale": "与实现不符",
 }
-
-
-def required_text(value, field):
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError(f"{field} 需要非空文本")
-    return " ".join(value.strip().splitlines())
-
-
-def text_list(value, field):
-    if not isinstance(value, list) or not value:
-        raise ValueError(f"{field} 需要非空文本数组")
-    return [required_text(item, field) for item in value]
 
 
 def classify_project(units, files):
@@ -91,22 +81,22 @@ def unread_notes(entries):
     return [f"- {source}（{reason}）。" for _, source, reason in unread_sources(entries)]
 
 
-def read_limits(entries):
+def read_limits(entries, selected=None):
     notes = []
     affected = {key: [] for key in TOPICS}
     for entry, source, reason in unread_sources(entries):
-        keys = text_list(entry.get("topics", list(TOPICS)), "unread.topics")
+        keys = text_list(entry.get("topics", list(selected or TOPICS)), "unread.topics")
         for key in keys:
             if key not in TOPICS:
                 raise ValueError(f"unread.topics 含未知检查项 {key}")
+        keys = [key for key in keys if not selected or key in selected]
+        if not keys:
+            continue
+        for key in keys:
             affected[key].append(source)
         labels = "、".join(TOPICS[key] for key in keys)
         notes.append(f"{source}（{reason}）。涉及{labels}。")
     return notes, affected
-
-
-def table_row(cells):
-    return "| " + " | ".join(cell.replace("|", r"\|") for cell in cells) + " |"
 
 
 def assess_topic(key, item, unread_sources):
@@ -140,6 +130,8 @@ def assess_topic(key, item, unread_sources):
 def overall_status(states, incomplete):
     if GAP in states:
         return GAP
+    if "未查" in states:
+        return "未查" if states == {"未查"} else "部分已查"
     if incomplete:
         return PENDING
     if states == {NOT_APPLICABLE}:
@@ -147,25 +139,35 @@ def overall_status(states, incomplete):
     return COVERED
 
 
-def render_report(record):
+def render_report(record, *, as_json=False):
     if not isinstance(record, dict):
         raise ValueError("检查记录需要 JSON 对象")
     summary = project_summary(record["project"]) if "project" in record else []
     scope = text_list(record.get("scope"), "scope")
-    notes, affected = read_limits(record.get("unread"))
-    topics = record.get("topics")
-    if not isinstance(topics, dict) or topics.keys() not in (TOPICS.keys(), LEGACY_TOPICS):
+    selected = selected_checks(record, TOPICS)
+    notes, affected = read_limits(record.get("unread"), selected)
+    topics = record.get("topics", {})
+    if not isinstance(topics, dict) or topics.keys() - TOPICS.keys():
+        raise ValueError("topics 需要由已知文档主题组成的对象")
+    if not selected and topics.keys() not in (TOPICS.keys(), LEGACY_TOPICS):
         raise ValueError(f"topics 需要完整的检查项 {'、'.join(TOPICS)}，也兼容旧版六项记录")
 
     sections = []
     suggestions = []
     states = set()
+    answers = {}
     for category, checks in DOCUMENT_TOPICS.items():
         rows = []
         candidates = []
         for key, label in checks.items():
+            if selected and (key not in selected or key not in topics):
+                continue
             if key in topics:
                 status, row, candidate = assess_topic(key, topics[key], affected[key])
+                reason = "待核对" + "、".join(affected[key]) if affected[key] else ""
+                if status == PENDING and not reason:
+                    reason = topics[key]["detail"]
+                answers[key] = reason
             else:
                 status = PENDING
                 row = table_row((label, status, "旧版记录未包含此项，需补查。", "—"))
@@ -175,16 +177,19 @@ def render_report(record):
             if candidate:
                 candidates.append(candidate)
 
-        sections.extend([
-            "", f"#### {category}", "",
-            "| 内容 | 状态 | 当前结论 | 核对依据 |",
-            "| --- | --- | --- | --- |",
-            *rows,
-        ])
+        if rows:
+            sections.extend([
+                "", f"#### {category}", "",
+                "| 内容 | 状态 | 当前结论 | 核对依据 |",
+                "| --- | --- | --- | --- |",
+                *rows,
+            ])
         if candidates:
             suggestions.extend(["", f"#### {category}", "", *candidates])
 
-    incomplete = bool(notes) or PENDING in states
+    if selected.keys() - answers.keys():
+        states.add("未查")
+    incomplete = bool(notes) or PENDING in states or "未查" in states
     lines = [
         "## 必要文档", "",
         *summary,
@@ -192,26 +197,28 @@ def render_report(record):
         "", f"**项目资料完整性**　{PENDING if incomplete else '已核对本轮相关资料'}",
         "", "### 已查范围", "",
         *(f"- {location}" for location in scope),
-        "", "### 按文档类别检查", *sections,
     ]
+    if sections:
+        lines.extend(["", "### 按文档类别检查", *sections])
     if notes:
         lines.extend(["", "### 未核实的资料", "", *(f"- {note}" for note in notes)])
     if suggestions:
         lines.extend(["", "### 建议补写", *suggestions])
-    return "\n".join(lines) + "\n"
+    return inspection_output(lines, selected, answers, as_json)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="检查记录 JSON，默认读取标准输入")
+    parser.add_argument("--json", action="store_true", help="返回章节和经核对的专项覆盖记录")
     parser.add_argument(
         "--project-size", nargs=2, metavar=("UNITS", "FILES"),
         help="按独立维护单元数和自维护文件数判断规模，未知值用 -",
     )
     args = parser.parse_args()
     if args.project_size is not None:
-        if args.record is not None:
-            parser.error("--project-size 不能与检查记录路径同时使用")
+        if args.record is not None or args.json:
+            parser.error("--project-size 不能与检查记录路径或 --json 同时使用")
         try:
             units, files = (None if value == "-" else int(value) for value in args.project_size)
             size = classify_project(units, files)
@@ -225,7 +232,7 @@ def main():
             record = json.load(sys.stdin)
         else:
             record = json.loads(args.record.read_text(encoding="utf-8"))
-        report = render_report(record)
+        report = render_report(record, as_json=args.json)
     except (OSError, ValueError) as error:
         parser.exit(2, f"检查记录无法汇总（{error}）\n")
     sys.stdout.write(report)

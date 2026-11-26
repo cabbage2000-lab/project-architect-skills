@@ -1,6 +1,8 @@
 """按派发前的检查项和模块核对回传范围。"""
 
-from necessary_docs import required_text, table_row
+import json
+
+from report_fields import required_text, table_row
 
 
 def indexed_units(rows, field):
@@ -15,6 +17,40 @@ def indexed_units(rows, field):
             raise ValueError(f"coverage.{field} 中的检查范围重复：{key}")
         units[key] = row
     return units
+
+
+def selected_checks(record, supported):
+    """一份专家取证记录对应一个模块，复用派发清单中的原始键。"""
+    if "selected" not in record:
+        return {}
+    pairs = indexed_units(record["selected"], "selected")
+    if len({unit for check, unit in pairs}) != 1:
+        raise ValueError("selected 需要同一模块或入口的非空清单，不同模块分别提交记录")
+    selected = {check: unit for check, unit in pairs}
+    unknown = selected.keys() - supported.keys()
+    if unknown:
+        raise ValueError(f"selected 含不支持的专项检查：{'、'.join(sorted(unknown))}")
+    return selected
+
+
+def inspection_output(lines, selected, answers, as_json):
+    results = []
+    for check, unit in selected.items():
+        row = {"check": check, "unit": unit}
+        if check not in answers:
+            row.update(status="未查", reason="未收到该范围的检查结果")
+        elif answers[check]:
+            row.update(status="部分已查", reason=answers[check])
+        else:
+            row["status"] = "已查"
+        results.append(row)
+    if selected:
+        scope = [{"check": check, "unit": unit} for check, unit in selected.items()]
+        lines.extend(["", "### 专项核对", "", *coverage_lines({"selected": scope, "results": results})])
+    markdown = "\n".join(lines).rstrip("\n") + "\n"
+    if as_json:
+        return json.dumps({"markdown": markdown, "results": results}, ensure_ascii=False) + "\n"
+    return markdown
 
 
 def coverage_lines(coverage):

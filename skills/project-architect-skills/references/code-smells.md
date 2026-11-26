@@ -69,6 +69,8 @@ python3 -B skills/project-architect-skills/scripts/python_smell_signals.py \
 
 用 `python3 -B <本 Skill 目录>/scripts/code_smells.py` 从标准输入读取 UTF-8 JSON，也可传入记录文件。脚本将确认的证据汇总为「代码异味」Markdown。单独运行可提供与必要文档检查相同格式的 `project`，合并报告时只需在首个章节记录规模。
 
+专项记录在顶层 `selected` 放入派发的检查项，如 `[{"check":"architecture_drift","unit":"订单"}]`。每份记录核对同一入口。方法专项在 `checks` 填选中的方法状态，有发现时附 `methods`。模块专项只需 `scope`、`unread` 和对应的 `modules` 结论，架构漂移确认为问题时，`evidence` 的前两项依次是分层约定和实际调用出处。已核对并符合约定时同样提交结论。用 `--json` 取得章节和[专项覆盖记录](governance-plan.md#检查范围记录)。省略 `selected` 时按完整五类方法异味检查处理。
+
 - `scope` 为非空字符串数组，记录实际已读路径、方法和语言口径。`unread` 的每项含 `source` 和 `reason`，无则传 `[]`。
 - `checks` 以五类标识为键。每项含 `status` 和 `detail`，结论与 `methods` 中已确认的类别一致。
 - `methods` 每项含 `path`、`symbol`、正整数起止行 `start` 与 `end`、`impact`，以及非空 `findings`。每条发现含 `kind`、`detail` 和非空 `evidence` 出处数组。多段嵌套逻辑给出两个以上不同区间。同一 `path`、`symbol`、`start` 的各类发现放在同一项。可附一句 `suggestion`。无已确认发现时传 `[]`。

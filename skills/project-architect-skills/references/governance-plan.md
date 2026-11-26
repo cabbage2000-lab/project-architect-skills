@@ -41,10 +41,12 @@
 
 新一轮检查在计划中附上 `coverage`。以派发前的清单填写 `selected`，以实际回传填写 `results`。每项用 `check`（检查项）和 `unit`（模块或业务入口）共同定位。状态为「已查」「部分已查」或「未查」，后两种填写 `reason` 指明缺口。对从一开始就排除、且有必要向读者交代的范围，可在 `excluded` 列出同样的位置及原因。
 
+点名文档主题、方法异味或模块诊断时，`check` 使用相应判据标识。每份专家记录在顶层 `selected` 放入原清单中同一模块的相关项，可以包含多个判据。用 `necessary_docs.py --json` 或 `code_smells.py --json` 取得章节和核对后的 `results`。主 Agent 将可信回传合并进原清单，重试时用同一对键更新对应结果。只收到订单的结果时，退款仍在原清单中。预览的 `plan` 直接供最终报告复用。
+
 ```json
 {
-  "selected": [{"check": "代码异味", "unit": "订单"}, {"check": "代码异味", "unit": "退款"}],
-  "results": [{"check": "代码异味", "unit": "订单", "status": "已查"}]
+  "selected": [{"check": "architecture_drift", "unit": "订单"}, {"check": "architecture_drift", "unit": "退款"}],
+  "results": [{"check": "architecture_drift", "unit": "订单", "status": "已查"}]
 }
 ```
 

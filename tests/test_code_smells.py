@@ -221,6 +221,81 @@ class CodeSmellReportTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         return result.stdout
 
+    def packet(self, record):
+        result = run_script("code_smells.py", "--json", input=json.dumps(record))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return json.loads(result.stdout)
+
+    def test_focused_drift_flows_through_preview_and_report_by_unit(self):
+        orders = {"check": "architecture_drift", "unit": "订单"}
+        refunds = {**orders, "unit": "退款"}
+        entry = {"kind": orders["check"], "title": "订单直接访问存储", "status": "发现问题",
+                 "detail": "订单入口绕过仓储接口。", "impact": "更换存储需修改业务层。",
+                 "evidence": ["docs/layers.md:6", "src/order.py:19"]}
+        record = {"selected": [orders], "scope": ["订单业务入口"], "unread": [], "modules": [entry]}
+        packet = self.packet(record)
+        self.assertEqual(packet["results"], [{**orders, "status": "已查"}])
+        self.assertNotIn("### 方法级检查", packet["markdown"])
+        for source in entry["evidence"]:
+            self.assertIn(source, packet["markdown"])
+        plan = {"mode": "inspect", "candidates": [],
+                "coverage": {"selected": [orders, refunds], "results": packet["results"]}}
+        preview = run_script("governance_plan.py", "--preview", "--json", input=json.dumps(plan))
+        self.assertEqual(preview.returncode, 0, preview.stderr)
+        preview = json.loads(preview.stdout)
+        final = run_script("governance_report.py", input=json.dumps({
+            "audit": [packet["markdown"]], "plan": preview["plan"], "reviews": [],
+            "guide": [], "guide_limit": "退款模块尚待核对。",
+        }))
+        self.assertEqual(final.returncode, 0, final.stderr)
+        for output in (preview["markdown"], final.stdout):
+            self.assertIn("| architecture_drift | 退款 | 未查 |", output)
+            self.assertIn("| architecture_drift | 订单 | 已查 |", output)
+
+    def test_unrelated_checks_cannot_answer_a_requested_diagnosis(self):
+        record = report_record()
+        record["selected"] = [{"check": "architecture_drift", "unit": "订单"}]
+        packet = self.packet(record)
+        self.assertEqual(packet["results"][0]["status"], "未查")
+        self.assertIn("**检查结果**　未查", packet["markdown"])
+        self.assertNotIn("范围内未发现", packet["markdown"])
+        record["modules"] = [{"kind": "architecture_drift", "title": "存储依赖", "status": "待确认",
+                              "detail": "尚未取得分层约定。", "evidence": ["orders.py:3"]}]
+        packet = self.packet(record)
+        self.assertEqual(packet["results"][0]["status"], "部分已查")
+        self.assertIn("分层约定", packet["results"][0]["reason"])
+        self.assertIn("**检查结果**　待确认", packet["markdown"])
+        record["modules"][0].update(status="范围内未发现", detail="可见入口符合约定。")
+        record["unread"] = [{"source": "另一个订单入口", "reason": "目录不可见"}]
+        packet = self.packet(record)
+        self.assertEqual(packet["results"][0]["status"], "部分已查")
+        self.assertIn("另一个订单入口", packet["results"][0]["reason"])
+
+    def test_selected_method_and_missing_module_keep_the_confirmed_finding(self):
+        record = report_record(method_record(finding("long_method"), finding("complex_method")))
+        record["selected"] = [{"check": kind, "unit": "导出"} for kind in ("long_method", "srp")]
+        packet = self.packet(record)
+        self.assertEqual([row["status"] for row in packet["results"]], ["已查", "未查"])
+        self.assertIn("**检查结果**　发现问题", packet["markdown"])
+        self.assertIn("export_orders", packet["markdown"])
+        self.assertNotIn("复杂方法", packet["markdown"])
+
+    def test_invalid_focused_selection_and_unsubstantiated_drift_emit_no_report(self):
+        item = {"check": "architecture_drift", "unit": "订单"}
+        for selected in ([], [item, item], [dict(item, check="typo")], [item, dict(item, unit="退款")]):
+            with self.subTest(selected=selected):
+                result = run_script("code_smells.py", "--json", input=json.dumps(dict(report_record(), selected=selected)))
+                self.assertEqual(result.returncode, 2)
+                self.assertEqual(result.stdout, "")
+                self.assertIn("selected", result.stderr)
+        record = dict(report_record(), selected=[item], modules=[{
+            "kind": "architecture_drift", "title": "依赖方向", "status": "发现问题", "detail": "跨层调用。",
+            "impact": "牵动上层。", "evidence": ["src/order.py:19"],
+        }])
+        result = run_script("code_smells.py", "--json", input=json.dumps(record))
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+
     def test_same_function_retains_all_labels_with_one_candidate(self):
         record = report_record(method_record(finding("long_method"), finding("complex_method")))
         report = self.report(record)
