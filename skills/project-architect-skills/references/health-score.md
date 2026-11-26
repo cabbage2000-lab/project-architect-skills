@@ -35,7 +35,7 @@ python3 -B skills/project-architect-skills/scripts/governance_plan.py --preview 
   },
   "scoring": {"version": 2, "scope": "scoped", "assessments": [{
     "check": "verification", "unit": "仓库测试", "status": "范围内未发现",
-    "detail": "README 给出完整的测试命令和成功标志。", "evidence": ["README.md#验证模块"]
+    "detail": "README 给出完整的测试命令和成功标志。", "evidence": ["README.md#testing"]
   }]}
 }
 JSON

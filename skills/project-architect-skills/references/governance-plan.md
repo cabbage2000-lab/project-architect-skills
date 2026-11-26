@@ -69,7 +69,7 @@
 
 ### 最小示例
 
-在本仓库根目录运行此例。唯一出处超出 README 的行数，预览应显示「待确认」；改用 `README.md#使用` 并核对该节后重新运行，应得到一项待授权建议。
+在本仓库根目录运行此例。唯一出处超出 README 的行数，预览应显示「待确认」；改用 `README.md#usage-examples` 并核对该节后重新运行，应得到一项待授权建议。
 
 ```sh
 python3 -B skills/project-architect-skills/scripts/governance_plan.py --preview <<'JSON'
@@ -80,7 +80,7 @@ python3 -B skills/project-architect-skills/scripts/governance_plan.py --preview 
     "results": [{"check": "必要文档", "unit": "README 的使用说明", "status": "已查"}]
   },
   "candidates": [{
-    "target": "README.md#使用", "title": "补充手工核对项目规模的命令",
+    "target": "README.md#usage-examples", "title": "补充手工核对项目规模的命令",
     "evidence": ["README.md:999999"],
     "impact": "接手者需要打开引用手册才能找到规模判档命令。",
     "status": "可执行", "reason": "本例的维护任务是从 README 直接验证规模判档。",
