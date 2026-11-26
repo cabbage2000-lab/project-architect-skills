@@ -14,7 +14,7 @@ project-architect-skills
 
 | 专家定义 | 负责的检查 |
 | --- | --- |
-| [项目文档专家](skills/project-architect-skills/agents/project-documentation-expert.md) | 必要文档能否支持接手者运行、验证和维护项目 |
+| [项目文档专家](skills/project-architect-skills/agents/project-documentation-expert.md) | 交接说明是否够用，同一文档或多份手册是否重复维护相同内容 |
 | [架构专家](skills/project-architect-skills/agents/architecture-expert.md) | 架构图是否符合实现，实际调用是否遵守项目认可的分层约定 |
 | [目录专家](skills/project-architect-skills/agents/directory-expert.md) | 文件路径是否符合项目约定和生效配置 |
 | [代码整洁专家](skills/project-architect-skills/agents/clean-code-expert.md) | 长方法、深层嵌套、多段嵌套逻辑、复杂条件表达式和复杂方法 |
@@ -22,6 +22,8 @@ project-architect-skills
 主 Agent 合并重复发现，按维护影响推荐本轮修复事项。计划列出改动范围、基线、验收方法和回退办法。在同一会话回复 **同意治理** 后，助手按计划逐项修复和验收。[治理计划](skills/project-architect-skills/references/governance-plan.md)
 
 例如，输入「README 里的订单调用图和代码对得上吗？」会交给架构专家。输入「新人能照说明跑通测试吗？订单测试放的位置也帮我看一下」会分别交给项目文档专家和目录专家。也可以直接限定范围，例如「用 project-architect-skills 请目录专家只读检查 tests/ 的归属」。
+
+输入「用 project-architect-skills 只读检查 README 和 docs/ 的文档冗余」，会得到每组重复的具体章节、维护影响、建议保留的正文和其他入口的调整方式。默认体检也包含这项检查。[文档冗余判据](skills/project-architect-skills/references/necessary-documents.md#文档冗余)
 
 输入「只核对订单和退款有没有违反分层约定」，会分别登记两个模块的架构漂移检查。报告对每项给出结论，缺少约定时列为「待确认」，某个模块未回传时列为「未查」。只问测试说明或某一种代码异味时，也可按点名的主题交付。[专项检查记录](skills/project-architect-skills/references/governance-plan.md#检查范围记录)
 

@@ -1,6 +1,6 @@
 ---
 name: project-documentation-expert
-description: 项目文档专家。检查接手项目所需的产品、技术、架构、测试与部署说明能否支持实际维护任务。
+description: 项目文档专家。检查交接说明能否支持实际维护任务，以及哪些文档或章节在重复维护同一内容。
 ---
 
 # 项目文档专家
@@ -9,4 +9,6 @@ description: 项目文档专家。检查接手项目所需的产品、技术、�
 
 对照真实入口核实关键步骤。例如验证说明给了命令，就核对它要求的工作目录、输入和可判断成败的结果。资料读不到时，仅将依赖这份资料的判断标为「待确认」。文字中的模块职责由你核对，本轮同时检查架构图时，将图件缺失、连线失效等线索交给主 Agent，与架构专家的发现归并。
 
-按[必要文档判据](../references/necessary-documents.md)整理记录，用 [necessary_docs.py](../scripts/necessary_docs.py) 生成「必要文档」章节。候选指出接手者卡在哪一步、查过哪些出处，以及适合补写的现有章节。
+完整检查以及用户单问文档是否重复时，按[文档冗余判据](../references/necessary-documents.md#文档冗余)比对正文。每组已确认的重复都要能定位到保留正文和其余入口，并说明哪些独有步骤需要留下。
+
+按[必要文档判据](../references/necessary-documents.md)整理记录，用 [necessary_docs.py](../scripts/necessary_docs.py) 生成「必要文档」章节，回传有出处和维护影响的补写或合并建议。

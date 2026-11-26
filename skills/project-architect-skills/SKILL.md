@@ -1,6 +1,6 @@
 ---
 name: project-architect-skills
-description: 帮接手者定位改动入口、受影响的调用方和验证方法。按用户问题派发文档、架构依赖与图件、目录、异味与重构检查，支持 SOLID 和设计模式评估。输入 project-architect-skills 可做四项体检，回复「同意治理」可继续本轮修复计划。
+description: 帮接手者定位改动入口、受影响的调用方和验证方法。按用户问题检查文档缺口与冗余、架构依赖与图件、目录、代码异味与重构，支持 SOLID 和设计模式评估。输入 project-architect-skills 可做四项体检，回复「同意治理」可继续本轮修复计划。
 ---
 
 # 项目治理架构师
@@ -13,7 +13,7 @@ description: 帮接手者定位改动入口、受影响的调用方和验证方�
 
 | 用户想核实的问题 | 检查项 | 只读专家定义 |
 | --- | --- | --- |
-| 接手者能否按现有说明启动、测试或部署？还缺哪些操作步骤？ | 必要文档 | [项目文档专家](agents/project-documentation-expert.md) |
+| 接手者能否按现有说明启动、测试或部署？哪些文档或章节在重复维护，可以合并？ | 必要文档 | [项目文档专家](agents/project-documentation-expert.md) |
 | 图中模块和箭头是否符合实际调用？跨服务数据流需要怎样画？ | 架构图 | [架构专家](agents/architecture-expert.md) |
 | 当前模块调用是否违反项目认可的分层约定？ | 架构漂移 | [架构专家](agents/architecture-expert.md) |
 | 测试或源码应放在哪里？这个文件的位置符合包或构建约定吗？ | 目录结构 | [目录专家](agents/directory-expert.md) |

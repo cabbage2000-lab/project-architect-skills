@@ -26,6 +26,10 @@ def local_tool():
             "architecture": entry("不适用", "一个脚本直接生成 CSV，无其他模块依赖。", "export.py:12"),
             "verification": entry("范围内未发现", "重放订单样例并核对表头。", "docs/样例.md:4"),
             "deployment": entry("不适用", "源码交付，仅在终端运行。", "docs/交接.md:3"),
+            "redundancy": [{
+                "status": "范围内未发现", "detail": "交接手册只链接验收样例，预期表头集中在样例中。",
+                "evidence": ["docs/交接.md:10", "docs/样例.md:4"],
+            }],
         },
     }
 
@@ -37,6 +41,15 @@ def verification_gap():
         "evidence": ["docs/交接.md#本地开发", "Makefile:9"],
         "impact": "接手人改完列名后无法核对表头。",
         "placement": "docs/交接.md 的「本地开发」末尾补入 make check 的预期结果。",
+    }
+
+
+def repeated_configuration():
+    return {
+        "status": "发现问题", "detail": "两处各自维护了同一版本的配置表，部署手册是配置入口。",
+        "evidence": ["docs/部署.md#配置", "README.md#运行参数"],
+        "impact": "默认端口变化时需要更新两张表。",
+        "placement": "将 README 的配置表改为正文链接，保留本地端口占用时的处理步骤。",
     }
 
 
@@ -79,6 +92,7 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertIn("| verification | 订单 | 未查 |", report)
         self.assertIn("| 启动或最小使用示例 | 范围内未发现 |", report)
         self.assertIn("**检查结果**　部分已查", report)
+        self.assertNotIn("### 文档冗余", report)
 
     def test_manual_and_linked_example_cover_handoff_without_readme(self):
         report = self.report(local_tool())
@@ -182,9 +196,90 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertIn("#### 架构文档\n\n- **模块职责与依赖**", suggestions)
         self.assertIn("#### 测试文档\n\n- **验证改动的方法**", suggestions)
         self.assertEqual(suggestions.count("#### "), 2)
+        redundancy = checklist.split("### 文档冗余\n")[1]
+        self.assertIn("README.md#导出规则、docs/操作手册.md#CSV 格式", redundancy)
+        self.assertIn("保留 README.md#导出规则", redundancy)
+        self.assertIn("手册独有的对账示例", redundancy)
+
+    def test_focused_redundancy_reports_cross_document_and_same_document_groups(self):
+        task = {"check": "redundancy", "unit": "部署说明"}
+        first = repeated_configuration()
+        second = {
+            "status": "发现问题", "detail": "同一手册的两节完整重述回滚步骤，发布流程指向回滚章节。",
+            "evidence": ["docs/部署.md#回滚", "docs/部署.md#常见问题"],
+            "impact": "回滚顺序变化时容易漏改常见问题。", "placement": "将常见问题的步骤替换为回滚章节链接。",
+        }
+        record = {"scope": ["README.md 和 docs/部署.md"], "unread": [], "selected": [task],
+                  "topics": {"redundancy": [first, second]}}
+        result = run_report(record, "--json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        packet = json.loads(result.stdout)
+        self.assertEqual(packet["results"], [{**task, "status": "已查"}])
+        rows = [line for line in packet["markdown"].splitlines() if line.startswith("| 发现问题 |")]
+        self.assertEqual(len(rows), 2)
+        for row, comparison in zip(rows, (first, second)):
+            self.assertIn(comparison["impact"], row)
+            self.assertIn("、".join(comparison["evidence"]), row)
+            self.assertIn(f"保留 {comparison['evidence'][0]}", row)
+            self.assertIn(comparison["placement"], row)
+        self.assertNotIn("### 按文档类别检查", packet["markdown"])
+        self.assertNotIn("### 建议补写", packet["markdown"])
+
+    def test_unread_manual_preserves_confirmed_pair_and_only_that_merge_suggestion(self):
+        record = local_tool()
+        task = {"check": "redundancy", "unit": "部署说明"}
+        record["selected"] = [task]
+        confirmed = repeated_configuration()
+        record["topics"]["redundancy"].extend([confirmed, {
+            "status": "待确认", "detail": "尚未读到值班手册的正文，无法判定其适用版本。",
+            "evidence": ["docs/交接.md#值班手册"],
+        }])
+        record["unread"] = [{"source": "值班手册", "reason": "访问受限", "topics": ["redundancy"]}]
+        result = run_report(record, "--json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        packet = json.loads(result.stdout)
+        report = packet["markdown"]
+        self.assertIn("**检查结果**　发现问题", report)
+        self.assertIn("**项目资料完整性**　待确认", report)
+        self.assertIn(confirmed["placement"], report)
+        self.assertIn("| 范围内未发现 | 交接手册只链接验收样例，预期表头集中在样例中。 | docs/交接.md:10、docs/样例.md:4 | — |", report)
+        self.assertIn("| 待确认 | 尚未读到值班手册的正文，无法判定其适用版本。 | docs/交接.md#值班手册 | — |", report)
+        self.assertEqual(packet["results"][0]["status"], "部分已查")
+        self.assertIn("待核对值班手册", packet["results"][0]["reason"])
+
+    def test_invalid_redundancy_records_do_not_render_a_partial_report(self):
+        valid = repeated_configuration()
+        for comparisons, field in (
+            ([], "topics.redundancy"),
+            (valid, "topics.redundancy"),
+            ([valid, {**valid, "evidence": ["README.md:3"]}], "redundancy.evidence"),
+            ([{**valid, "evidence": ["README.md:3", " README.md:3 "]}], "redundancy.evidence"),
+            ([{**valid, "placement": ""}], "redundancy.placement"),
+            ([{**valid, "impact": ""}], "redundancy.impact"),
+        ):
+            with self.subTest(comparisons=comparisons):
+                record = local_tool()
+                record["topics"]["redundancy"] = comparisons
+                result = run_report(record)
+                self.assertEqual(result.returncode, 2)
+                self.assertEqual(result.stdout, "")
+                self.assertIn(field, result.stderr)
+
+    def test_old_eight_topic_record_and_missing_focused_result_do_not_claim_coverage(self):
+        record = local_tool()
+        del record["topics"]["redundancy"]
+        report = self.report(record)
+        self.assertIn("**检查结果**　待确认", report)
+        self.assertIn("旧版记录未包含文档冗余检查", report)
+        self.assertIn("| 验证改动的方法 | 范围内未发现 |", report)
+        record["selected"] = [{"check": "redundancy", "unit": "文档"}]
+        report = self.report(record)
+        self.assertIn("**检查结果**　未查", report)
+        self.assertIn("| redundancy | 文档 | 未查 |", report)
 
     def test_legacy_record_marks_new_checks_pending(self):
         record = local_tool()
+        del record["topics"]["redundancy"]
         del record["topics"]["requirements"]
         del record["topics"]["architecture"]
         report = self.report(record)

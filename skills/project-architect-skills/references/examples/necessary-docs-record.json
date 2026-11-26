@@ -5,7 +5,7 @@
     "evidence": ["示例项目的一个导出工具，含 export.py、order_source.py、Makefile 和 tests/test_export.py"],
     "focus": "通查本地导出和验证流程"
   },
-  "scope": ["检索示例项目的仓库根、docs/ 和 tests/，阅读 README、Makefile、导出入口、订单读取模块和测试"],
+  "scope": ["检索示例项目的仓库根、docs/ 和 tests/，阅读 README、操作手册、Makefile、导出入口、订单读取模块和测试"],
   "unread": [],
   "topics": {
     "purpose": {
@@ -53,6 +53,15 @@
       "status": "不适用",
       "detail": "仓库以源码交付，订单导出在本地终端完成。",
       "evidence": ["README.md#项目用途", "README.md#本地开发"]
-    }
+    },
+    "redundancy": [
+      {
+        "status": "发现问题",
+        "detail": "README 和操作手册都完整列出当前 CSV 列序与空订单规则。项目指定 README 的「导出规则」作为维护入口。",
+        "evidence": ["README.md#导出规则", "docs/操作手册.md#CSV 格式"],
+        "impact": "修改表头时维护者要同步更新两份规则表。",
+        "placement": "将操作手册的规则表改为正文链接，保留手册独有的对账示例。"
+      }
+    ]
   }
 }
