@@ -65,16 +65,16 @@
         <mxCell id="audit-line" parent="audit" vertex="1" value="" style="rounded=0;html=1;fillColor=#D8DDD9;strokeColor=none;" connectable="0">
           <mxGeometry as="geometry" x="16" y="78" width="344" height="1" />
         </mxCell>
-        <mxCell id="audit-docs" parent="audit" vertex="1" value="项目文档专家 · 必要文档" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="audit-docs" parent="audit" vertex="1" value="工程文档专家 · 必要文档" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="85" width="344" height="23" />
         </mxCell>
-        <mxCell id="audit-smells" parent="audit" vertex="1" value="架构专家 · 架构图" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="audit-smells" parent="audit" vertex="1" value="软件架构专家 · 架构图" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="111" width="344" height="23" />
         </mxCell>
-        <mxCell id="audit-types-a" parent="audit" vertex="1" value="目录专家 · 目录结构" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="audit-types-a" parent="audit" vertex="1" value="仓库结构专家 · 目录结构" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="137" width="344" height="23" />
         </mxCell>
-        <mxCell id="audit-types-b" parent="audit" vertex="1" value="代码整洁专家 · 五类方法级代码异味" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="audit-types-b" parent="audit" vertex="1" value="代码质量专家 · 五类方法级代码异味" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="163" width="344" height="23" />
         </mxCell>
         <mxCell id="audit-related" parent="audit" vertex="1" value="长方法、深层或多段嵌套、复杂条件与复杂方法" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">

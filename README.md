@@ -16,30 +16,50 @@
 project-architect-skills
 ```
 
-单独输入命令会检查全部四项。也可以直接描述维护问题，主 Agent 会判断要核实什么，只将相关问题派给下表中对应的专家。每位专家在独立的只读上下文中取证，交回检查章节、治理候选及出处。
+单独输入命令会检查全部四项。有具体维护任务时，可以直接用自己的话提问。
+
+## 使用场景与提问示例
+
+第一次用，可以直接问：
+
+> 项目评估
+
+| 使用场景 | 可以这样问 | 你会拿到什么 |
+| --- | --- | --- |
+| 刚接手一个项目 | 我下周要接手这个仓库。先做一次全面体检，哪些问题最值得先修？ | 文档、架构、目录和代码四项的检查结果与评分，以及按维护影响排序的修复计划。 |
+| 改功能前找入口 | 我要给订单 CSV 加一列「退款金额」。从哪个函数改起？哪些页面会用到这个导出？改完怎么验？ | 入口函数、实际调用方的源码位置，以及可重放的验证步骤。[维护导读](skills/project-architect-skills/references/execution-and-handover.md#独立维护导读) |
+| 把项目交给新人 | 新同事只看 README 能跑通订单测试吗？README 和操作手册都写了测试步骤，以后该维护哪一份？ | 缺失或过期的步骤、重复说明所在的章节，以及建议保留的正文和链接位置。[文档冗余判据](skills/project-architect-skills/references/necessary-documents.md#文档冗余) |
+| 团队混用 AI 编程工具 | 我们在仓库根目录用 Claude Code 和 Codex。它们各自会读到哪份项目指引？缺了该补在哪里？ | 按工具列出使用依据，以及实际生效的指引（如 `CLAUDE.md`、`AGENTS.md`）或应补建的路径。[项目指引判据](skills/project-architect-skills/references/necessary-documents.md#ai-编程工具项目指引) |
+| 核对架构图和分层约定 | README 画的是订单服务调用退款服务，代码里也是这个方向吗？这条调用符合仓库的分层约定吗？ | 图中箭头对应的实际调用位置，以及按项目约定核实的结论。找不到约定时，分层判断列为「待确认」。[专项检查记录](skills/project-architect-skills/references/governance-plan.md#检查范围记录) |
+| 决定测试文件放哪里 | 订单导出的测试现在放在仓库根目录。按项目约定该放在哪？移动后，现有测试命令还能找到它吗？ | 目录约定、测试发现配置和建议路径，以及验证测试仍会执行的命令。 |
+| 准备重构复杂方法 | 订单导出循环里好几层判断，哪些分支可以简化？先给我看计划，尤其是怎么验证跳过的订单仍然会被跳过。 | 具体分支、建议拆分的步骤，以及用于对照改前改后行为的输入和预期结果。 |
+
+在本仓库的 Codex 会话中，可以直接复制这句提问。
+
+```text
+我想调整体检报告里的扣分规则。请只读追踪 skills/project-architect-skills/scripts/health_score.py，指出从哪里改、计划预览和最终报告在哪里用到它，以及该跑哪些测试。
+```
+
+## 检查分工与治理流程
+
+主 Agent 根据问题选择对应的专家。每位专家在独立的只读上下文中取证，交回检查章节、治理候选及出处。
 
 | 专家定义 | 负责的检查 |
 | --- | --- |
-| [项目文档专家](skills/project-architect-skills/agents/project-documentation-expert.md) | 交接说明是否够用，同一文档或多份手册是否重复维护相同内容 |
-| [架构专家](skills/project-architect-skills/agents/architecture-expert.md) | 架构图是否符合实现，实际调用是否遵守项目认可的分层约定 |
-| [目录专家](skills/project-architect-skills/agents/directory-expert.md) | 文件路径是否符合项目约定和生效配置 |
-| [代码整洁专家](skills/project-architect-skills/agents/clean-code-expert.md) | 长方法、深层嵌套、多段嵌套逻辑、复杂条件表达式和复杂方法 |
+| [工程文档专家](skills/project-architect-skills/agents/engineering-documentation-expert.md) | 交接说明是否够用，同一文档或多份手册是否重复维护相同内容 |
+| [软件架构专家](skills/project-architect-skills/agents/software-architecture-expert.md) | 架构图是否符合实现，实际调用是否遵守项目认可的分层约定 |
+| [仓库结构专家](skills/project-architect-skills/agents/repository-structure-expert.md) | 文件路径是否符合项目约定和生效配置 |
+| [代码质量专家](skills/project-architect-skills/agents/code-quality-expert.md) | 哪些方法或分支难以维护，怎样重构并验证原有行为 |
 
-主 Agent 合并重复发现，按维护影响推荐本轮修复事项。计划列出改动范围、基线、验收方法和回退办法。在同一会话回复 **同意治理** 后，助手按计划逐项修复和验收。[治理计划](skills/project-architect-skills/references/governance-plan.md)
+主 Agent 合并重复发现，按维护影响推荐本轮修复事项。计划列出改动范围、基线、验收方法和回退办法。在同一会话选择或回复 **同意治理** 后，助手按计划逐项修复和验收。有多项时也可以逐项选择。[治理计划](skills/project-architect-skills/references/governance-plan.md)
+
+制定计划或执行中遇到需要你决定的业务规则、兼容要求或验收目标时，助手会用 Ask User Question 给出选择题。每题的首项标为「推荐」，说明推荐理由和各选项的影响。工具不可用时，可在会话中回复选项字母或名称。等待答复期间，只暂停依赖该决定的改动。[治理选择题及表头兼容示例](skills/project-architect-skills/references/governance-plan.md#治理选择题)
 
 **体检评分**随计划预览或只读报告一起交付。也可以输入「给项目打分」或「只给订单的测试说明打分」。全面体检展示四项各 25 分的明细及总分，专项只展示所查范围的维度分。每笔扣分可追到具体操作和出处，证据不足的维度标为「待补查」。[评分规则与可运行的专项示例](skills/project-architect-skills/references/health-score.md)
 
-例如，一个姓名工具经核实无需架构图，README 里的验收命令失效，但直接使用测试入口可以跑通。预览列出文档 20/25、目录 25/25、代码 25/25，实得 **70/75，折算 93.3/100**。回复「同意治理」后，助手补正命令，从手册跑通测试并复查原范围，最终报告在同一根因下给出新出处，显示 **93.3 → 100，提升 6.7 分**。在本仓库运行 `python3 -B -m unittest discover -s tests -p test_health_score.py -v` 可重放该场景。
+例如，一个姓名工具经核实无需架构图，README 里的验收命令失效，但直接使用测试入口可以跑通。预览列出工程文档 20/25、仓库结构 25/25、代码质量 25/25，实得 **70/75，折算 93.3/100**。回复「同意治理」后，助手补正命令，从手册跑通测试并复查原范围，最终报告在同一根因下给出新出处，显示 **93.3 → 100，提升 6.7 分**。在本仓库运行 `python3 -B -m unittest discover -s tests -p test_health_score.py -v` 可重放该场景。
 
-例如，输入「README 里的订单调用图和代码对得上吗？」会交给架构专家。输入「新人能照说明跑通测试吗？订单测试放的位置也帮我看一下」会分别交给项目文档专家和目录专家。也可以直接限定范围，例如「用 project-architect-skills 请目录专家只读检查 tests/ 的归属」。
-
-输入「用 project-architect-skills 只读检查 README 和 docs/ 的文档冗余」，会得到每组重复的具体章节、维护影响、建议保留的正文和其他入口的调整方式。默认体检也包含这项检查。[文档冗余判据](skills/project-architect-skills/references/necessary-documents.md#文档冗余)
-
-默认体检会检查项目实际使用的 AI 编程工具是否有项目指引。也可以输入「只检查 Claude Code 的 `CLAUDE.md` 和 Codex 的 `AGENTS.md` 是否缺失」。报告逐个列出使用依据、生效的指引或应补建的路径。[AI 编程工具项目指引判据](skills/project-architect-skills/references/necessary-documents.md#ai-编程工具项目指引)
-
-输入「只核对订单和退款有没有违反分层约定」，会分别登记两个模块的架构漂移检查。报告对每项给出结论，缺少约定时列为「待确认」，某个模块未回传时列为「未查」。只问测试说明或某一种代码异味时，也可按点名的主题交付。[专项检查记录](skills/project-architect-skills/references/governance-plan.md#检查范围记录)
-
-输入「改订单 CSV 表头应该从哪里入手、会影响哪个页面、改完怎么验」，助手会直接给出只读维护导读，列出当前符号、真实调用方、源码出处和可重放的核对步骤。如果还要求检查或重构，导读随治理报告一起交付。[独立维护导读](skills/project-architect-skills/references/execution-and-handover.md#独立维护导读)
+默认体检包含文档冗余和 AI 编程工具项目指引检查。专项检查可以限定专家、主题和模块，例如「请仓库结构专家只读检查 tests/ 的归属」。同时问到测试说明和文件归属时，工程文档专家和仓库结构专家分别核对。单问改动入口时直接交付维护导读，同时要求检查或重构时，导读随治理报告一起交付。
 
 检查前先判断项目规模。小项目通查相关资料，中等项目分模块核对，大项目优先检查主要业务路径和跨模块依赖。预览和最终报告按检查项列出选定的模块或入口，漏交的范围标为「未查」。判档和取证方式见[项目规模与取证范围](skills/project-architect-skills/references/project-size.md)。
 

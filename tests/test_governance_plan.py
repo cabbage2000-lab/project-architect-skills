@@ -98,11 +98,23 @@ class GovernancePlanTests(unittest.TestCase):
             ready("补写运行示例", "README.md#运行"),
             ready("补写接口约定", "docs/api.md#导出"),
         )
-        plan = self.report(self.run_plan(*candidates))
-        preview = self.report(self.run_plan(*candidates, preview=True))
-        body, prompt = preview.rstrip().rsplit("\n\n", 1)
-        self.assertEqual(body, plan.rstrip().replace("本轮按以下顺序执行 4 项。", "本轮拟治理 4 项，待授权。"))
-        self.assertEqual(prompt, "请在当前会话回复 **同意治理**，我会按以上计划逐项修复和验收。")
+        pending = candidate("确定导入表头", "docs/api.md#导入", status="待确认", reason="待用户决定兼容范围。")
+        for count in (1, len(candidates)):
+            with self.subTest(count=count):
+                items = (*candidates[:count], pending)
+                plan = self.report(self.run_plan(*items))
+                preview = self.report(self.run_plan(*items, preview=True))
+                expected_body = plan.rstrip().replace(
+                    f"本轮按以下顺序执行 {count} 项。", f"本轮拟治理 {count} 项，待授权。",
+                )
+                self.assertTrue(preview.startswith(expected_body + "\n\n"))
+                choices = preview[len(expected_body):]
+                options = [line for line in choices.splitlines() if line.startswith("- ")]
+                self.assertEqual(len(options), 3 if count > 1 else 2)
+                self.assertIn("同意治理（推荐）", options[0])
+                self.assertEqual(choices.count("（推荐）"), 1)
+                self.assertIn("仅交付检查结果", options[1])
+                self.assertEqual("逐项选择" in choices, count > 1)
 
     def test_preview_without_selected_items_omits_consent_prompt(self):
         selected = ready("补写验证说明", "README.md#验证")

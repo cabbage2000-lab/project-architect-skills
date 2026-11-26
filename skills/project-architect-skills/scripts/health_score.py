@@ -13,6 +13,7 @@ from report_fields import records, required_text, table_row, text_list
 VERSION = 2
 BASIC = {"必要文档": "必要文档", "架构图": "架构", "目录结构": "目录结构", "代码异味": "代码异味"}
 DIMENSIONS = tuple(BASIC.values())
+DIMENSION_LABELS = {"必要文档": "工程文档", "架构": "软件架构", "目录结构": "仓库结构", "代码异味": "代码质量"}
 CHECK_DIMENSION = {
     **BASIC, **dict.fromkeys(TOPICS, "必要文档"), **dict.fromkeys(SMELLS | MODULE_ISSUES, "代码异味"),
     "architecture_drift": "架构",
@@ -242,12 +243,12 @@ def render_snapshot(score, heading):
             reasons = [f"累计扣 {dim.deductions} 分，按 {MAX_POINTS} 分封顶"] if dim.deductions > MAX_POINTS else []
         else:
             points, reasons = NOT_APPLICABLE, dim.not_applicable
-        lines.append(table_row((name, points, "、".join(dim.units) or "—", "、".join(dict.fromkeys(reasons)) or "—")))
+        lines.append(table_row((DIMENSION_LABELS[name], points, "、".join(dim.units) or "—", "、".join(dict.fromkeys(reasons)) or "—")))
     if score.findings:
         lines.extend(["", "| 根因 | 主责维度 | 影响档位 | 扣分 | 实际发现与维护影响 | 出处 |",
                       "| --- | --- | --- | ---: | --- | --- |"])
         for root_id, item in score.findings.items():
-            lines.append(table_row((root_id, item.owner, item.severity, str(PENALTIES[item.severity]),
+            lines.append(table_row((root_id, DIMENSION_LABELS[item.owner], item.severity, str(PENALTIES[item.severity]),
                                     f"{item.detail} {item.impact}", "、".join(item.evidence))))
     return lines
 
@@ -266,7 +267,8 @@ def compare_findings(before, after):
         current = after.findings.get(root_id)
         if current:
             if (original.owner, original.severity) != (current.owner, current.severity):
-                changes.append(f"{root_id} 从{original.owner}「{original.severity}」变为{current.owner}「{current.severity}」。")
+                changes.append(f"{root_id} 从{DIMENSION_LABELS[original.owner]}「{original.severity}」"
+                               f"变为{DIMENSION_LABELS[current.owner]}「{current.severity}」。")
         elif root_id not in after.resolutions and any((check, unit) in after.selected for check, unit, _ in original.origins):
             dim = after.dimensions.get(original.owner)
             if dim is not None:
@@ -290,7 +292,7 @@ def score_change(before, after):
     if after.total is not None:
         return f"**总分变化**　{before.total:g} → {after.total:g}（{after.total - before.total:+.1f} 分）"
     if after.scope == "scoped" and current:
-        changes = [f"{name} {dim.points - before.dimensions[name].points:+d} 分"
+        changes = [f"{DIMENSION_LABELS[name]} {dim.points - before.dimensions[name].points:+d} 分"
                    for name, dim in after.dimensions.items() if dim.applicable]
         return "**专项分数变化**　" + "、".join(changes)
     return "本轮无可比较的适用维度。"

@@ -118,8 +118,8 @@ class HealthScoreTests(unittest.TestCase):
         packet = self.preview(plan)
         baseline = packet["markdown"].split("\n\n## 治理计划")[0]
         self.assertIn("93.3/100（实得 70/75）", baseline)
-        self.assertIn("| 架构 | 不适用 |", baseline)
-        self.assertIn("| 必要文档 | 20/25 |", baseline)
+        self.assertIn("| 软件架构 | 不适用 |", baseline)
+        self.assertIn("| 工程文档 | 20/25 |", baseline)
         self.assertIn("同意治理", packet["markdown"])
         self.assertFalse((self.root / "docs").exists())
         old = subprocess.run([sys.executable, "missing.py"], cwd=self.root, capture_output=True)
@@ -160,8 +160,8 @@ class HealthScoreTests(unittest.TestCase):
         report = self.preview(plan)["markdown"]
         self.assertIn("85/100", report)
         self.assertIn("**阻断操作**　无法按图定位回调。", report)
-        self.assertIn("| 架构 | 10/25 |", report)
-        self.assertIn("| 必要文档 | 25/25 |", report)
+        self.assertIn("| 软件架构 | 10/25 |", report)
+        self.assertIn("| 工程文档 | 25/25 |", report)
         self.assertEqual(report.count("| wrong-edge |"), 1)
         detail = next(line for line in report.splitlines() if "| wrong-edge |" in line)
         for source in ("README.md:1", "README.md:2", "tool.py:1"):
@@ -179,12 +179,12 @@ class HealthScoreTests(unittest.TestCase):
         records["selected"] = keys
         packet = self.cli("code_smells", records, "--json")
         report = self.preview(from_rows(keys, packet["assessments"]))["markdown"]
-        self.assertIn("| 代码异味 | 23/25 |", report)
+        self.assertIn("| 代码质量 | 23/25 |", report)
         self.assertEqual(report.count("| name-logic |"), 1)
         self.assertNotIn("**本轮总分**", report)
         rows = [assessment("verification", problem(key, "阻断")) for key in ("first", "second")]
         report = self.preview(from_rows([dispatched("verification")], rows))["markdown"]
-        self.assertIn("| 必要文档 | 0/25 |", report)
+        self.assertIn("| 工程文档 | 0/25 |", report)
         self.assertIn("累计扣 30 分，按 25 分封顶", report)
 
     def test_embedded_architecture_drift_counts_even_when_no_diagram_is_needed(self):
@@ -195,12 +195,12 @@ class HealthScoreTests(unittest.TestCase):
         plan, _ = self.inspect(records)
         preview = self.preview(plan)
         self.assertIn("95/100（实得 95/100）", preview["markdown"])
-        self.assertIn("| 架构 | 20/25 |", preview["markdown"])
-        self.assertIn("| 代码异味 | 25/25 |", preview["markdown"])
+        self.assertIn("| 软件架构 | 20/25 |", preview["markdown"])
+        self.assertIn("| 代码质量 | 25/25 |", preview["markdown"])
         only_code, _ = self.inspect({"code_smells": records["code_smells"]})
         only_code["scoring"]["scope"] = "scoped"
         scoped = self.preview(only_code)
-        self.assertIn("| 架构 | 20/25 | architecture_drift /", scoped["markdown"])
+        self.assertIn("| 软件架构 | 20/25 | architecture_drift /", scoped["markdown"])
         records["code_smells"]["selected"].append(dispatched("architecture_drift"))
         separately_selected, _ = self.inspect({"code_smells": records["code_smells"]})
         separately_selected["scoring"]["scope"] = "scoped"
@@ -219,10 +219,10 @@ class HealthScoreTests(unittest.TestCase):
         plan, _ = self.inspect(records)
         packet = self.preview(plan)
         self.assertIn("**本轮总分**　待补查", packet["markdown"])
-        self.assertIn("| 必要文档 | 待补查 |", packet["markdown"])
+        self.assertIn("| 工程文档 | 待补查 |", packet["markdown"])
         self.assertIn("docs/manual.md", packet["markdown"])
-        self.assertIn("| usage | 必要文档 | 需要绕行 | 5 |", packet["markdown"])
-        self.assertIn("| 目录结构 | 25/25 |", packet["markdown"])
+        self.assertIn("| usage | 工程文档 | 需要绕行 | 5 |", packet["markdown"])
+        self.assertIn("| 仓库结构 | 25/25 |", packet["markdown"])
         fact = next(row for row in packet["plan"]["scoring"]["assessments"] if row["criterion"] == "verification")
         self.assertEqual(fact["status"], "待确认")
 
@@ -231,7 +231,7 @@ class HealthScoreTests(unittest.TestCase):
         plan["coverage"]["selected"].append(dispatched("目录结构", "退款"))
         plan["coverage"]["excluded"] = [{**dispatched("目录结构", "归档"), "reason": "属于其他工具。"}]
         report = self.preview(plan)["markdown"]
-        self.assertIn("| 目录结构 | 待补查 |", report)
+        self.assertIn("| 仓库结构 | 待补查 |", report)
         self.assertIn("退款：未收到", report)
         self.assertIn("待补查", report)
         focused = from_rows([dispatched("verification")], [assessment("verification", conclusion())], scope="full")
@@ -253,9 +253,9 @@ class HealthScoreTests(unittest.TestCase):
                     del fact[key]
                 focused = from_rows([dispatched("verification")], [fact])
                 first = self.preview(focused)
-                self.assertIn("| 必要文档 | 待补查 |", first["markdown"])
+                self.assertIn("| 工程文档 | 待补查 |", first["markdown"])
                 report = self.cli("governance_report", self.final_record(first))
-                self.assertIn("| 必要文档 | 待补查 |", report)
+                self.assertIn("| 工程文档 | 待补查 |", report)
 
     def test_unread_redundancy_pair_and_ungraded_cross_dimension_finding(self):
         records = project_records()
@@ -269,9 +269,9 @@ class HealthScoreTests(unittest.TestCase):
         plan, _ = self.inspect(records)
         packet = self.preview(plan)
         self.assertNotIn("| duplicate |", packet["markdown"])
-        self.assertIn("| 架构 | 待补查 |", packet["markdown"])
-        self.assertIn("| 目录结构 | 25/25 |", packet["markdown"])
-        self.assertIn("| 架构 | 待补查 |", self.cli("governance_report", self.final_record(packet)))
+        self.assertIn("| 软件架构 | 待补查 |", packet["markdown"])
+        self.assertIn("| 仓库结构 | 25/25 |", packet["markdown"])
+        self.assertIn("| 软件架构 | 待补查 |", self.cli("governance_report", self.final_record(packet)))
 
     def test_changed_new_and_unreviewed_findings(self):
         key = dispatched("verification")
@@ -280,8 +280,8 @@ class HealthScoreTests(unittest.TestCase):
         after = from_rows([key], [assessment("verification", problem(severity="轻微")),
                                   assessment("verification", problem("new", "阻断"))])
         report = self.cli("governance_report", self.final_record(packet, after))
-        self.assertIn("必要文档 -12 分", report)
-        self.assertIn("从必要文档「需要绕行」变为必要文档「轻微」", report)
+        self.assertIn("工程文档 -12 分", report)
+        self.assertIn("从工程文档「需要绕行」变为工程文档「轻微」", report)
         self.assertIn("新增根因 new", report)
         after["scoring"]["assessments"] = [assessment("verification", conclusion())]
         report = self.cli("governance_report", self.final_record(packet, after))
@@ -298,7 +298,7 @@ class HealthScoreTests(unittest.TestCase):
         report = self.cli("governance_report", self.final_record(packet, after))
         self.assertIn("test-command 已消除", report)
         self.assertIn("新增根因 new", report)
-        self.assertIn("必要文档 +3 分", report)
+        self.assertIn("工程文档 +3 分", report)
 
     def test_change_requires_identical_version_scope_and_applicable_dimensions(self):
         plan, _ = self.inspect(project_records())
@@ -359,7 +359,7 @@ class HealthScoreTests(unittest.TestCase):
         plan["mode"] = "execute"
         deferred = self.preview(plan)
         for packet in (readonly, deferred):
-            self.assertIn("| 必要文档 | 20/25 |", packet["markdown"])
+            self.assertIn("| 工程文档 | 20/25 |", packet["markdown"])
             self.assertNotIn("同意治理", packet["markdown"])
         self.assertEqual(readonly["plan"]["scoring"], deferred["plan"]["scoring"])
 
@@ -367,11 +367,11 @@ class HealthScoreTests(unittest.TestCase):
         key = dispatched("verification")
         plan = from_rows([key], [assessment("verification", problem(source="future.md:1"))])
         raw = self.final_record({"plan": plan})
-        self.assertIn("| 必要文档 | 待补查 |", self.cli("governance_report", raw))
+        self.assertIn("| 工程文档 | 待补查 |", self.cli("governance_report", raw))
         frozen = self.final_record(self.preview(plan))
         (self.root / "future.md").write_text("已补录的观察\n", encoding="utf-8")
-        self.assertIn("| 必要文档 | 待补查 |", self.cli("governance_report", frozen))
-        self.assertIn("| 必要文档 | 20/25 |", self.cli("governance_report", raw))
+        self.assertIn("| 工程文档 | 待补查 |", self.cli("governance_report", frozen))
+        self.assertIn("| 工程文档 | 20/25 |", self.cli("governance_report", raw))
 
 
 if __name__ == "__main__":

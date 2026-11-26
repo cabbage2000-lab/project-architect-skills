@@ -110,7 +110,13 @@ def prepare_plan(record, *, preview=False, root=None, include_score=True):
             "| --- | --- | --- | --- | --- |", *(table_row(row) for row in deferred),
         ])
     if preview and selected:
-        lines.extend(["", "请在当前会话回复 **同意治理**，我会按以上计划逐项修复和验收。"])
+        lines.extend([
+            "", "本轮治理如何处理？", "",
+            "- A. **同意治理（推荐）**　拟执行项已有基线和验收方法，按计划逐项修复。",
+            "- B. **仅交付检查结果**　在会话中查看报告和建议。",
+        ])
+        if len(selected) > 1:
+            lines.append("- C. **逐项选择**　分别决定本轮执行哪些事项。")
     titles = {target: title for target, (title, _) in selected.items()}
     checked_plan = {**record, "candidates": checked}
     if include_score and "scoring" in record:
