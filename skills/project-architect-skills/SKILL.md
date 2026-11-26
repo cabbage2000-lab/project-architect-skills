@@ -1,5 +1,8 @@
 ---
 name: project-architect-skills
+license: MIT
+metadata:
+  version: "0.0.1"
 description: 帮接手者定位改动入口、受影响的调用方和验证方法。按用户问题检查文档缺口与冗余、架构依赖与图件、目录、代码异味与重构，支持 SOLID 和设计模式评估。输入「项目评估」或 project-architect-skills 可做四项体检并评分，回复「同意治理」可继续修复并复评。
 ---
 
