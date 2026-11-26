@@ -150,6 +150,60 @@ class GovernanceReportTests(unittest.TestCase):
         self.assertIn("## 维护导读", report)
         self.assertEqual(list(self.root.iterdir()), [])
 
+    def test_standalone_guide_from_file_or_stdin_only_prints_the_guide(self):
+        module = self.root / "export.py"
+        module.write_text("COLUMNS = ('订单号', '客户')\n", encoding="utf-8")
+        callers = ["orders.py", "reconciliation.py"]
+        for name in callers:
+            (self.root / name).write_text("from export import COLUMNS\n", encoding="utf-8")
+        record = {"guide": [guide(entry="export.py::COLUMNS", callers="订单页和对账页共享列定义。",
+                                  evidence=["export.py:1", *(name + ":1" for name in callers)])]}
+        path = self.root / REPORT
+        path.parent.mkdir()
+        path.write_bytes(b"existing handover\n")
+        payload = self.root / "guide.json"
+        payload.write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
+        before = {p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
+        report = self.report(record, "--guide-only")
+        result = subprocess.run([sys.executable, "-B", str(SCRIPT), "--guide-only", str(payload)],
+                                cwd=self.root, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(report, result.stdout)
+        self.assertEqual([line for line in report.splitlines() if line.startswith("## ")], ["## 维护导读"])
+        self.assertIn("**当前入口**　export.py::COLUMNS", report)
+        self.assertIn("reconciliation.py:1", report)
+        self.assertIn("自查步骤", report)
+        self.assertNotIn("同意治理", report)
+        self.assertEqual(before, {p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()})
+
+    def test_standalone_guide_reports_visible_limits_and_cannot_publish_a_governance_report(self):
+        record = {"guide": [], "guide_limit": "只读到 README，尚需核对业务入口。"}
+        self.assertIn(record["guide_limit"], self.report(record, "--guide-only"))
+        for args in ((), ("--guide-only", "--write")):
+            result = run_report(record, self.root, *args)
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(result.stdout, "")
+        self.assertFalse((self.root / REPORT).exists())
+
+    def test_standalone_guide_rejects_unverified_targets_and_stale_local_references(self):
+        (self.root / "export.py").write_text("COLUMNS = []\n", encoding="utf-8")
+        current = guide(entry="export.py::COLUMNS", evidence=["export.py:1"])
+        cases = (
+            ({"guide": [{**current, "target": "计划新增的入口"}]}, "target"),
+            ({"guide": [{**current, "entry": "future.py::columns"}]}, "entry"),
+            ({"guide": [{**current, "entry": "https://example.invalid/guide"}]}, "entry"),
+            ({"guide": [{**current, "evidence": ["export.py:1", "export.py:99"]}]}, "evidence"),
+            ({"guide": []}, "guide_limit"),
+            ([], "JSON"),
+        )
+        for record, field in cases:
+            with self.subTest(record=record):
+                result = run_report(record, self.root, "--guide-only")
+                self.assertEqual(result.returncode, 2)
+                self.assertEqual(result.stdout, "")
+                self.assertIn(field, result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
     def test_empty_guide_records_the_visible_limit(self):
         record = report_record(entries=[])
         self.invalid(record, "guide_limit")

@@ -43,6 +43,8 @@ project-architect-skills
 
 本轮只做检查、没有可执行项或用户拒绝治理时，默认在会话交付报告和维护导读。治理获批或用户明确要求保存本次报告时，助手将报告写入 `docs/project-architect-report.md`，在会话给出摘要和路径。仓库不可写或已有同名人工报告时，在会话交付全文。
 
+只想知道下次维护从哪里改、影响谁、如何验证时，主 Agent 从当前工作区取证，用 `governance_report.py --guide-only` 直接在会话交付独立导读。用户同时要求诊断或修复时，将同一导读并入治理报告。
+
 ### 实现视图
 
 四位专家依照各自定义引用的判据，把取证记录以 JSON 传给对应的检查脚本，生成 Markdown 章节。主 Agent 按检查项合并章节，保留未查范围，并按治理目标归并候选。主 Agent 用 `git_change_history.py` 对本轮文件取证，再用 `governance_plan.py --preview` 展示待授权计划。收到确认后按原计划范围执行，用 `python_smell_signals.py --compare` 对照改动前后的 Python 结构信号。`governance_report.py` 复用 `build_plan`，按入选顺序校验复核记录，再合并检查章节、计划、复核与导读。 [Skill 入口](../skills/project-architect-skills/SKILL.md)

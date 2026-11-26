@@ -19,12 +19,12 @@ def check_sources(sources, root):
     return usable, issues
 
 
-def location_issue(source, root):
+def location_issue(source, root, *, require_file=False):
     quoted = source.startswith("`") and source.endswith("`")
     if quoted:
         source = source[1:-1]
     if re.match(r"[a-zA-Z][\w+.-]*://", source) or source.startswith(("命令观察：", "外部资料：", "观察：")):
-        return None
+        return "需要仓库内的入口文件" if require_file else None
     lines = LINE_REF.fullmatch(source) or LINE_ANCHOR.fullmatch(source)
     path, separator, _ = source.partition("::")
     if not separator:
@@ -33,10 +33,10 @@ def location_issue(source, root):
         path = lines[1]
     path = path.strip("`")
     if not path:
-        return None
+        return "缺少入口文件路径" if require_file else None
     candidate = Path(path)
     try:
-        if not lines and not separator and not quoted and not (root / path).exists():
+        if not require_file and not lines and not separator and not quoted and not (root / path).exists():
             # 旧记录也接受取证说明。只有独立的路径引用可机械核对。
             if any(char.isspace() for char in path) or not (
                 "/" in path or candidate.suffix or path.startswith(".") or path in ("Makefile", "Dockerfile", "README")
@@ -45,7 +45,7 @@ def location_issue(source, root):
         target = (root / candidate).resolve()
         if not target.is_relative_to(root):
             return "超出目标仓库"
-        if target.is_dir() and not lines and not separator:
+        if target.is_dir() and not require_file and not lines and not separator:
             return None
         if not target.is_file():
             return "找不到可读文件"

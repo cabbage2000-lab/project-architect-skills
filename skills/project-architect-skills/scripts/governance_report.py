@@ -11,6 +11,7 @@ from pathlib import Path
 
 from governance_plan import DEFERRED, UNVERIFIED, build_plan
 from necessary_docs import PENDING, required_text, table_row, text_list
+from plan_evidence import check_sources, location_issue
 
 
 PASSED = "通过"
@@ -114,7 +115,9 @@ def render_reviews(reviews, selected):
     return "\n".join(lines), passed
 
 
-def render_guide(record, passed):
+def render_guide(record, passed, *, root=None):
+    if not isinstance(record, dict):
+        raise ValueError("维护导读记录需要 JSON 对象")
     guide = records(record.get("guide"), "guide")
     lines = ["## 维护导读"]
     for index, entry in enumerate(guide):
@@ -126,11 +129,18 @@ def render_guide(record, passed):
         task, location, callers = (
             required_text(entry.get(key), f"{field}.{key}") for key in ("task", "entry", "callers")
         )
-        evidence = "、".join(text_list(entry.get("evidence"), f"{field}.evidence"))
+        evidence = text_list(entry.get("evidence"), f"{field}.evidence")
+        if root is not None:
+            issue = location_issue(location, root, require_file=True)
+            if issue:
+                raise ValueError(f"{field}.entry 无法定位：{location}（{issue}）")
+            _, issues = check_sources(evidence, root)
+            if issues:
+                raise ValueError(f"{field}.evidence 无法定位：{'、'.join(issues)}")
         checks = text_list(entry.get("checks"), f"{field}.checks")
         lines.extend([
             "", f"### {task}", "", f"- **当前入口**　{location}",
-            f"- **受影响的调用方**　{callers}", f"- **核对依据**　{evidence}",
+            f"- **受影响的调用方**　{callers}", f"- **核对依据**　{'、'.join(evidence)}",
             "", "自查步骤", "", *(f"{number}. {check}" for number, check in enumerate(checks, 1)),
         ])
     if not guide or "guide_limit" in record:
@@ -194,14 +204,19 @@ def publish_report(report):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="治理报告 JSON，默认读取标准输入")
-    parser.add_argument("--write", action="store_true", help="将报告写入当前仓库，无法安全写入时输出全文")
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument("--write", action="store_true", help="将报告写入当前仓库，无法安全写入时输出全文")
+    output.add_argument("--guide-only", action="store_true", help="仅在标准输出交付当前工作区的维护导读")
     args = parser.parse_args()
     try:
         if args.record is None:
             record = json.load(sys.stdin)
         else:
             record = json.loads(args.record.read_text(encoding="utf-8"))
-        report = render_report(record)
+        if args.guide_only:
+            report = render_guide(record, set(), root=Path.cwd()) + "\n"
+        else:
+            report = render_report(record)
     except (OSError, ValueError) as error:
         parser.exit(2, f"治理报告无法汇总（{error}）\n")
     if args.write:

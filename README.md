@@ -25,6 +25,8 @@ project-architect-skills
 
 输入「只核对订单和退款有没有违反分层约定」，会分别登记两个模块的架构漂移检查。报告对每项给出结论，缺少约定时列为「待确认」，某个模块未回传时列为「未查」。只问测试说明或某一种代码异味时，也可按点名的主题交付。[专项检查记录](skills/project-architect-skills/references/governance-plan.md#检查范围记录)
 
+输入「改订单 CSV 表头应该从哪里入手、会影响哪个页面、改完怎么验」，助手会直接给出只读维护导读，列出当前符号、真实调用方、源码出处和可重放的核对步骤。如果还要求检查或重构，导读随治理报告一起交付。[独立维护导读](skills/project-architect-skills/references/execution-and-handover.md#独立维护导读)
+
 检查前先判断项目规模。小项目通查相关资料，中等项目分模块核对，大项目优先检查主要业务路径和跨模块依赖。预览和最终报告按检查项列出选定的模块或入口，漏交的范围标为「未查」。判档和取证方式见[项目规模与取证范围](skills/project-architect-skills/references/project-size.md)。
 
 有足够的本地 Git 历史时，变更热点为影响相近的治理候选提供排序依据，共变记录帮助定位需要核实的调用方和测试。修改 Python 代码时，复核会用实际改前快照对照改后的结构信号，并记录行为验收结果。 [Git 变更证据](skills/project-architect-skills/references/git-change-history.md) · [Python 增量对照](skills/project-architect-skills/references/execution-and-handover.md#python-结构信号增量对照)
