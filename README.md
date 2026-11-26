@@ -1,89 +1,97 @@
-# project-architect-skills（项目治理架构师）
+# 项目治理架构师
 
-这个 Codex Skill 帮助接手项目的人检查必要文档、架构图、目录结构和代码异味。各项是否适用取决于项目用途、交付方式和本轮维护任务。
+让 Vibe Coding 在项目变大后依然顺畅。准备改功能时，它帮你找出该从哪里改、哪些地方也会受影响，以及改完怎么验证。
 
 ## 项目背景
 
-有了 AI，越来越多人能把自己的想法做成软件。项目迭代几轮后，哪怕只想改一个小功能，也常常要先把项目背景重新讲一遍。这段逻辑还有哪些地方在用？当初为什么这样设计？当答案散落在代码、文档和过去的对话里，开发者就得反复补充说明，AI 也容易漏掉已有约束，让改动偏离预期。
+刚开始用 AI 做软件，加一个功能可能只要几轮对话。做过几版以后，哪怕只是给订单表加一列「退款金额」，也可能遇到这些麻烦。
 
-这个项目把工程师接手和维护软件时常用的方法整理成一套 AI 可以执行的检查。它会对照文档、架构图和源码，帮你发现哪些说明已经过时、哪些模块彼此依赖。这样，即使是第一次维护一个持续迭代的项目，你也能和 AI 一起判断该从哪里改、会影响什么、怎样验证结果，让 Vibe Coding 在项目变大后依然顺畅。
+| 痛点 | 为什么会积累 | 最后会遇到什么 |
+|---|---|---|
+| 文档里的引用失效 | AI 移动了文件，却容易漏掉其他手册里指向它的链接和命令。 | 新人照着 README 操作，第一步就找不到文件。 |
+| 代码越来越臃肿 | 加功能时，复制一段现成代码很快，重复的部分却很少回头整理。 | 页面、导出表和对账单各算一次退款，改漏一处，三个金额就对不上。 |
+| 架构图跟不上代码 | 退款流程改了，图上还画着原来的步骤。 | 退款到账慢了，AI 沿着旧图排查，找错了地方。 |
+| 相似功能越加越多 | 你说「加个退款导出」，AI 容易顺着做，很少先问现有导出能否满足。 | 用户面对两个相似的按钮，不知道该点哪个；以后两套功能都要维护。 |
+| 项目背景要反复解释 | 「部分退款怎么算」只在上次对话里讨论过，项目里没留下原因。 | 换个会话，你又得从头讲一遍，否则 AI 可能改掉当初有意保留的规则。 |
+| 改一处会影响哪里，说不清 | 同一个算金额的函数，后来又被月末对账用上了。 | 原本只想改页面上的退款金额，却连对账单也一起改了。 |
+| 改完心里没底 | 每次只试新功能，旧用法没有留下可以重复检查的例子。 | 新列显示正常，直到客户拿到旧订单的账单，才发现退款被多算了一次。 |
+| **Token 消耗越来越大，小功能越改越慢** | 为了弄清现状，AI 要反复读文件，你要补讲背景，改错了还得再来一轮。 | 同样是给订单表加一列，现在要多花好几轮对话才能改对。 |
 
-## 使用
+项目治理架构师会对照当前的文档、图和代码，指出哪些说明已经失效、哪些地方共用同一条规则，并给出改完可以实际核对的例子。你可以先看结果，再决定这次值得改什么。
 
-本仓库已配置项目级 Skill 入口。在其他项目使用时，将 `skills/project-architect-skills` 整个目录复制到目标项目的 `.agents/skills/`，然后在该项目的 Codex 会话中输入
+## 快速开始
 
-```text
-project-architect-skills
-```
+**1. 让 AI 安装。** 用 Codex、Claude Code 或 WorkBuddy 打开你想检查的项目，把本工具的项目链接或下载好的文件夹路径和下面这句话一起发给 AI。
 
-单独输入命令会检查全部四项。有具体维护任务时，可以直接用自己的话提问。
+> 请帮我把「项目治理架构师」（project-architect-skills）安装到当前项目，装好后告诉我。
 
-## 使用场景与提问示例
-
-第一次用，可以直接问：
+**2. 开始检查。** 安装好后，在同一个项目里新开对话，输入：
 
 > 项目评估
 
-| 使用场景 | 可以这样问 | 你会拿到什么 |
+AI 会先给你看检查结果和修复建议。想让它动手，就回复 **同意治理**。有多项建议时，也可以只选其中几项。
+
+<details>
+<summary>供 AI 安装时查看</summary>
+
+将来源项目中的 `skills/project-architect-skills/` 整个复制到目标项目的技能目录。本仓库通过相对符号链接提供各工具的入口，Git 检出时保留符号链接即可直接试用。
+
+| 工具 | 目标项目中的技能目录 | 新会话中显式调用 |
 | --- | --- | --- |
-| 刚接手一个项目 | 我下周要接手这个仓库。先做一次全面体检，哪些问题最值得先修？ | 文档、架构、目录和代码四项的检查结果与评分，以及按维护影响排序的修复计划。 |
-| 改功能前找入口 | 我要给订单 CSV 加一列「退款金额」。从哪个函数改起？哪些页面会用到这个导出？改完怎么验？ | 入口函数、实际调用方的源码位置，以及可重放的验证步骤。[维护导读](skills/project-architect-skills/references/execution-and-handover.md#独立维护导读) |
-| 把项目交给新人 | 新同事只看 README 能跑通订单测试吗？README 和操作手册都写了测试步骤，以后该维护哪一份？ | 缺失或过期的步骤、重复说明所在的章节，以及建议保留的正文和链接位置。[文档冗余判据](skills/project-architect-skills/references/necessary-documents.md#文档冗余) |
-| 团队混用 AI 编程工具 | 我们在仓库根目录用 Claude Code 和 Codex。它们各自会读到哪份项目指引？缺了该补在哪里？ | 按工具列出使用依据，以及实际生效的指引（如 `CLAUDE.md`、`AGENTS.md`）或应补建的路径。[项目指引判据](skills/project-architect-skills/references/necessary-documents.md#ai-编程工具项目指引) |
-| 核对架构图和分层约定 | README 画的是订单服务调用退款服务，代码里也是这个方向吗？这条调用符合仓库的分层约定吗？ | 图中箭头对应的实际调用位置，以及按项目约定核实的结论。找不到约定时，分层判断列为「待确认」。[专项检查记录](skills/project-architect-skills/references/governance-plan.md#检查范围记录) |
-| 决定测试文件放哪里 | 订单导出的测试现在放在仓库根目录。按项目约定该放在哪？移动后，现有测试命令还能找到它吗？ | 目录约定、测试发现配置和建议路径，以及验证测试仍会执行的命令。 |
-| 准备重构复杂方法 | 订单导出循环里好几层判断，哪些分支可以简化？先给我看计划，尤其是怎么验证跳过的订单仍然会被跳过。 | 具体分支、建议拆分的步骤，以及用于对照改前改后行为的输入和预期结果。 |
+| Codex | `.agents/skills/` | `project-architect-skills` |
+| Claude Code | `.claude/skills/` | `/project-architect-skills` |
+| WorkBuddy 桌面端 | `.workbuddy/skills/`（macOS 5.11.3 实测） | `用 project-architect-skills 评估当前项目` |
 
-在本仓库的 Codex 会话中，可以直接复制这句提问。
+WorkBuddy 使用 `.codebuddy/` 项目级代码开发配置时，复制到 `.codebuddy/skills/`。安装后，从所选目录打开 `project-architect-skills/SKILL.md`，确认旁边有 `agents/`、`references/` 和 `scripts/`。[Claude Code 技能说明](https://code.claude.com/docs/en/skills) · [WorkBuddy 项目配置](https://www.codebuddy.cn/docs/workbuddy/From-Beginner-to-Expert-Guide/Function-Description/Project#项目级代码开发配置)
 
-```text
-我想调整体检报告里的扣分规则。请只读追踪 skills/project-architect-skills/scripts/health_score.py，指出从哪里改、计划预览和最终报告在哪里用到它，以及该跑哪些测试。
-```
+</details>
 
-## 检查分工与治理流程
+## 使用
 
-主 Agent 根据问题选择对应的专家。每位专家在独立的只读上下文中取证，交回检查章节、治理候选及出处。
+下面用订单项目举例。选一个你正拿不准的问题，换成自己的模块名或文件名。要显式调用，可以在问题前加上「请用 project-architect-skills 检查」。
 
-| 专家定义 | 负责的检查 |
-| --- | --- |
-| [工程文档专家](skills/project-architect-skills/agents/engineering-documentation-expert.md) | 交接说明是否够用，同一文档或多份手册是否重复维护相同内容 |
-| [软件架构专家](skills/project-architect-skills/agents/software-architecture-expert.md) | 架构图是否符合实现，实际调用是否遵守项目认可的分层约定 |
-| [仓库结构专家](skills/project-architect-skills/agents/repository-structure-expert.md) | 文件路径是否符合项目约定和生效配置 |
-| [代码质量专家](skills/project-architect-skills/agents/code-quality-expert.md) | 哪些方法或分支难以维护，怎样重构并验证原有行为 |
+**工程文档专家 · 两份手册能合并到什么程度？**
 
-主 Agent 合并重复发现，按维护影响推荐本轮修复事项。计划列出改动范围、基线、验收方法和回退办法。在同一会话选择或回复 **同意治理** 后，助手按计划逐项修复和验收。有多项时也可以逐项选择。[治理计划](skills/project-architect-skills/references/governance-plan.md)
+> README 和操作手册各有一张订单 CSV 列序表。它们讲的是同一版导出吗？下次加列，我想只维护一张表。请指出规则该留在哪个章节，另一处哪些内容可以换成链接，哪些对账步骤还得留下。
 
-制定计划或执行中遇到需要你决定的业务规则、兼容要求或验收目标时，助手会用 Ask User Question 给出选择题。每题的首项标为「推荐」，说明推荐理由和各选项的影响。工具不可用时，可在会话中回复选项字母或名称。等待答复期间，只暂停依赖该决定的改动。[治理选择题及表头兼容示例](skills/project-architect-skills/references/governance-plan.md#治理选择题)
+仓库自带的样例里，README 的「导出规则」是约定的维护入口。操作手册可以链接到这张表，同时保留手册独有的对账示例。[查看样例检查记录](skills/project-architect-skills/references/examples/necessary-docs-record.json)
 
-**体检评分**随计划预览或只读报告一起交付。也可以输入「给项目打分」或「只给订单的测试说明打分」。全面体检展示四项各 25 分的明细及总分，专项只展示所查范围的维度分。每笔扣分可追到具体操作和出处，证据不足的维度标为「待补查」。[评分规则与可运行的专项示例](skills/project-architect-skills/references/health-score.md)
+**软件架构专家 · 这条箭头画错了吗？**
 
-例如，一个姓名工具经核实无需架构图，README 里的验收命令失效，但直接使用测试入口可以跑通。预览列出工程文档 20/25、仓库结构 25/25、代码质量 25/25，实得 **70/75，折算 93.3/100**。回复「同意治理」后，助手补正命令，从手册跑通测试并复查原范围，最终报告在同一根因下给出新出处，显示 **93.3 → 100，提升 6.7 分**。在本仓库运行 `python3 -B -m unittest discover -s tests -p test_health_score.py -v` 可重放该场景。
+> 图上画着「订单 → 退款」，同事说两边靠消息队列联系。这条箭头表示代码调用还是事件流向？请对照图例，从取消订单的入口追到退款开始处理的位置，再核对项目允许的依赖方向。该修图、改代码，还是保留现状？请指出决定这一点的连线和源码位置。
 
-默认体检包含文档冗余和 AI 编程工具项目指引检查。专项检查可以限定专家、主题和模块，例如「请仓库结构专家只读检查 tests/ 的归属」。同时问到测试说明和文件归属时，工程文档专家和仓库结构专家分别核对。单问改动入口时直接交付维护导读，同时要求检查或重构时，导读随治理报告一起交付。
+**仓库结构专家 · 测试移了位置，CI 还会跑它吗？**
 
-检查前先判断项目规模。小项目通查相关资料，中等项目分模块核对，大项目优先检查主要业务路径和跨模块依赖。预览和最终报告按检查项列出选定的模块或入口，漏交的范围标为「未查」。判档和取证方式见[项目规模与取证范围](skills/project-architect-skills/references/project-size.md)。
+> 我把「部分退款」用例从订单源码旁移到了 `tests/`，CI 还是绿的。请用 CI 实际采用的测试命令核对，这条用例有没有执行？结合订单模块自己的目录约定，判断该保留新位置、把文件移回去，还是调整测试发现规则。
 
-有足够的本地 Git 历史时，变更热点为影响相近的治理候选提供排序依据，共变记录帮助定位需要核实的调用方和测试。修改 Python 代码时，复核会用实际改前快照对照改后的结构信号，并记录行为验收结果。 [Git 变更证据](skills/project-architect-skills/references/git-change-history.md) · [Python 增量对照](skills/project-architect-skills/references/execution-and-handover.md#python-结构信号增量对照)
+**代码质量专家 · 两段退款计算能共用一个函数吗？**
 
-报告列出规模依据、已查范围、逐项结论、治理计划和复核结果。拟执行项会核对本地引用的位置，唯一出处越界时标为「待确认」。建议合并、删除或替换既有行为时，先用相关调用方、契约或测试查找反例。维护导读给出下次改动的入口、受影响的调用方和自查方法。治理获批后，报告默认保存到目标项目的 `docs/project-architect-report.md`。只做检查、没有可执行项或拒绝治理时，默认在会话交付全文。用户也可以单独要求保存本次报告。写入受限或已有同名人工报告时，助手在会话交付全文。[执行复核与维护导读](skills/project-architect-skills/references/execution-and-handover.md)
+> 订单导出和月末对账各算一次退款金额，我想把计算合并。假设两条明细分摊后各退 0.005 元，两个入口分别在哪一步舍入，最后各记几分钱？请用现有测试或业务约定核对，再指出哪段逻辑可以共用，以及重构后两边各要验什么结果。
 
-需要重构时，可以输入「用 project-architect-skills 检查订单导出循环的嵌套，给出简化计划」。助手会选取能检验改动的输入，例如混合可导出和应跳过的订单，记录原入口的结果。获批后逐步重构并重放样例；涉及跨文件改名时，先核对定义、调用点和配置引用。这套做法吸收自 Claude Code 的重构专家说明。[上游 refactoring-expert](https://github.com/luanquangminh/claude-skill/blob/85ebeee29a6b32085d56e8b7022d5673b1760fe6/agents/refactoring-expert.md) · [本项目执行判据](skills/project-architect-skills/references/execution-and-handover.md#局部与跨文件重构)
+**四位专家一起检查 · 交接前只够先修一项**
 
-也可以指定重构任务，例如「只读评估运费模块是否适合策略模式」或「把导出模块迁移到新版 SDK，先预览所有受影响的调用」。Skill 会对照现有契约和调用方选择手法，获批后执行并在报告中交付结构与行为验证。[SOLID 取证](skills/project-architect-skills/references/code-smells.md#solid-原则与设计模式) · [支持的重构与迁移](skills/project-architect-skills/references/refactoring.md)
+> 用 project-architect-skills 评估订单导出。新人接手后的第一个任务是加一列退款金额，交接前我只来得及先修一个问题。请四位专家围绕这个任务取证，把同一原因造成的发现合并计分。哪一项最值得先修？请给出它卡住的具体步骤，以及修完后可以重跑的验收方法，等我选定再动手。
+
+## 怎样读体检报告
+
+先看**哪些问题会影响你手头的事**。比如，README 里的启动命令指向一个已删除的文件，报告会标出是哪一条命令、它会让新人卡在哪一步。
+
+再看分数。全面体检分为工程文档、软件架构、仓库结构和代码质量四项，每项满分 25 分，按适用项折算为百分制。只问一个问题时，只给相关部分打分。「待补查」表示现有资料还不足以判断。[评分规则](skills/project-architect-skills/references/health-score.md)
+
+报告会显示在对话里。想留一份，可以说「请保存这次报告」。同意修复后，报告默认保存在项目的 `docs/project-architect-report.md`。[查看一份报告示例](docs/project-architect-report.md)
 
 ## 验证模块
 
-在本仓库根目录运行以下命令。完整运行测试需要 Python 3.10 或更高版本，并且能从 `PATH` 调用 `git`。无需安装第三方 Python 包。
+如果你修改了这个 Skill，可以在本仓库根目录运行全部测试。完整测试需要 Python 3.10+ 和可从 `PATH` 调用的 Git，只用 Python 标准库。
 
 ```sh
 python3 -B -m unittest discover -s tests -v
 ```
 
-全部用例执行并通过时，最后一行显示 `OK`。`OK (skipped=N)` 表示已执行的用例通过，另有 N 项被跳过。Python 3.9 会跳过模式匹配测试；找不到 `git` 时会跳过 Git 历史测试。可在 `-v` 输出中查看具体用例和跳过原因。
+最后一行显示 `OK` 表示全部用例通过。`OK (skipped=N)` 表示有 N 项跳过，原因在对应的用例旁。例如 Python 3.9 会跳过模式匹配测试，找不到 Git 会跳过 Git 历史测试。
 
-检查记录和可运行的示例见[必要文档](skills/project-architect-skills/references/necessary-documents.md)、[架构图](skills/project-architect-skills/references/architecture-diagrams.md)、[目录结构](skills/project-architect-skills/references/directory-structure.md)和[代码异味](skills/project-architect-skills/references/code-smells.md)检查判据。
-
-### 在 Codex 会话中验证只读检查
+<details>
+<summary>在任一支持的工具中验证只读检查</summary>
 
 修改 `SKILL.md` 或检查判据后，可用一份有运行说明的临时项目检查取证和报告交付。先在终端创建样例。
 
@@ -101,15 +109,18 @@ EOF
 printf '%s\n' "$smoke_project"
 ```
 
-在本仓库的 Codex 会话中输入「用 project-architect-skills 只读检查 `<临时目录路径>` 的必要文档」，将占位符换成终端输出的路径。会话应给出报告。复核以下三点。
+在以本仓库为工作目录的会话中输入「用 project-architect-skills 只读检查 `<临时目录路径>` 的必要文档」，将占位符换成终端输出的路径。会话应给出报告。复核以下三点。
 
 - 「启动或最小使用示例」显示「范围内未发现」，依据指向临时项目的运行说明。
 - 「验证改动的方法」显示「发现问题」，缺口类型为「缺少说明」。补写建议指向临时项目的 `README.md`，可记录运行后的预期输出 `Ada, Bob`。
 - 终端执行 `ls -A "$smoke_project"`，目录清单应只有 `README.md` 和 `names.py`。
 
-### 在临时仓库验证默认治理
+</details>
 
-在本仓库根目录运行以下命令。样例有两个可独立验收的问题：README 缺少验收说明，单元测试放在了仓库根目录。
+<details>
+<summary>在临时仓库验证默认治理（以 Codex 为例）</summary>
+
+在本仓库根目录运行以下命令。这个样例的 README 缺少验收说明，单元测试也放错了目录，两项修复可以分别验收。
 
 ```sh
 governance_project=$(mktemp -d)
@@ -155,3 +166,5 @@ printf '%s\n' "$governance_project"
 - `docs/project-architect-report.md` 包含四项体检、两项已通过的执行复核和维护导读。两项改动都有各自的改前基线和验收证据。
 
 另建一份相同的临时仓库，收到授权提示后回复「不同意治理」。会话应交付检查结果和未执行的建议，`git status --short` 仍无输出。
+
+</details>

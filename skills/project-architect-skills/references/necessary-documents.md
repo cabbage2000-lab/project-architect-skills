@@ -22,6 +22,7 @@
 
 - **Claude Code** 核对 `CLAUDE.md`、`.claude/CLAUDE.md` 及对该目录生效的项目规则。若已证实当前版本和配置能直接加载共享的 `AGENTS.md`，或 `CLAUDE.md` 通过 `@AGENTS.md` 引用它，记录共享入口及依据。[Claude Code 项目指引](https://code.claude.com/docs/en/memory)
 - **Codex** 从项目根到工作目录逐级核对 `AGENTS.md`，同时检查优先加载的 `AGENTS.override.md` 或项目已配置的后备文件名。子模块的专用指引只覆盖其生效范围。[Codex 项目指引](https://developers.openai.com/codex/guides/agents-md/)
+- **WorkBuddy** 核对当前工作区实际加载的项目指令或共享的 `AGENTS.md`。采用 `.codebuddy/` 配置的代码项目还可通过 `CODEBUDDY.md`、`.codebuddy/CODEBUDDY.md` 或 `.codebuddy/rules/` 提供约定。记录其中对本次维护任务生效的入口。[WorkBuddy 项目配置](https://www.codebuddy.cn/docs/workbuddy/From-Beginner-to-Expert-Guide/Function-Description/Project#项目级代码开发配置)
 - **其他已采用的工具** 按已核实的项目配置或该工具支持的入口检查。个人主目录中的指引不能作为团队可交接的项目入口。
 
 工具已用于项目且已查全适用位置，仍缺少入口时，报「发现问题」并填 `missing`。在 `evidence` 引用使用依据和实际目录检索结果，在 `placement` 填应补建的文件路径。已有入口只有空模板时填 `incomplete`。可加载的入口给出项目约定或引用仓库手册时，记为「范围内未发现」。若使用替代文件，写明缺少的常规文件名及实际生效的路径。
