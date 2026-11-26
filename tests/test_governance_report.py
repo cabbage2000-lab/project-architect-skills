@@ -26,7 +26,7 @@ def check(kind, operation, expected, observed, result="通过"):
 def guide(**fields):
     return {
         "task": "修改导出列名", "entry": "export.py::download_orders", "callers": "orders_page.py::download",
-        "evidence": ["orders_page.py:8", "export.py:4"],
+        "evidence": ["orders_page.py:4", "export.py:1"],
         "checks": ["导出空订单，应只得到表头。", "导出含引号的客户名，确认仍落在同一列。"],
         **fields,
     }
@@ -53,6 +53,10 @@ class GovernanceReportTests(unittest.TestCase):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.root = Path(directory.name)
+        (self.root / "export.py").write_text("def download_orders():\n    return 'Customer'\n", encoding="utf-8")
+        (self.root / "orders_page.py").write_text(
+            "from export import download_orders\n\ndef download():\n    return download_orders()\n", encoding="utf-8",
+        )
 
     def report(self, record, *args):
         result = run_report(record, self.root, *args)
@@ -67,6 +71,7 @@ class GovernanceReportTests(unittest.TestCase):
         self.assertFalse((self.root / "docs").exists())
 
     def test_combines_plan_reviews_and_verified_guide(self):
+        (self.root / "csv_format.py").write_text("def format_csv():\n    return 'Customer'\n", encoding="utf-8")
         doc = candidate("README.md#验证", "补写验证说明")
         code = candidate("export.py::download_orders", "提取 CSV 格式化")
         reviews = [
@@ -144,11 +149,20 @@ class GovernanceReportTests(unittest.TestCase):
         self.assertIn(blocked["reason"], self.report(report_record([doc, code], [changed, blocked])))
 
     def test_read_only_report_with_no_execution_still_includes_guide(self):
+        before = {path: path.read_bytes() for path in self.root.iterdir()}
         report = self.report(report_record([candidate("README.md#验证", "补写验证说明")], mode="inspect"))
         self.assertIn("| 补写验证说明 | 未执行 |", report)
         self.assertNotIn("## 执行复核", report)
         self.assertIn("## 维护导读", report)
-        self.assertEqual(list(self.root.iterdir()), [])
+        self.assertEqual({path: path.read_bytes() for path in self.root.iterdir()}, before)
+
+    def test_full_report_rejects_stale_guide_before_publication(self):
+        for entry, field in (
+            (guide(entry="gone.py::download"), "guide[0].entry"),
+            (guide(evidence=["orders_page.py:4", "export.py:99"]), "guide[0].evidence"),
+        ):
+            with self.subTest(field=field):
+                self.invalid(report_record(entries=[entry]), field)
 
     def test_standalone_guide_from_file_or_stdin_only_prints_the_guide(self):
         module = self.root / "export.py"

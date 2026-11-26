@@ -168,6 +168,18 @@ class GovernancePlanTests(unittest.TestCase):
                 self.assertIn(source, packet["markdown"])
                 self.assertNotIn("同意治理", packet["markdown"])
 
+    def test_observations_cannot_replace_failed_local_sources(self):
+        item = ready("核对入口", "入口")
+        notes = ["命令观察：python -V 已打印版本", "https://example.org/spec", "专家现场核对记录"]
+        for sources, status in ((notes, "可执行"), (["README.md:99", *notes, "docs/gone.md"], "待确认")):
+            with self.subTest(status=status):
+                result = self.run_plan({**item, "evidence": sources}, preview=True, as_json=True)
+                packet = json.loads(self.report(result))
+                checked = packet["plan"]["candidates"][0]
+                self.assertEqual(checked["status"], status)
+                self.assertEqual(checked["evidence"], sources)
+                self.assertEqual("同意治理" in packet["markdown"], status == "可执行")
+
     def test_independent_sources_and_failed_reference_survive_plan_replay(self):
         sources = ["README.md:1–2", "README.md#L2", "命令观察：python -V 已打印版本", "https://example.org/spec#usage"]
         first = {**ready("核对运行入口", "入口"), "evidence": sources + ["README.md:99"]}

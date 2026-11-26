@@ -57,13 +57,11 @@ def select_candidates(candidates, mode, root=None):
                 label: required_text(candidate.get(key), f"{field}.{key}") for key, label in PLAN_FIELDS.items()
             }
             if root is not None:
-                usable, issues = check_sources(sources, root)
+                usable, issues = check_sources(sources, root, require_local_on_error=True)
                 if issues:
                     reason += " 待核实出处：" + "、".join(issues) + "。"
-                    if usable:
-                        sources = usable
-                    else:
-                        status = PENDING
+                    status = READY if usable else PENDING
+                    sources = usable or sources
         checked.append({**candidate, "status": status, "evidence": sources, "reason": reason})
         evidence = "、".join(sources)
         if status == READY:

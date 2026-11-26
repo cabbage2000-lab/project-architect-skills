@@ -118,7 +118,7 @@ class NecessaryDocsTests(unittest.TestCase):
         for units, files, expected in cases:
             with self.subTest(units=units, files=files):
                 result = subprocess.run(
-                    [sys.executable, str(SCRIPT), "--project-size", units, files],
+                    [sys.executable, "-B", str(SCRIPT), "--project-size", units, files],
                     text=True, capture_output=True,
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
@@ -141,7 +141,7 @@ class NecessaryDocsTests(unittest.TestCase):
 
     def test_invalid_project_counts_do_not_produce_output(self):
         result = subprocess.run(
-            [sys.executable, str(SCRIPT), "--project-size", "-1", "20"],
+            [sys.executable, "-B", str(SCRIPT), "--project-size", "-1", "20"],
             text=True, capture_output=True,
         )
         self.assertEqual(result.returncode, 2)
@@ -182,7 +182,7 @@ class NecessaryDocsTests(unittest.TestCase):
 
     def test_documented_example_renders_a_report(self):
         example = SKILL_DIR / "references/examples/necessary-docs-record.json"
-        result = subprocess.run([sys.executable, str(SCRIPT), str(example)], capture_output=True, text=True)
+        result = subprocess.run([sys.executable, "-B", str(SCRIPT), str(example)], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(result.stdout.startswith("## 必要文档\n"))
         checklist, suggestions = result.stdout.split("### 建议补写\n")
@@ -460,7 +460,7 @@ class NecessaryDocsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "交接记录.json"
             path.write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
-            result = subprocess.run([sys.executable, str(SCRIPT), str(path)], capture_output=True, text=True)
+            result = subprocess.run([sys.executable, "-B", str(SCRIPT), str(path)], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, self.report(record))
         self.assertIn(r"A\|B 并检查两列。", result.stdout)

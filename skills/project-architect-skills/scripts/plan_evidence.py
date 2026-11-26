@@ -10,8 +10,9 @@ SOURCE_NOTES = ("命令观察：", "外部资料：", "观察：")
 SOURCE_URL = re.compile(r"[a-zA-Z][\w+.-]*://")
 
 
-def check_sources(sources, root, *, require_reference=False):
+def check_sources(sources, root, *, require_local_on_error=False, require_reference=False):
     usable, issues = [], []
+    has_valid_local = False
     has_reference = False
     for source in sources:
         is_local, issue = _check_location(source, root)
@@ -19,6 +20,7 @@ def check_sources(sources, root, *, require_reference=False):
             issues.append(f"{source}（{issue}）")
         else:
             usable.append(source)
+            has_valid_local = has_valid_local or is_local
             if require_reference:
                 location = source.strip("`")
                 has_reference |= is_local or bool(SOURCE_URL.match(location)) or any(
@@ -26,6 +28,9 @@ def check_sources(sources, root, *, require_reference=False):
                 )
     if require_reference and not (has_reference or issues):
         issues.append("缺少可定位的文件、已读外部资料或具体命令观察")
+    if require_local_on_error and issues and not has_valid_local:
+        # 全部本地出处失效时，补充观察仍保存在原始记录中。
+        return [], issues
     return usable, issues
 
 

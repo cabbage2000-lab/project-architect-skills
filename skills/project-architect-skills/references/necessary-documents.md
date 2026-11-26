@@ -66,7 +66,7 @@
 
 ## 交给汇总脚本的记录
 
-用 `python3 <本 Skill 目录>/scripts/necessary_docs.py` 传入 UTF-8 JSON。也可以在命令末尾传入记录文件路径。宿主负责阅读和判断，脚本负责完整性、候选筛选和报告格式。只读检查可以直接通过标准输入完成。
+用 `python3 -B <本 Skill 目录>/scripts/necessary_docs.py` 传入 UTF-8 JSON。也可以在命令末尾传入记录文件路径。宿主负责阅读和判断，脚本负责完整性、候选筛选和报告格式。只读检查可以直接通过标准输入完成。
 
 只问某个主题时，把派发项放进顶层 `selected`，如 `[{"check":"redundancy","unit":"订单导出"}]`，在 `topics` 填对应主题及证据。加 `--json` 取得章节和[专项覆盖记录](governance-plan.md#检查范围记录)。省略 `selected` 时按完整文档检查处理。
 
@@ -81,7 +81,7 @@
 这个[完整检查记录](examples/necessary-docs-record.json)使用虚构的订单导出工具演示输入格式。维护本 Skill 时，在 `project-architect-skills` 仓库根目录运行以下命令。
 
 ```sh
-python3 skills/project-architect-skills/scripts/necessary_docs.py \
+python3 -B skills/project-architect-skills/scripts/necessary_docs.py \
   skills/project-architect-skills/references/examples/necessary-docs-record.json
 ```
 

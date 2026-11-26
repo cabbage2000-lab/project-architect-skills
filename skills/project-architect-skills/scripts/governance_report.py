@@ -114,6 +114,8 @@ def render_reviews(reviews, selected):
 def render_guide(record, passed, *, root=None):
     if not isinstance(record, dict):
         raise ValueError("维护导读记录需要 JSON 对象")
+    if root is None:
+        root = Path.cwd()
     guide = records(record.get("guide"), "guide")
     lines = ["## 维护导读"]
     for index, entry in enumerate(guide):
@@ -126,13 +128,12 @@ def render_guide(record, passed, *, root=None):
             required_text(entry.get(key), f"{field}.{key}") for key in ("task", "entry", "callers")
         )
         evidence = text_list(entry.get("evidence"), f"{field}.evidence")
-        if root is not None:
-            issue = location_issue(location, root, require_file=True)
-            if issue:
-                raise ValueError(f"{field}.entry 无法定位：{location}（{issue}）")
-            _, issues = check_sources(evidence, root)
-            if issues:
-                raise ValueError(f"{field}.evidence 无法定位：{'、'.join(issues)}")
+        issue = location_issue(location, root, require_file=True)
+        if issue:
+            raise ValueError(f"{field}.entry 无法定位：{location}（{issue}）")
+        _, issues = check_sources(evidence, root)
+        if issues:
+            raise ValueError(f"{field}.evidence 无法定位：{'、'.join(issues)}")
         checks = text_list(entry.get("checks"), f"{field}.checks")
         lines.extend([
             "", f"### {task}", "", f"- **当前入口**　{location}",
@@ -219,7 +220,7 @@ def main():
         else:
             record = json.loads(args.record.read_text(encoding="utf-8"))
         if args.guide_only:
-            report = render_guide(record, set(), root=Path.cwd()) + "\n"
+            report = render_guide(record, set()) + "\n"
         else:
             report = render_report(record)
     except (OSError, ValueError) as error:
