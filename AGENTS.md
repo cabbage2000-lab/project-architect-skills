@@ -8,7 +8,7 @@
 
 本项目提供一个 Codex Skill，用于核对交接文档、架构图、目录结构和代码异味。修改 Skill 时，请编辑 `skills/project-architect-skills/` 下的源文件。Codex 通过符号链接 `.agents/skills/project-architect-skills` 加载该目录。
 
-- `SKILL.md` 定义检查流程，包括如何收集证据和交付报告。
+- `SKILL.md` 定义检查流程，按检查项路由到 `agents/` 下的四份专家定义。专家定义说明职责、取证方法和回传内容。
 - `references/necessary-documents.md` 定义文档类别、各类检查项、状态标签和 JSON 检查记录的格式。
 - `scripts/necessary_docs.py` 校验检查记录，并生成 Markdown 报告。
 - `references/architecture-diagrams.md` 定义图件取证、源码对照和修订流程。`scripts/architecture_diagrams.py` 校验对照记录并汇总架构图章节。
