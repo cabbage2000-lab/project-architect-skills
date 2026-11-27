@@ -14,7 +14,7 @@
         <mxCell id="legend" parent="canvas" vertex="1" value="实线为调用与数据流，虚线为 Python 导入" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=right;" connectable="0">
           <mxGeometry x="840" y="30" width="400" height="32" as="geometry" />
         </mxCell>
-        <mxCell id="call-checks" parent="canvas" edge="1" source="codex" target="check-scripts" value="按 agents/ 专家定义派发体检" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jettySize=auto;html=1;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;labelBackgroundColor=#FFFFFF;exitX=0.176666667;exitY=1;entryX=0.5;entryY=0;">
+        <mxCell id="call-checks" parent="canvas" edge="1" source="codex" target="check-scripts" value="按 agents/ 专家定义派发质检" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jettySize=auto;html=1;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;labelBackgroundColor=#FFFFFF;exitX=0.176666667;exitY=1;entryX=0.5;entryY=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="0" y="0" as="offset" />
           </mxGeometry>
@@ -24,7 +24,7 @@
             <mxPoint x="0" y="0" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="call-report" parent="canvas" edge="1" source="codex" target="governance-report" value="体检章节、计划、复核与导读" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jettySize=auto;html=1;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;labelBackgroundColor=#FFFFFF;exitX=0.8575;exitY=1;entryX=0.5;entryY=0;">
+        <mxCell id="call-report" parent="canvas" edge="1" source="codex" target="governance-report" value="质检章节、计划、复核与导读" style="edgeStyle=orthogonalEdgeStyle;rounded=1;jettySize=auto;html=1;strokeColor=#6E7871;strokeWidth=1.5;endArrow=blockThin;endFill=1;endSize=7;fontFamily=PingFang SC;fontSize=14;fontColor=#535C56;labelBackgroundColor=#FFFFFF;exitX=0.8575;exitY=1;entryX=0.5;entryY=0;">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="0" y="0" as="offset" />
           </mxGeometry>
@@ -105,7 +105,7 @@
         <mxCell id="report-rule" parent="governance-report" vertex="1" value="按计划校验复核并呈现结构增量" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
           <mxGeometry x="18" y="92" width="300" height="23" as="geometry" />
         </mxCell>
-        <mxCell id="report-content" parent="governance-report" vertex="1" value="合并体检、计划、复核和维护导读" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+        <mxCell id="report-content" parent="governance-report" vertex="1" value="合并质检、计划、复核和维护导读" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
           <mxGeometry x="18" y="125" width="300" height="23" as="geometry" />
         </mxCell>
         <mxCell id="report-output" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#F9F9F9;strokeColor=#D8DDD9;container=1;collapsible=0;">

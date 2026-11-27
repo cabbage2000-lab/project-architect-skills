@@ -50,13 +50,13 @@
         <mxCell id="command-value" parent="command" vertex="1" value="project-architect-skills" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=Menlo;fontSize=23;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="150" y="10" width="400" height="44" />
         </mxCell>
-        <mxCell id="command-context" parent="command" vertex="1" value="在当前仓库启动只读体检，确认计划后修复" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#535C56;fontStyle=0;align=right;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="command-context" parent="command" vertex="1" value="在当前仓库启动只读质检，确认计划后修复" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=16;fontColor=#535C56;fontStyle=0;align=right;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="557" y="12" width="629" height="40" />
         </mxCell>
         <mxCell id="audit" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
           <mxGeometry as="geometry" x="36" y="190" width="376" height="230" />
         </mxCell>
-        <mxCell id="audit-title" parent="audit" vertex="1" value="项目体检" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=23;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="audit-title" parent="audit" vertex="1" value="项目质检" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=23;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="10" width="344" height="34" />
         </mxCell>
         <mxCell id="audit-lead" parent="audit" vertex="1" value="专家分项取证，主 Agent 汇总" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">

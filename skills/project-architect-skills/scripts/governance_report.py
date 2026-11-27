@@ -1,4 +1,4 @@
-"""汇总体检、治理计划、执行复核和维护导读。"""
+"""汇总质检、治理计划、执行复核和维护导读。"""
 
 import argparse
 import hashlib
@@ -198,12 +198,12 @@ def render_report(record):
         raise ValueError("治理报告记录需要 JSON 对象")
     audit = record.get("audit")
     if not isinstance(audit, list) or any(not isinstance(item, str) or not item.strip() for item in audit):
-        raise ValueError("audit 需要体检章节数组")
+        raise ValueError("audit 需要质检章节数组")
     plan, selected = build_plan(record.get("plan"), replay=True)
     if not audit:
         coverage = record["plan"].get("coverage", {})
         if not coverage.get("selected") or any(result["status"] != "未查" for result in coverage["results"]):
-            raise ValueError("audit 缺少已查范围的体检章节")
+            raise ValueError("audit 缺少已查范围的质检章节")
     review, passed = render_reviews(record.get("reviews"), selected)
     guide = render_guide(record, passed)
     summary = render_summary(record) if "summary" in record else ""

@@ -16,7 +16,7 @@
 - `references/code-smells.md` 定义异味和模块诊断判据。`scripts/python_smell_signals.py` 提取 Python 结构信号，`scripts/code_smells.py` 汇总证据和治理候选。
 - `references/behavior-verification.md` 定义运行、业务规则和回归断言的取证方法。`scripts/behavior_verification.py` 校验单入口记录并生成行为验证章节。
 - `references/git-change-history.md` 说明怎样用 `scripts/git_change_history.py` 提取本地热点和共变线索。
-- `references/change-check.md` 定义本次改动体检的取证与交付方式。`scripts/change_check.py` 列出未提交改动或指定 Git 提交范围。
+- `references/change-check.md` 定义本次改动质检的取证与交付方式。`scripts/change_check.py` 列出未提交改动或指定 Git 提交范围。
 - `references/governance-plan.md` 定义候选排序与纳入条件。`scripts/governance_plan.py` 校验并汇总本轮计划。
 - `references/execution-and-handover.md` 定义复核、回退与导读。`scripts/governance_report.py` 汇总各阶段并交付报告。
 

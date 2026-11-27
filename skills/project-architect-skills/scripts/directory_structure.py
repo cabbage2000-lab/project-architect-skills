@@ -1,4 +1,4 @@
-"""将实际路径与归属依据汇总为目录结构体检章节。"""
+"""将实际路径与归属依据汇总为目录结构质检章节。"""
 
 import argparse
 import json
@@ -101,7 +101,7 @@ def render_report(record, *, as_json=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="检查记录 JSON，默认读取标准输入")
-    parser.add_argument("--json", action="store_true", help="返回体检章节和检查范围记录")
+    parser.add_argument("--json", action="store_true", help="返回质检章节和检查范围记录")
     args = parser.parse_args()
     try:
         if args.record is None:

@@ -10,19 +10,39 @@ Keep your codebase under control and easy to maintain as your AI-assisted develo
 
 Project Architect is a skill for **Codex, Claude Code, and WorkBuddy**. It checks documentation, architecture diagrams, repository layout, code quality, and the behavior of a representative user entry point. Before a handover or a change, it helps you find where to start, which callers depend on the current behavior, and how to verify the result.
 
+## How it works
+
+Project quality checks answer five engineering questions: can maintainers follow the instructions, understand dependencies, find files in the right place, change the code safely, and verify that the feature works? Each reviewer gathers evidence from source code, documentation, configuration, and tests. The main agent combines the findings; Python scripts validate the records and generate the results.
+
+| Quality check | Reviewer | What it checks | Why it matters |
+| --- | --- | --- | --- |
+| Essential documentation | Engineering documentation expert | Missing or repeated instructions, broken references, and runnable setup and verification steps | Gives maintainers and AI a reliable starting point and reduces mistakes caused by outdated or conflicting instructions. |
+| Architecture diagrams and dependencies | Software architecture expert | Diagram relationships against source code, dependency direction, and agreed layer boundaries | Identifies affected modules and callers so a change does not overlook dependencies or violate the project's architecture. |
+| Repository structure | Repository structure expert | Directory rules, file ownership, and the effects of moving files on imports, builds, and test discovery | Keeps files discoverable by both people and tools, including tests that could otherwise be silently skipped. |
+| Code quality | Code quality expert | Method smells, module responsibilities, and evidence-backed refactoring opportunities | Exposes tangled responsibilities, complex branches, and repeated rules that make changes harder and regressions more likely. |
+| Behavior verification | Behavior verification expert | Samples through a real entry point, business rules, and regression assertions | Confirms that the feature works as agreed and that the normal tests can catch a regression in that behavior. |
+
+The checks complement one another. For example, the structure reviewer can locate a test outside the discovery directory, while the behavior reviewer confirms which test the normal command misses. The main agent combines these observations into one repair item and retains both sources of evidence.
+
+![Project quality checks, repair planning and approval, execution and verification, and maintenance handover.](docs/diagrams/product-functional-architecture.png)
+
+[Editable diagram](docs/diagrams/product-functional-architecture.drawio) · [Full workflow](skills/project-architect-skills/SKILL.md#治理流程)
+
+A full quality check covers all five areas; a focused request checks only the relevant modules or entry points. Inspection and planning stay read-only. The conversation shows a check table and a one-sentence conclusion, with proposed scope and acceptance criteria when repairs are needed. Changes require approval and are then verified individually. Inconclusive findings remain marked as needing confirmation.
+
 ## Quick start
 
 **1. Install the skill.** Open the project you want to inspect and give your coding assistant this prompt.
 
 > Install the project-architect-skills skill from https://github.com/cabbage2000-lab/project-architect-skills in the current project.
 
-**2. Run a project health check.** Start a new conversation in the same project. In Claude Code, enter this command.
+**2. Run a project quality check.** Start a new conversation in the same project. In Claude Code, enter this command.
 
 ```text
-/project-architect-skills Run a full project health check
+/project-architect-skills Run a full project quality check
 ```
 
-The Chinese prompt is `/project-architect-skills 项目体检`. In Codex or WorkBuddy, say “Use project-architect-skills to run a full project health check.”
+The Chinese prompt is `/project-architect-skills 项目质检`. In Codex or WorkBuddy, say “Use project-architect-skills to run a full project quality check.”
 
 The first pass is read-only. The behavior reviewer follows one user entry point through a minimal run, a documented business rule, and the relevant test assertions. The report identifies which checks ran and which relied on source inspection. The report shows the evidence for each finding, explains which maintenance task it affects, and suggests what to fix first. Reply “Apply the proposed fixes” or `同意治理` to approve the plan. You can also name just the items you want fixed.
 
@@ -47,14 +67,14 @@ Choose a prompt that matches what you need to do. In Codex or WorkBuddy, replace
 
 | When to use it | Claude Code prompt |
 | --- | --- |
-| Full project health check | `/project-architect-skills Run a full project health check` |
+| Full project quality check | `/project-architect-skills Run a full project quality check` |
 | Behavior verification | `/project-architect-skills Verify the empty-order export and check whether the normal test suite would catch a missing header` |
 | Pre-commit change check | `/project-architect-skills Check my uncommitted changes for affected callers, outdated docs, and missing tests` |
 | Review a commit range | `/project-architect-skills Check the changes in main...feature` |
-| Documentation health check | `/project-architect-skills Run a documentation health check` |
+| Documentation quality check | `/project-architect-skills Run a documentation quality check` |
 | Check for missing documentation | `/project-architect-skills List the essential documents this project is missing and explain why each should be added` |
 | Add documentation | `/project-architect-skills Write a local setup guide with steps to start the project and verify it works` |
-| Architecture diagram health check | `/project-architect-skills Run an architecture diagram health check` |
+| Architecture diagram quality check | `/project-architect-skills Run an architecture diagram quality check` |
 | Check for missing architecture diagrams | `/project-architect-skills List the essential architecture diagrams this project is missing and explain why each should be added` |
 | Add an architecture diagram | `/project-architect-skills Use the source code to draw an architecture diagram showing the main modules and how they call one another` |
 | Project structure check | `/project-architect-skills Run a project structure check` |

@@ -134,7 +134,7 @@ class BehaviorVerificationTests(unittest.TestCase):
         ]}
         audit = [f"## {kind}\n已核对订单导出。" for kind in kinds]
         report = {"audit": audit, "plan": {"mode": "inspect", "candidates": [], "coverage": coverage},
-                  "reviews": [], "guide": [], "guide_limit": "本样例只核对体检章节。"}
+                  "reviews": [], "guide": [], "guide_limit": "本样例只核对质检章节。"}
         data = record()
         del data["checks"]["business_rule"]
         packet = self.packet(data)
