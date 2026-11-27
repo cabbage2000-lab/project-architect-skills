@@ -88,12 +88,15 @@ WorkBuddy 使用 `.codebuddy/` 项目级代码开发配置时，复制到 `.code
 | 检查提交范围 | `/project-architect-skills 本次改动质检，检查 main...feature` |
 | 文档质检 | `/project-architect-skills 文档质检` |
 | 本项目缺失文档检查 | `/project-architect-skills 本项目缺哪些必要文档，列出建议补写项和依据` |
-| 补文档 | `/project-architect-skills 补一份本地启动指南，写清启动和验证步骤` |
+| 补文档，请助手推荐 | `/project-architect-skills 补文档` |
+| 补指定文档 | `/project-architect-skills 补一份本地启动指南，写清启动和验证步骤` |
 | 架构图质检 | `/project-architect-skills 架构图质检` |
 | 本项目缺失架构图检查 | `/project-architect-skills 本项目缺哪些必要架构图，列出建议补画的图和依据` |
 | 补架构图 | `/project-architect-skills 根据源码补一张架构图，画清主要模块及调用关系` |
 | 项目结构检查 | `/project-architect-skills 项目结构质检` |
 | 代码重构检查 | `/project-architect-skills 找出值得重构的代码，给出理由和验证方法` |
+
+只说「补文档」时，助手会先看你的项目，用简单的话说明建议先补什么、为什么、补在哪里。你选定后，助手再写入。
 
 本次改动质检默认只读检查已暂存、未暂存和未被 Git 忽略的新文件。报告列出行为变化、受影响的位置和提交前还需执行的验证。指定 `A..B` 比较两个提交的内容，`A...B` 检查从共同祖先到 B 的改动。[本次改动质检](skills/project-architect-skills/references/change-check.md)
 

@@ -78,12 +78,15 @@ Choose a prompt that matches what you need to do. In Codex or WorkBuddy, replace
 | Review a commit range | `/project-architect-skills Check the changes in main...feature` |
 | Documentation quality check | `/project-architect-skills Run a documentation quality check` |
 | Check for missing documentation | `/project-architect-skills List the essential documents this project is missing and explain why each should be added` |
-| Add documentation | `/project-architect-skills Write a local setup guide with steps to start the project and verify it works` |
+| Add documentation with recommendations | `/project-architect-skills Add documentation` |
+| Write a specific guide | `/project-architect-skills Write a local setup guide with steps to start the project and verify it works` |
 | Architecture diagram quality check | `/project-architect-skills Run an architecture diagram quality check` |
 | Check for missing architecture diagrams | `/project-architect-skills List the essential architecture diagrams this project is missing and explain why each should be added` |
 | Add an architecture diagram | `/project-architect-skills Use the source code to draw an architecture diagram showing the main modules and how they call one another` |
 | Project structure check | `/project-architect-skills Run a project structure check` |
 | Refactoring review | `/project-architect-skills Identify code worth refactoring, explain why, and suggest how to verify the changes` |
+
+When you ask to “Add documentation,” the assistant looks at your project and explains in plain language what to add first, why it matters, and where it belongs. It writes the additions you choose.
 
 A change check reviews staged, unstaged, and non-ignored untracked files in read-only mode. It reports what behavior changed, which consumers or instructions are affected, and what still needs verification. Use `A..B` to compare two committed snapshots or `A...B` to review changes from the common ancestor to B.
 
