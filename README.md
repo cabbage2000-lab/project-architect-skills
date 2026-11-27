@@ -72,11 +72,11 @@ Software professionals build these engineering and architecture skills on a stro
 
 ## Reading the report
 
-Start with the operation you need to complete. If a README tells a new maintainer to run a deleted file, the report identifies the failing command and the step it blocks.
+By default, the conversation shows a compact table with each check, its pass status, and a short explanation, followed by one sentence stating whether repairs are needed. Findings name the problem directly, such as a README command pointing to a deleted file. Ask for details to expand the evidence, repair plan, and maintenance guide.
 
 The report uses `待确认` (needs confirmation) when evidence is missing. For example, if a test manual is inaccessible, the report identifies the steps that still need checking. When Git rules exclude confidential documents or diagrams from the checkout, their delivery check is marked `不适用` (not applicable). Verified errors in public instructions still appear as findings.
 
-A read-only report appears in the conversation. Ask “Save this report” to keep a copy. After approved repairs, the default output is `docs/project-architect-report.md` in the target project. [Example report](docs/project-architect-report.md)
+Ask “Show the detailed report” to expand the evidence, or “Save this report” to keep the complete report. After approved repairs, it is saved to `docs/project-architect-report.md`; the conversation still shows only the check table, one-sentence conclusion, and file path. [Detailed report example](docs/project-architect-report.md)
 
 ## Testing
 
@@ -107,7 +107,7 @@ EOF
 printf '%s\n' "$smoke_project"
 ```
 
-From a conversation opened in **this** repository, ask “Use project-architect-skills to check the handover documentation in `<temporary project path>`. Keep the check read-only.” Substitute the path printed above.
+From a conversation opened in **this** repository, ask “Use project-architect-skills to check the handover documentation in `<temporary project path>`. Keep the check read-only.” Substitute the path printed above. The initial response should contain a compact table marking documentation as failed because expected verification output is missing, followed by one sentence. Then ask for the detailed report and verify the following.
 
 - The usage check should cite the working example and report `范围内未发现` (no issue found in scope).
 - The verification check should report `发现问题` (issue found). The README tells readers how to run the program but does not tell them what output to expect. The suggested addition should identify `Ada, Bob` as the expected result.

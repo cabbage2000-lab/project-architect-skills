@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 
 from governance_plan import DEFERRED, UNVERIFIED, build_plan
+from inspection_coverage import coverage_units
 from necessary_docs import PENDING, required_text, table_row, text_list
 from plan_evidence import check_sources, location_issue
 from report_fields import records
@@ -20,6 +21,53 @@ REGRESSION = "发现差异"
 RESOLVED = "已解决"
 CHECK_KINDS = {"structure": "结构", "behavior": "行为", "handover": "交接"}
 REPORT_PATH = Path("docs/project-architect-report.md")
+SUMMARY_STATUSES = {
+    "通过": "✅ 通过", "未通过": "❌ 未通过", "待确认": "待确认", "未查": "未查", "不适用": "不适用",
+}
+
+
+def render_summary(record):
+    if not isinstance(record, dict):
+        raise ValueError("质检摘要记录需要 JSON 对象")
+    build_plan(record.get("plan"), replay=True)
+    entries = records(record.get("summary"), "summary")
+    if not entries:
+        raise ValueError("summary 需要非空质检结论数组，不能用已查范围推断通过")
+    selected, results, _ = coverage_units(record.get("plan", {}).get("coverage"))
+    expected = {check for check, unit in selected}
+    seen, counts, rows = set(), {}, []
+    for index, entry in enumerate(entries):
+        field = f"summary[{index}]"
+        check = required_text(entry.get("check"), f"{field}.check")
+        status = required_text(entry.get("status"), f"{field}.status")
+        detail = required_text(entry.get("detail"), f"{field}.detail")
+        if check in seen or check not in expected:
+            raise ValueError(f"{field}.check 需要对应选定检查项，且同类结果合并一行")
+        if status not in SUMMARY_STATUSES:
+            raise ValueError(f"{field}.status 需要通过、未通过、待确认、未查或不适用")
+        if status in (PASSED, "不适用") and any(
+            results.get(key, {}).get("status") != "已查" for key in selected if key[0] == check
+        ):
+            raise ValueError(f"{field}.status 不能将部分已查或未查的范围标为{status}")
+        seen.add(check)
+        counts[status] = counts.get(status, 0) + 1
+        rows.append(table_row((check, SUMMARY_STATUSES[status], detail)))
+    if seen != expected:
+        raise ValueError("summary 缺少选定检查项的结论，未查项也需单独标明")
+
+    pending = counts.get(PENDING, 0) + counts.get("未查", 0)
+    failed = counts.get("未通过", 0)
+    if failed:
+        conclusion = f"本次质检有 {failed} 项未通过，需修复表中问题"
+        if pending:
+            conclusion += f"，另有 {pending} 项待确认或未查"
+    elif pending:
+        conclusion = f"本次质检有 {pending} 项待确认或未查，暂不能判定全部通过"
+    elif counts.get(PASSED):
+        conclusion = "本次适用的质检项均通过，暂无需要修复的问题"
+    else:
+        conclusion = "本次质检项均不适用，无需修复"
+    return "\n".join(["| 质检项 | 是否通过 | 说明 |", "| --- | --- | --- |", *rows, "", conclusion + "。"])
 
 
 def review_checks(review, field):
@@ -158,7 +206,8 @@ def render_report(record):
             raise ValueError("audit 缺少已查范围的体检章节")
     review, passed = render_reviews(record.get("reviews"), selected)
     guide = render_guide(record, passed)
-    sections = ["# 项目治理报告", *(item.strip() for item in audit), plan.rstrip(), review, guide]
+    summary = render_summary(record) if "summary" in record else ""
+    sections = ["# 项目治理报告", summary, *(item.strip() for item in audit), plan.rstrip(), review, guide]
     return "\n\n".join(section for section in sections if section) + "\n"
 
 
@@ -203,6 +252,7 @@ def main():
     output = parser.add_mutually_exclusive_group()
     output.add_argument("--write", action="store_true", help="将报告写入当前仓库，无法安全写入时输出全文")
     output.add_argument("--guide-only", action="store_true", help="仅在标准输出交付当前工作区的维护导读")
+    output.add_argument("--summary", action="store_true", help="仅输出质检表格和一句话总结，需提供 summary 结论")
     args = parser.parse_args()
     try:
         if args.record is None:
@@ -211,6 +261,8 @@ def main():
             record = json.loads(args.record.read_text(encoding="utf-8"))
         if args.guide_only:
             report = render_guide(record, set()) + "\n"
+        elif args.summary:
+            report = render_summary(record) + "\n"
         else:
             report = render_report(record)
     except (OSError, ValueError) as error:
@@ -220,9 +272,9 @@ def main():
             if publish_report(report):
                 print(REPORT_PATH)
                 return
-            print(f"保留已有的 {REPORT_PATH}，请在会话交付报告全文。", file=sys.stderr)
+            print(f"保留已有的 {REPORT_PATH}，会话默认交付质检摘要。", file=sys.stderr)
         except OSError as error:
-            print(f"无法写入 {REPORT_PATH}（{error}），请在会话交付报告全文。", file=sys.stderr)
+            print(f"无法写入 {REPORT_PATH}（{error}），会话默认交付质检摘要。", file=sys.stderr)
     sys.stdout.write(report)
 
 

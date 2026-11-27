@@ -70,6 +70,109 @@ class GovernanceReportTests(unittest.TestCase):
         self.assertIn(field, result.stderr)
         self.assertFalse((self.root / "docs").exists())
 
+    def summary_record(self, *outcomes):
+        record = report_record(mode="inspect")
+        checks = ("必要文档", "架构图", "目录结构", "代码异味", "行为验证")
+        rows = [{"check": name, "unit": "导出工具"} for name in checks[:len(outcomes)]]
+        record["plan"]["coverage"] = {
+            "selected": rows, "results": [{**row, "status": "已查"} for row in rows],
+        }
+        record["summary"] = [
+            {"check": row["check"], "status": status, "detail": f"{row['check']}的核对结果。"}
+            for row, status in zip(rows, outcomes)
+        ]
+        return record
+
+    def test_summary_only_shows_check_table_and_conclusion_without_writing(self):
+        record = self.summary_record(*(["通过"] * 5))
+        before = {p: p.read_bytes() for p in self.root.iterdir()}
+        report = self.report(record, "--summary")
+        self.assertEqual(report.count("| ✅ 通过 |"), 5)
+        self.assertTrue(report.startswith("| 质检项 | 是否通过 | 说明 |\n"))
+        self.assertEqual(len(report.strip().splitlines()), 9)
+        self.assertIn("暂无需要修复的问题", report)
+        self.assertNotIn("治理计划", report)
+        self.assertNotIn("维护导读", report)
+        self.assertEqual({p: p.read_bytes() for p in self.root.iterdir()}, before)
+        full = self.report(record)
+        self.assertIn(report.strip(), full)
+        self.assertIn("## 维护导读", full)
+
+    def test_summary_preserves_failures_uncertainty_and_not_applicable(self):
+        record = self.summary_record("未通过", "待确认", "未查", "不适用", "通过")
+        record["summary"][0]["detail"] = "export.py 中的 A | B 两处表头需统一。"
+        report = self.report(record, "--summary")
+        for status in ("❌ 未通过", "待确认", "未查", "不适用", "✅ 通过"):
+            self.assertIn(f"| {status} |", report)
+        self.assertIn(r"A \| B", report)
+        self.assertIn("1 项未通过", report)
+        self.assertIn("2 项待确认或未查", report)
+        self.assertNotIn("暂无需要修复", report)
+        pending = self.report(self.summary_record("通过", "待确认"), "--summary")
+        self.assertIn("暂不能判定全部通过", pending)
+        excluded = self.report(self.summary_record("不适用"), "--summary")
+        self.assertIn("质检项均不适用", excluded)
+
+    def test_summary_requires_explicit_complete_verdicts(self):
+        for change in ("missing", "empty", "duplicate", "omitted", "unknown", "coverage_only"):
+            with self.subTest(change=change):
+                record = self.summary_record("通过", "通过")
+                if change == "missing":
+                    del record["summary"]
+                elif change == "empty":
+                    record["summary"] = []
+                elif change == "duplicate":
+                    record["summary"][1] = record["summary"][0].copy()
+                elif change == "omitted":
+                    record["summary"].pop()
+                elif change == "unknown":
+                    record["summary"][0]["check"] = "未选中的检查"
+                else:
+                    record["summary"][0]["status"] = "已查"
+                result = run_report(record, self.root, "--summary")
+                self.assertEqual(result.returncode, 2)
+                self.assertEqual(result.stdout, "")
+                self.assertIn("summary", result.stderr)
+
+    def test_summary_cannot_pass_incomplete_or_unreturned_modules(self):
+        for state in ("部分已查", "未查", None):
+            for verdict in ("通过", "不适用"):
+                with self.subTest(state=state, verdict=verdict):
+                    record = self.summary_record(verdict)
+                    coverage = record["plan"]["coverage"]
+                    second = {"check": "必要文档", "unit": "另一个入口"}
+                    coverage["selected"].append(second)
+                    if state:
+                        coverage["results"].append({**second, "status": state, "reason": "缺少资料"})
+                    result = run_report(record, self.root, "--summary")
+                    self.assertEqual(result.returncode, 2)
+                    self.assertEqual(result.stdout, "")
+                    self.assertIn("summary", result.stderr)
+                    record["summary"][0]["status"] = "待确认"
+                    self.assertIn("暂不能判定全部通过", self.report(record, "--summary"))
+
+    def test_summary_preview_needs_no_execution_reviews_or_guide(self):
+        record = self.summary_record("未通过")
+        record["plan"].update(mode="execute", candidates=[candidate("export.py", "修正导出表头")])
+        for field in ("audit", "reviews", "guide"):
+            del record[field]
+        self.assertIn("1 项未通过", self.report(record, "--summary"))
+        self.assertFalse((self.root / REPORT).exists())
+
+    def test_summary_cannot_publish_or_bypass_full_report_publication_checks(self):
+        record = self.summary_record("通过")
+        record["guide"][0]["entry"] = "gone.py::download"
+        self.assertIn("暂无需要修复", self.report(record, "--summary"))
+        result = run_report(record, self.root, "--write")
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("guide[0].entry", result.stderr)
+        for flags in (("--summary", "--write"), ("--summary", "--guide-only")):
+            result = run_report(self.summary_record("通过"), self.root, *flags)
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(result.stdout, "")
+        self.assertFalse((self.root / REPORT).exists())
+
     def test_combines_plan_reviews_and_verified_guide(self):
         (self.root / "csv_format.py").write_text("def format_csv():\n    return 'Customer'\n", encoding="utf-8")
         doc = candidate("README.md#验证", "补写验证说明")
