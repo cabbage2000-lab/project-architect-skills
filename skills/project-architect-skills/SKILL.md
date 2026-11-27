@@ -2,7 +2,7 @@
 name: project-architect-skills
 license: MIT
 metadata:
-  version: "0.0.2"
+  version: "0.0.3"
 description: 帮接手者定位改动入口、受影响的调用方和验证方法。「本次改动质检」按未提交改动或 Git 提交范围检查行为变化、调用方、文档和验证缺口。按项目大小推荐、补写关键文档和架构图。质检覆盖文档、架构图、目录、代码异味和行为验证，支持跨入口业务规则、生成产物同步和维护导读独立复验，可评估 SOLID 和设计模式。输入「项目评估」或 project-architect-skills 可做五项质检，按维护影响给出修复建议。回复「同意治理」可逐项修复并验收。
 ---
 
