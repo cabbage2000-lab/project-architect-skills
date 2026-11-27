@@ -68,7 +68,7 @@
         <mxCell id="audit-docs" parent="audit" vertex="1" value="工程文档专家：" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="85" width="105" height="23" />
         </mxCell>
-        <mxCell id="audit-docs-duties" parent="audit" vertex="1" value="文档缺漏、文档重复、引用核查" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="audit-docs-duties" parent="audit" vertex="1" value="文档缺漏、重复与交接复验" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="123" y="85" width="241" height="23" />
         </mxCell>
         <mxCell id="audit-smells" parent="audit" vertex="1" value="软件架构专家：" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
@@ -80,7 +80,7 @@
         <mxCell id="audit-types-a" parent="audit" vertex="1" value="仓库结构专家：" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="137" width="105" height="23" />
         </mxCell>
-        <mxCell id="audit-types-a-duties" parent="audit" vertex="1" value="目录约定、文件归属、迁移影响" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="audit-types-a-duties" parent="audit" vertex="1" value="文件归属、生成产物同步" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="123" y="137" width="241" height="23" />
         </mxCell>
         <mxCell id="audit-types-b" parent="audit" vertex="1" value="代码质量专家：" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
@@ -92,7 +92,7 @@
         <mxCell id="audit-behavior" parent="audit" vertex="1" value="行为验证专家：" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="189" width="105" height="23" />
         </mxCell>
-        <mxCell id="audit-behavior-duties" parent="audit" vertex="1" value="样例重放、规则核对、回归断言" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="audit-behavior-duties" parent="audit" vertex="1" value="入口实跑、跨入口规则、回归断言" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#202522;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="123" y="189" width="241" height="23" />
         </mxCell>
         <mxCell id="tickets" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
@@ -149,7 +149,7 @@
         <mxCell id="handover-title" parent="handover" vertex="1" value="维护导读" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=23;fontColor=#202522;fontStyle=1;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="10" width="196" height="34" />
         </mxCell>
-        <mxCell id="handover-lead" parent="handover" vertex="1" value="用共变线索复查关联位置" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
+        <mxCell id="handover-lead" parent="handover" vertex="1" value="正式移交时独立复验导读" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;fontFamily=PingFang SC;fontSize=15;fontColor=#535C56;fontStyle=0;align=left;verticalAlign=middle;spacing=0;spacingTop=0;spacingBottom=0;spacingLeft=0;spacingRight=0;" connectable="0">
           <mxGeometry as="geometry" x="16" y="46" width="196" height="22" />
         </mxCell>
         <mxCell id="handover-line" parent="handover" vertex="1" value="" style="rounded=0;html=1;fillColor=#D8DDD9;strokeColor=none;" connectable="0">

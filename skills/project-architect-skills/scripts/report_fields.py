@@ -19,5 +19,14 @@ def records(value, field):
     return value
 
 
+def labeled_fields(item, field, fields):
+    lines = []
+    for key, label, required in fields:
+        if required or key in item:
+            value = required_text(item.get(key), f"{field}.{key}")
+            lines.append(f"- {label}　{value}")
+    return lines
+
+
 def table_row(cells):
     return "| " + " | ".join(cell.replace("|", r"\|") for cell in cells) + " |"

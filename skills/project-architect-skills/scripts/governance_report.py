@@ -9,11 +9,14 @@ import sys
 import tempfile
 from pathlib import Path
 
+from behavior_verification import SPECIALTY_LABELS
+from directory_structure import GENERATED, GENERATED_LABEL
 from governance_plan import DEFERRED, UNVERIFIED, build_plan
 from inspection_coverage import coverage_units
 from necessary_docs import PENDING, required_text, table_row, text_list
 from plan_evidence import check_sources, location_issue
-from report_fields import records
+from report_fields import labeled_fields, records
+from report_publication import matches, refresh_managed
 
 
 PASSED = "通过"
@@ -21,6 +24,7 @@ REGRESSION = "发现差异"
 RESOLVED = "已解决"
 CHECK_KINDS = {"structure": "结构", "behavior": "行为", "handover": "交接"}
 REPORT_PATH = Path("docs/project-architect-report.md")
+SUMMARY_LABELS = {**SPECIALTY_LABELS, GENERATED: GENERATED_LABEL}
 SUMMARY_STATUSES = {
     "通过": "✅ 通过", "未通过": "❌ 未通过", "待确认": "待确认", "未查": "未查", "不适用": "不适用",
 }
@@ -51,10 +55,14 @@ def render_summary(record):
             raise ValueError(f"{field}.status 不能将部分已查或未查的范围标为{status}")
         seen.add(check)
         counts[status] = counts.get(status, 0) + 1
-        rows.append(table_row((check, SUMMARY_STATUSES[status], detail)))
+        rows.append(table_row((SUMMARY_LABELS.get(check, check), SUMMARY_STATUSES[status], detail)))
     if seen != expected:
         raise ValueError("summary 缺少选定检查项的结论，未查项也需单独标明")
+    conclusion = summary_conclusion(counts, record)
+    return "\n".join(["| 质检项 | 是否通过 | 说明 |", "| --- | --- | --- |", *rows, "", conclusion + "。"])
 
+
+def summary_conclusion(counts, record):
     pending = counts.get(PENDING, 0) + counts.get("未查", 0)
     failed = counts.get("未通过", 0)
     if failed:
@@ -67,7 +75,12 @@ def render_summary(record):
         conclusion = "本次适用的质检项均通过，暂无需要修复的问题"
     else:
         conclusion = "本次质检项均不适用，无需修复"
-    return "\n".join(["| 质检项 | 是否通过 | 说明 |", "| --- | --- | --- |", *rows, "", conclusion + "。"])
+    if "guide_replay" in record:
+        status, detail, _ = guide_replay(record, Path.cwd())
+        if status != PASSED and not (failed or pending):
+            conclusion = "表内质检已完成"
+        conclusion += f"，维护导读独立复验{status}（{detail}）"
+    return conclusion
 
 
 def review_checks(review, field):
@@ -158,6 +171,48 @@ def render_reviews(reviews, selected):
     return "\n".join(lines), passed
 
 
+def guide_sources(item, field, root, location=None):
+    if location is not None:
+        issue = location_issue(location, root, require_file=True)
+        if issue:
+            raise ValueError(f"{field}.entry 无法定位：{location}（{issue}）")
+    evidence = text_list(item.get("evidence"), f"{field}.evidence")
+    _, issues = check_sources(evidence, root)
+    if issues:
+        raise ValueError(f"{field}.evidence 无法定位：{'、'.join(issues)}")
+    return evidence
+
+
+def guide_replay(record, root):
+    replay = record["guide_replay"]
+    if not isinstance(replay, dict):
+        raise ValueError("guide_replay 需要独立复验记录")
+    status = required_text(replay.get("status"), "guide_replay.status")
+    if status not in (PASSED, "未通过", PENDING):
+        raise ValueError("guide_replay.status 需要通过、未通过或待确认")
+    attempted = status != PENDING
+    if attempted and replay.get("independent") is not True:
+        raise ValueError("guide_replay.independent 需要由未参与拟稿的复验者确认")
+    if attempted or "guide_task" in replay:
+        topic = required_text(replay.get("guide_task"), "guide_replay.guide_task")
+        if not any(guide.get("task") == topic for guide in records(record.get("guide"), "guide")):
+            raise ValueError("guide_replay.guide_task 需要对应本次交付的一条导读")
+    lines = ["### 维护导读独立复验", "", f"**{status}**", ""]
+    lines.extend(labeled_fields(replay, "guide_replay", (
+        ("guide_task", "对应导读", attempted), ("task", "相邻维护任务", True),
+        ("reviewer", "独立复验者", attempted), ("entry", "找到的修改入口", status == PASSED),
+        ("callers", "核实的调用方及影响", status == PASSED), ("operation", "实际操作", attempted),
+        ("expected", "可区分对错的预期", status == PASSED), ("observed", "观察结果", attempted),
+        ("reason", "卡住的步骤或限制", status != PASSED),
+    )))
+    if attempted or "evidence" in replay:
+        location = replay["entry"] if status == PASSED else None
+        evidence = guide_sources(replay, "guide_replay", root, location)
+        lines.append(f"- 核对依据　{'、'.join(evidence)}")
+    detail = replay["observed"] if status == PASSED else replay["reason"]
+    return status, required_text(detail, "guide_replay"), lines
+
+
 def render_guide(record, passed, *, root=None):
     if not isinstance(record, dict):
         raise ValueError("维护导读记录需要 JSON 对象")
@@ -174,13 +229,7 @@ def render_guide(record, passed, *, root=None):
         task, location, callers = (
             required_text(entry.get(key), f"{field}.{key}") for key in ("task", "entry", "callers")
         )
-        evidence = text_list(entry.get("evidence"), f"{field}.evidence")
-        issue = location_issue(location, root, require_file=True)
-        if issue:
-            raise ValueError(f"{field}.entry 无法定位：{location}（{issue}）")
-        _, issues = check_sources(evidence, root)
-        if issues:
-            raise ValueError(f"{field}.evidence 无法定位：{'、'.join(issues)}")
+        evidence = guide_sources(entry, field, root, location)
         checks = text_list(entry.get("checks"), f"{field}.checks")
         lines.extend([
             "", f"### {task}", "", f"- **当前入口**　{location}",
@@ -190,6 +239,9 @@ def render_guide(record, passed, *, root=None):
     if not guide or "guide_limit" in record:
         limit = required_text(record.get("guide_limit"), "guide_limit")
         lines.extend(["", f"**可见范围与待核实事项**　{limit}"])
+    if "guide_replay" in record:
+        _, _, replay_lines = guide_replay(record, root)
+        lines.extend(["", *replay_lines])
     return "\n".join(lines)
 
 
@@ -233,17 +285,25 @@ def publish_report(report):
         return True
 
     path.parent.mkdir(exist_ok=True)
-    with tempfile.TemporaryDirectory(dir=path.parent, prefix=".project-architect-") as directory:
-        staged = Path(directory) / path.name
+    directory = Path(tempfile.mkdtemp(dir=path.parent, prefix=".project-architect-"))
+    staged = directory / path.name
+    try:
         staged.write_bytes(content)
         if before is None:
             os.link(staged, path)
+            return True
+        if not matches(path, before):
+            return False
+        staged.chmod(stat.S_IMODE(path.stat().st_mode))
+        return refresh_managed(staged, path, before, content)
+    finally:
+        # An unexpected displaced file may be the only copy of a concurrent save.
+        if matches(staged, content):
+            staged.unlink()
+        if any(directory.iterdir()):
+            print(f"发布期间保留的文件位于 {directory}", file=sys.stderr)
         else:
-            if path.is_symlink() or not path.is_file() or path.read_bytes() != before:
-                return False
-            staged.chmod(stat.S_IMODE(path.stat().st_mode))
-            staged.replace(path)
-    return True
+            directory.rmdir()
 
 
 def main():

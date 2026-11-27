@@ -24,6 +24,8 @@ Project quality checks answer five engineering questions: can maintainers follow
 
 The checks complement one another. For example, the structure reviewer can locate a test outside the discovery directory, while the behavior reviewer confirms which test the normal command misses. The main agent combines these observations into one repair item and retains both sources of evidence.
 
+The behavior reviewer can compare the same rule across entry points, replay a data migration and recovery, exercise concurrent writes, verify access boundaries, or diagnose a controlled failure. The structure reviewer can rebuild a generated artifact and check what its consumer receives. At handover, a fresh documentation reviewer or the recipient can use the guide to locate a related change and run a check that would catch a regression.
+
 ![Project quality checks, repair planning and approval, execution and verification, and maintenance handover.](docs/diagrams/product-functional-architecture.png)
 
 [Editable diagram](docs/diagrams/product-functional-architecture.drawio) · [Full workflow](skills/project-architect-skills/SKILL.md#治理流程)
@@ -69,6 +71,9 @@ Choose a prompt that matches what you need to do. In Codex or WorkBuddy, replace
 | --- | --- |
 | Full project quality check | `/project-architect-skills Run a full project quality check` |
 | Behavior verification | `/project-architect-skills Verify the empty-order export and check whether the normal test suite would catch a missing header` |
+| Compare entry points | `/project-architect-skills Compare sales totals on the orders page and in the reconciliation export using the same cancelled order` |
+| Generated artifacts | `/project-architect-skills Verify that the SDK customers install matches the current API definition` |
+| Independent handover | `/project-architect-skills Independently verify that a maintainer can use the export guide to check a column rename` |
 | Pre-commit change check | `/project-architect-skills Check my uncommitted changes for affected callers, outdated docs, and missing tests` |
 | Review a commit range | `/project-architect-skills Check the changes in main...feature` |
 | Documentation quality check | `/project-architect-skills Run a documentation quality check` |
@@ -96,7 +101,7 @@ By default, the conversation shows a compact table with each check, its pass sta
 
 The report uses `待确认` (needs confirmation) when evidence is missing. For example, if a test manual is inaccessible, the report identifies the steps that still need checking. When Git rules exclude confidential documents or diagrams from the checkout, their delivery check is marked `不适用` (not applicable). Verified errors in public instructions still appear as findings.
 
-Ask “Show the detailed report” to expand the evidence, or “Save this report” to keep the complete report. After approved repairs, it is saved to `docs/project-architect-report.md`; the conversation still shows only the check table, one-sentence conclusion, and file path. [Detailed report example](docs/project-architect-report.md)
+Ask “Show the detailed report” to expand the evidence, or “Save this report” to keep the complete report. After approved repairs, it is saved to `docs/project-architect-report.md`; the conversation still shows only the check table, one-sentence conclusion, and file path. [Example from an earlier documentation review](docs/project-architect-report.md)
 
 ## Testing
 

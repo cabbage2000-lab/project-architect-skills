@@ -47,6 +47,8 @@ project-architect-skills
 
 只想知道下次维护从哪里改、影响谁、如何验证时，主 Agent 从当前工作区取证，用 `governance_report.py --guide-only` 直接在会话交付独立导读。用户同时要求诊断或修复时，将同一导读并入治理报告。
 
+正式移交或点名复验时，由未参与拟稿的工程文档专家或接手者只凭仓库和导读完成相邻任务。记录其找到的修改位置、受影响的调用方和实际验证结果，或独立完成时卡住的步骤。[维护导读独立复验](../skills/project-architect-skills/references/execution-and-handover.md#维护导读独立复验)
+
 ### 实现视图
 
 五位专家依照各自定义引用的判据，把取证记录以 JSON 传给对应的检查脚本，生成 Markdown 章节。主 Agent 按检查项合并章节，保留未查范围，并按治理目标归并候选。主 Agent 用 `git_change_history.py` 对本轮文件取证，再用 `governance_plan.py --preview` 展示待授权计划。收到确认后按原计划范围执行，用 `python_smell_signals.py --compare` 对照改动前后的 Python 结构信号。`governance_report.py` 复用 `build_plan`，按入选顺序校验复核记录，再合并检查章节、计划、复核与导读。 [Skill 入口](../skills/project-architect-skills/SKILL.md)
@@ -70,6 +72,8 @@ project-architect-skills
 | 行为验证专家 | 核心功能的运行结果与回归验证 | 选一条代表性入口，重放最小样例，对照业务预期，检查常用测试命令的发现范围、输入和断言。遇到公开契约、旧输入或重试时核对相应样例 | 区分已实跑和静态核对，列出可重放的输入、预期出处、实际结果、相关用例和阻塞点。[行为验证判据](../skills/project-architect-skills/references/behavior-verification.md) |
 
 完整质检对五项基础检查和五类异味均记录「发现问题」「范围内未发现」「待确认」或「不适用」，后两种结果需写明原因。只读到子目录时，仍可确认其中某个方法的异味。项目级资料未查全或外链不可访问时，其完整性标为「待确认」。架构文档核对模块职责、依赖关系及重大架构决策的理由和影响。图本身的缺失或失效归入架构图一项。
+
+行为专家依据交付契约选查跨入口业务规则一致性、存量数据迁移与恢复、并发写入一致性、权限与数据隔离及失败可诊断性。仓库结构专家检查修改源与实际交付的生成产物是否同步，图源及其导出图归软件架构专家。提交前检查按差异触发同一组专项。[行为专项](../skills/project-architect-skills/references/behavior-verification.md#按业务约定触发的专项) · [生成产物专项](../skills/project-architect-skills/references/directory-structure.md#修改源与生成产物同步)
 
 ### 3.2 五类方法级代码异味
 

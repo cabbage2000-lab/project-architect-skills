@@ -116,6 +116,65 @@ class BehaviorVerificationTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertEqual(result.stdout, "")
 
+    def test_cross_entry_requires_observations_from_distinct_entries_using_one_sample(self):
+        data = record("cross_entry")
+        data["checks"]["cross_entry"] = {
+            **data["checks"]["business_rule"], "input": "已支付 100，已取消 40",
+            "expected": "只计入已支付的 100", "status": "发现问题", "observed": "导出多计取消单",
+            "impact": "对账与页面相差 40", "entries": [
+                {"entry": "订单页", "operation": "打开汇总", "observed": "100"},
+                {"entry": "导出", "operation": "下载并读取金额", "observed": "140"},
+            ],
+        }
+        packet = self.packet(data)
+        self.assertIn("| 订单页 | 打开汇总 | 100 |", packet["markdown"])
+        self.assertIn("| 导出 | 下载并读取金额 | 140 |", packet["markdown"])
+        self.assertNotIn("最小运行", packet["markdown"])
+        self.assertEqual(packet["results"][0]["status"], "已查")
+        item = data["checks"]["cross_entry"]
+        first, second = item["entries"]
+        invalid_entries = (
+            ([first], ("cross_entry.entries", "两个不同入口")),
+            ([first, first], ("cross_entry.entries[1].entry", "重复", first["entry"])),
+            ([first, {**second, "observed": ""}], ("cross_entry.entries[1].observed",)),
+        )
+        for entries, diagnostics in invalid_entries:
+            item["entries"] = entries
+            result = invoke(json.dumps(data), "--json")
+            self.assertEqual((result.returncode, result.stdout), (2, ""))
+            for diagnostic in diagnostics:
+                self.assertIn(diagnostic, result.stderr)
+        item.update(entries=[first], status="待确认", reason="导出运行环境暂不可用")
+        self.assertEqual(self.packet(data)["results"][0]["status"], "部分已查")
+
+    def test_conditional_behavior_evidence_is_required_only_for_conclusive_runs(self):
+        details = {
+            "data_migration": {"before": "旧库有两条订单", "after": "总额与外键保留", "recovery": "已从备份恢复两条"},
+            "concurrent_writes": {"overlap": "两个事务同在屏障等待", "outcomes": "一笔成功一笔被拒绝", "final_state": "库存 0"},
+            "access_scope": {"allowed": "甲能读自己的订单", "restricted": "乙的订单不可见", "state": "仅出现甲的记录"},
+            "failure_diagnostics": {"signal": "退出码 2，标准错误指出字段", "location": "导入第 8 行的金额"},
+        }
+        for kind, fields in details.items():
+            with self.subTest(kind=kind):
+                data = record(kind)
+                item = {**data["checks"]["business_rule"], **fields}
+                data["checks"] = {kind: item}
+                self.assertIn(next(iter(fields.values())), self.packet(data)["markdown"])
+                item["mode"] = "static"
+                self.assertEqual(invoke(json.dumps(data)).returncode, 2)
+                item["mode"] = "run"
+                for key in fields:
+                    value = item.pop(key)
+                    result = invoke(json.dumps(data), "--json")
+                    self.assertEqual((result.returncode, result.stdout), (2, ""))
+                    self.assertIn(f"{kind}.{key}", result.stderr)
+                    item[key] = value
+                data["checks"] = {kind: {"status": "不适用", "mode": "static", "observed": "已核对入口",
+                                         "reason": "入口无此能力", "evidence": ["export.py:1"]}}
+                self.assertIn("**不适用**", self.packet(data)["markdown"])
+                data["checks"] = {}
+                self.assertEqual(self.packet(data)["results"][0]["status"], "未查")
+
     def test_file_and_stdin_produce_identical_markdown(self):
         data = record()
         del data["selected"]

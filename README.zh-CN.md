@@ -32,6 +32,8 @@
 
 五项检查相互补充。例如，测试文件放在发现目录之外，目录结构检查能定位归属错误，行为验证能确认常用测试命令漏跑了哪个用例。主 Agent 将同一问题合并为一个修复项，保留两处依据，避免重复治理。
 
+行为验证可按项目实际能力核对跨入口规则、存量数据迁移与恢复、并发写入、权限与数据隔离、失败可诊断性。仓库结构专家可从修改源重新生成产物，核对消费者拿到的版本。正式交接时，可让未参与拟稿的工程文档专家或实际接手者凭导读完成一项相邻维护验证。[行为专项](skills/project-architect-skills/references/behavior-verification.md#按业务约定触发的专项) · [交接复验](skills/project-architect-skills/references/execution-and-handover.md#维护导读独立复验)
+
 ### 从质检到修复
 
 ![项目质检流程：五位专家分项取证，汇总治理计划，授权后修复和复核，最后交付维护导读。](docs/diagrams/product-functional-architecture.png)
@@ -79,6 +81,9 @@ WorkBuddy 使用 `.codebuddy/` 项目级代码开发配置时，复制到 `.code
 | --- | --- |
 | 全面质检 | `/project-architect-skills 全面质检` |
 | 行为验证 | `/project-architect-skills 只做行为验证，检查空订单导出的结果，以及现有测试能否发现表头丢失` |
+| 跨入口规则 | `/project-architect-skills 用同一组含取消订单的数据，核对订单页与对账导出的销售额` |
+| 生成产物 | `/project-architect-skills 核对接口定义生成的 SDK 与用户安装到的版本是否同步` |
+| 交接复验 | `/project-architect-skills 对订单导出的维护导读做独立复验，看接手者能否验证列名调整` |
 | 提交前检查 | `/project-architect-skills 本次改动质检，看看这次改动漏了哪些调用方、文档或测试` |
 | 检查提交范围 | `/project-architect-skills 本次改动质检，检查 main...feature` |
 | 文档质检 | `/project-architect-skills 文档质检` |
@@ -98,7 +103,7 @@ WorkBuddy 使用 `.codebuddy/` 项目级代码开发配置时，复制到 `.code
 
 「待确认」表示证据还不足以判断。例如，测试手册无法访问时，报告会标明哪些验证步骤仍需核实。若已确认保密文档或图件因 Git 忽略规则未随仓库交付，其交付检查记为「不适用」。公开资料里已核实的失效步骤仍会列出。
 
-可以说「查看详细报告」展开依据，或说「请保存这次报告」保留完整报告。同意修复后，完整报告默认保存在项目的 `docs/project-architect-report.md`，对话仍只展示简表、总结和路径。[查看一份详细报告示例](docs/project-architect-report.md)
+可以说「查看详细报告」展开依据，或说「请保存这次报告」保留完整报告。同意修复后，完整报告默认保存在项目的 `docs/project-architect-report.md`，对话仍只展示简表、总结和路径。[查看早期必要文档专项报告示例](docs/project-architect-report.md)
 
 ## 验证模块
 

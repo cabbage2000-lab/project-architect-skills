@@ -113,6 +113,17 @@ class GovernanceReportTests(unittest.TestCase):
         excluded = self.report(self.summary_record("不适用"), "--summary")
         self.assertIn("质检项均不适用", excluded)
 
+    def test_specialty_summary_displays_the_name_and_preserves_dispatch_ids(self):
+        record = self.summary_record("通过", "待确认")
+        coverage = record["plan"]["coverage"]
+        for rows in (coverage["selected"], coverage["results"], record["summary"]):
+            for row, key in zip(rows, ("cross_entry", "generated_artifact")):
+                row["check"] = key
+        report = self.report(record, "--summary")
+        self.assertIn("| 跨入口业务规则一致性 | ✅ 通过 |", report)
+        self.assertIn("| 修改源与生成产物同步 | 待确认 |", report)
+        self.assertIn("| cross_entry |", self.report(record))
+
     def test_summary_requires_explicit_complete_verdicts(self):
         for change in ("missing", "empty", "duplicate", "omitted", "unknown", "coverage_only"):
             with self.subTest(change=change):
@@ -335,6 +346,45 @@ class GovernanceReportTests(unittest.TestCase):
         record["guide_limit"] = "只读到 docs/，调用方需在源码开放后核对。"
         self.assertIn(record["guide_limit"], self.report(record))
 
+    def test_independent_replay_is_visible_in_guide_summary_and_full_report(self):
+        record = self.summary_record("通过")
+        replay = {
+            "guide_task": guide()["task"], "task": "调整客户列", "reviewer": "新上下文工程文档专家",
+            "independent": True, "status": "通过", "entry": "export.py::download_orders",
+            "callers": "orders_page.py 的下载读取表头", "operation": "从订单页导出一份空订单",
+            "expected": "表头恰为 Customer", "observed": "得到 Customer，错误列名会使表头断言失败",
+            "evidence": ["orders_page.py:3", "export.py:2"],
+        }
+        record["guide_replay"] = replay
+        for mode in (("--guide-only",), ("--summary",), ()):
+            result = self.report(record, *mode)
+            self.assertIn("维护导读独立复验", result)
+            self.assertIn(replay["observed"], result)
+        for key, bad_value in (("independent", False), ("independent", 1), ("reviewer", ""),
+                               ("guide_task", "另一条导读"), ("entry", "gone.py"), ("callers", ""),
+                               ("evidence", ["orders_page.py:300"]), ("expected", "")):
+            with self.subTest(field=key):
+                self.invalid({**record, "guide_replay": {**replay, key: bad_value}}, f"guide_replay.{key}")
+
+    def test_failed_or_blocked_handover_identifies_the_step_and_supersedes_clean_summary(self):
+        record = self.summary_record("通过")
+        record["guide_replay"] = {
+            "guide_task": guide()["task"], "task": "调整列名", "status": "未通过", "independent": True,
+            "reviewer": "接手者", "operation": "按导读运行下载验证", "observed": "只检查文件存在",
+            "reason": "无法分辨表头是否正确", "evidence": ["orders_page.py:3"],
+        }
+        result = self.report(record, "--summary")
+        self.assertIn("维护导读独立复验未通过", result)
+        self.assertNotIn("暂无需要修复", result)
+        self.assertIn("无法分辨表头", self.report(record))
+        record.update(guide=[], guide_limit="当前只有仓库索引。", guide_replay={
+            "task": "修改导出", "status": "待确认", "reason": "还没有独立复验上下文。",
+        })
+        self.assertIn("待确认", self.report(record, "--guide-only"))
+        result = self.report(record, "--summary")
+        self.assertIn("维护导读独立复验待确认", result)
+        self.assertNotIn("无需修复", result)
+
     def test_coverage_accounts_for_missing_returns_separately_from_exclusions(self):
         units = [{"check": "代码异味", "unit": name} for name in ("订单", "支付", "退款")]
         docs = {"check": "必要文档", "unit": "订单"}
@@ -387,6 +437,50 @@ class GovernanceReportTests(unittest.TestCase):
         record = report_record()
         self.assertEqual(self.report(record, "--write"), self.report(record))
         self.assertEqual(path.read_bytes(), manual)
+
+    def test_completed_editor_saves_at_publication_and_restoration_are_preserved(self):
+        # At each actual file replacement, let an independent save finish first.
+        runner = """
+import os
+import sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+import governance_report
+import report_publication
+
+edits = iter(sys.argv[2:])
+replace = report_publication.replace_with_backup
+def finish_save(source, target, backup):
+    edit = next(edits, None)
+    if edit == 'append':
+        with target.open('ab') as handle:
+            handle.write(b'first manual note')
+    elif edit:
+        saved = target.with_name('editor.tmp')
+        saved.write_bytes(edit.encode())
+        os.replace(saved, target)
+    return replace(source, target, backup)
+report_publication.replace_with_backup = finish_save
+sys.argv = ['governance_report.py', '--write']
+governance_report.main()
+"""
+        updated = report_record(entries=[guide(task="调整下载入口")])
+        fallback = self.report(updated)
+        target = self.root / REPORT
+        for edits in (["append"], ["editor replacement"], ["append", "second manual version"]):
+            with self.subTest(edits=edits):
+                self.report(report_record(), "--write")
+                before = target.read_bytes()
+                result = subprocess.run([sys.executable, "-B", "-c", runner, str(SCRIPT.parent), *edits],
+                                        cwd=self.root, input=json.dumps(updated), capture_output=True, text=True)
+                self.assertEqual((result.returncode, result.stdout), (0, fallback), result.stderr)
+                expected = before + b"first manual note" if edits[0] == "append" else edits[0].encode()
+                self.assertEqual(target.read_bytes(), expected)
+                saved = [p for p in target.parent.rglob("*") if p.is_file() and p != target]
+                self.assertEqual([p.read_bytes() for p in saved], [e.encode() for e in edits[1:]])
+                if saved:
+                    self.assertIn(str(saved[0].relative_to(self.root)), result.stderr)
+                target.unlink()
 
     def test_renamed_report_can_refresh_a_valid_legacy_marker(self):
         path = self.root / REPORT

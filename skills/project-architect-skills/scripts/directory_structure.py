@@ -10,8 +10,12 @@ from necessary_docs import (
     COVERED, GAP, NOT_APPLICABLE, PENDING, overall_status, project_summary, required_text,
     table_row, text_list, unread_notes,
 )
+from report_fields import labeled_fields, records
 
 
+BASIC = "目录结构"
+GENERATED = "generated_artifact"
+GENERATED_LABEL = "修改源与生成产物同步"
 BASIS_LABELS = {
     "rule": "明确约定",
     "convention": "目录惯例",
@@ -55,47 +59,95 @@ def assess_path(check):
     return status, row, suggestion, reason
 
 
-def render_report(record, *, as_json=False):
-    if not isinstance(record, dict):
-        raise ValueError("检查记录需要 JSON 对象")
-    summary = project_summary(record["project"]) if "project" in record else []
-    selected = selected_checks(record, (), "目录结构")
-    scope = text_list(record.get("scope"), "scope")
-    notes = unread_notes(record.get("unread"))
-    checks = record.get("checks")
-    if not isinstance(checks, list) or not (checks or notes):
-        raise ValueError("checks 需要路径对照数组，尚无可核对路径时须提供 unread")
+def artifact_section(artifacts):
+    lines = ["", f"### {GENERATED_LABEL}"]
+    states, limits = set(), []
+    if not artifacts:
+        return [*lines, "", "未查。未收到生成产物的核对记录。"], {"未查"}, ["生成产物未查"]
+    for index, artifact in enumerate(artifacts):
+        field = f"artifacts[{index}]"
+        status = required_text(artifact.get("status"), f"{field}.status")
+        if status not in (COVERED, GAP, PENDING, NOT_APPLICABLE):
+            raise ValueError(f"{field}.status 无效")
+        states.add(status)
+        compared = status in (COVERED, GAP)
+        lines.extend(["", f"**{status}**", ""])
+        lines.extend(labeled_fields(artifact, field, (
+            ("source", "修改源", compared), ("artifact", "交付产物", compared),
+            ("consumer", "实际消费者", compared), ("operation", "生成与核对操作", compared),
+            ("expected", "预期内容", compared), ("observed", "实际观察", compared),
+            ("impact", "维护影响", status == GAP), ("reason", "原因", not compared),
+        )))
+        evidence = text_list(artifact.get("evidence"), f"{field}.evidence")
+        lines.append(f"- 核对依据　{'、'.join(evidence)}")
+        if status == PENDING:
+            limits.append(f"生成产物：{artifact['reason']}")
+    return lines, states, limits
 
+
+def path_section(checks, notes):
+    rows, suggestions, limits = [], [], []
     states = set()
-    gaps = list(notes)
-    rows = []
-    suggestions = []
     for check in checks:
         status, row, suggestion, reason = assess_path(check)
         states.add(status)
         if reason:
-            gaps.append(reason)
+            limits.append(reason)
         rows.append(row)
         if suggestion:
             suggestions.append(suggestion)
 
-    status = overall_status(states, bool(notes) or PENDING in states)
-    lines = [
-        "## 目录结构", "", *summary,
-        f"**检查结果**　{status}",
-        "", "### 已查范围", "", *(f"- {item}" for item in scope),
-    ]
+    lines = []
     if rows:
         lines.extend([
             "", "### 路径对照", "",
             "| 实际路径 | 预期归属 | 结论 | 对照说明 | 核对依据 |",
             "| --- | --- | --- | --- | --- |", *rows,
         ])
+    elif not notes:
+        lines.extend(["", "路径归属未查。"])
+        states.add("未查")
+        limits.append("路径归属未查")
     if notes:
         lines.extend(["", "### 未核实的资料", "", *notes])
     if suggestions:
         lines.extend(["", "### 建议调整", "", *suggestions])
-    return inspection_output(lines, selected, {"目录结构": "、".join(gaps)}, as_json, "目录结构")
+    return lines, states, limits
+
+
+def render_report(record, *, as_json=False):
+    if not isinstance(record, dict):
+        raise ValueError("检查记录需要 JSON 对象")
+    summary = project_summary(record["project"]) if "project" in record else []
+    selected = selected_checks(record, (GENERATED,), BASIC)
+    scope = text_list(record.get("scope"), "scope")
+    notes = unread_notes(record.get("unread"))
+    include_artifacts = GENERATED in selected or "artifacts" in record
+    lines, states, limits = [], set(), []
+    answers = {}
+    if not selected or BASIC in selected:
+        checks = records(record.get("checks", [] if include_artifacts else None), "checks")
+        if not (checks or notes or include_artifacts):
+            raise ValueError("checks 需要路径对照数组，尚无可核对路径时须提供 unread")
+        lines, states, limits = path_section(checks, notes)
+    elif notes:
+        lines.extend(["", "### 未核实的资料", "", *notes])
+    if include_artifacts:
+        artifacts = records(record.get("artifacts", []), "artifacts")
+        extra, artifact_states, artifact_limits = artifact_section(artifacts)
+        lines.extend(extra)
+        states.update(artifact_states)
+        limits.extend(artifact_limits)
+        if artifacts:
+            answers[GENERATED] = "、".join([*artifact_limits, *notes])
+    if notes or states - {"未查"}:
+        answers[BASIC] = "、".join([*notes, *limits])
+    status = overall_status(states, bool(notes) or PENDING in states)
+    lines = [
+        f"## {BASIC}", "", *summary, f"**检查结果**　{status}",
+        "", "### 已查范围", "", *(f"- {item}" for item in scope), *lines,
+    ]
+    return inspection_output(lines, selected, answers, as_json, BASIC)
 
 
 def main():

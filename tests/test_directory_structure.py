@@ -117,6 +117,42 @@ class DirectoryStructureTests(unittest.TestCase):
         self.assertIn("**项目规模**　小项目", report)
         self.assertIn("**检查结果**　范围内未发现", report)
 
+    def test_generated_artifact_can_be_scoped_or_combined_with_path_coverage(self):
+        record = directory_record(MISPLACED_MODULE)
+        scope = {"check": "generated_artifact", "unit": "订单 SDK"}
+        record["selected"] = [scope]
+        artifact = {
+            "status": "发现问题", "source": "orders.json", "artifact": "sdk/orders.py",
+            "consumer": "应用安装的订单 SDK", "operation": "在同版临时副本中运行 make sdk 并比较字段",
+            "expected": "新 SDK 的备注可省略", "observed": "随包 SDK 强制备注必填",
+            "impact": "创建订单要求多余字段", "evidence": ["Makefile:9", "sdk/orders.py:3"],
+        }
+        record["artifacts"] = [artifact]
+        packet = json.loads(run_report(record, "--json").stdout)
+        self.assertEqual(packet["results"], [{**scope, "status": "已查"}])
+        self.assertIn(artifact["observed"], packet["markdown"])
+        self.assertNotIn(MISPLACED_MODULE["path"], packet["markdown"])
+        for key in artifact:
+            bad = {**record, "artifacts": [{k: v for k, v in artifact.items() if k != key}]}
+            result = run_report(bad, "--json")
+            self.assertEqual((result.returncode, result.stdout), (2, ""))
+            self.assertIn(key, result.stderr)
+        record["selected"].insert(0, {**scope, "check": "目录结构"})
+        del record["artifacts"]
+        packet = json.loads(run_report(record, "--json").stdout)
+        self.assertIn("**检查结果**　发现问题", packet["markdown"])
+        self.assertEqual([r["status"] for r in packet["results"]], ["部分已查", "未查"])
+
+    def test_artifact_only_preserves_inapplicable_and_blocked_results(self):
+        scope = {"check": "generated_artifact", "unit": "报告"}
+        record = {"scope": ["产物清单"], "selected": [scope], "unread": []}
+        self.assertIn("**检查结果**　未查", self.report(record))
+        for status, coverage in (("不适用", "已查"), ("待确认", "部分已查")):
+            record["artifacts"] = [{"status": status, "reason": "交付依据", "evidence": ["README.md:2"]}]
+            packet = json.loads(run_report(record, "--json").stdout)
+            self.assertEqual(packet["results"][0]["status"], coverage)
+            self.assertIn(f"**检查结果**　{status}", packet["markdown"])
+
     def test_missing_rule_evidence_or_repair_details_produce_no_partial_report(self):
         cases = (
             (directory_record(), "checks"),

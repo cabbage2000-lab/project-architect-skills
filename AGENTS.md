@@ -12,13 +12,13 @@
 - `references/necessary-documents.md` 定义文档类别、各类检查项、状态标签和 JSON 检查记录的格式。
 - `scripts/necessary_docs.py` 校验检查记录，并生成 Markdown 报告。
 - `references/architecture-diagrams.md` 定义图件取证、源码对照和修订流程。`scripts/architecture_diagrams.py` 校验对照记录并汇总架构图章节。
-- `references/directory-structure.md` 定义路径归属判据。`scripts/directory_structure.py` 汇总实际路径、适用约定和调整建议。
+- `references/directory-structure.md` 定义路径归属与生成产物同步判据。`scripts/directory_structure.py` 汇总实际路径、生成链和核对结果。
 - `references/code-smells.md` 定义异味和模块诊断判据。`scripts/python_smell_signals.py` 提取 Python 结构信号，`scripts/code_smells.py` 汇总证据和治理候选。
-- `references/behavior-verification.md` 定义运行、业务规则和回归断言的取证方法。`scripts/behavior_verification.py` 校验单入口记录并生成行为验证章节。
+- `references/behavior-verification.md` 定义真实入口及条件专项的取证方法。`scripts/behavior_verification.py` 校验单入口或共享业务规则的一组入口，并生成行为验证章节。
 - `references/git-change-history.md` 说明怎样用 `scripts/git_change_history.py` 提取本地热点和共变线索。
 - `references/change-check.md` 定义本次改动质检的取证与交付方式。`scripts/change_check.py` 列出未提交改动或指定 Git 提交范围。
 - `references/governance-plan.md` 定义候选排序与纳入条件。`scripts/governance_plan.py` 校验并汇总本轮计划。
-- `references/execution-and-handover.md` 定义复核、回退与导读。`scripts/governance_report.py` 汇总各阶段并交付报告。
+- `references/execution-and-handover.md` 定义复核、回退、导读及交接时的独立复验。`scripts/governance_report.py` 汇总各阶段并交付报告。
 
 测试位于仓库根目录的 `tests/`，各版本的产品需求文档（PRD）位于 `docs/`。更新架构图时，先编辑 `docs/diagrams/` 中的 `.drawio` 源文件，再导出 PRD 引用的同名 PNG。
 
