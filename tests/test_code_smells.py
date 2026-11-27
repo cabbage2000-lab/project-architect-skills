@@ -234,7 +234,7 @@ class CodeSmellReportTests(unittest.TestCase):
                  "evidence": ["docs/layers.md:6", "src/order.py:19"]}
         record = {"selected": [orders], "scope": ["订单业务入口"], "unread": [], "modules": [entry]}
         packet = self.packet(record)
-        self.assertEqual(packet["results"], [{**orders, "status": "已查"}])
+        self.assertEqual(packet["results"], [{**orders, "status": "已查", "verdict": "未通过"}])
         self.assertNotIn("### 方法级检查", packet["markdown"])
         for source in entry["evidence"]:
             self.assertIn(source, packet["markdown"])

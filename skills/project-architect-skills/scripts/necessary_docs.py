@@ -278,18 +278,19 @@ def render_report(record, *, as_json=False):
                 continue
             if key not in topics:
                 states.add(PENDING)
-                answers[key] = f"旧版记录需补查{label}"
+                answers[key] = PENDING, f"旧版记录需补查{label}"
                 rows.append(table_row((label, PENDING, "旧版记录未包含此项，需补查。", "—")))
                 continue
-            reasons = []
+            reasons, topic_states = [], set()
             for status, row, candidate, reason in topic_assessments(key, topics[key], affected[key], notes):
                 states.add(status)
+                topic_states.add(status)
                 rows.append(row)
                 if candidate:
                     candidates.append(candidate)
                 if reason:
                     reasons.append(reason)
-            answers[key] = "、".join(dict.fromkeys(reasons))
+            answers[key] = overall_status(topic_states, bool(reasons)), "、".join(dict.fromkeys(reasons))
 
         if rows:
             sections.extend([
@@ -305,19 +306,20 @@ def render_report(record, *, as_json=False):
     if "redundancy" in topics and (not selected or "redundancy" in selected):
         redundancy, redundancy_states, reason = redundancy_section(topics["redundancy"], affected["redundancy"])
         states.update(redundancy_states)
-        answers["redundancy"] = reason
+        answers["redundancy"] = overall_status(redundancy_states, bool(reason)), reason
     elif not selected:
         states.add(PENDING)
-        answers["redundancy"] = "旧版记录需补查文档冗余"
+        answers["redundancy"] = PENDING, "旧版记录需补查文档冗余"
         redundancy = ["", "### 文档冗余", "", f"**{PENDING}**　旧版记录未包含文档冗余检查，需补查。"]
 
     if selected.keys() - answers.keys():
         states.add("未查")
     incomplete = bool(notes) or PENDING in states or "未查" in states
+    status = overall_status(states, incomplete)
     lines = [
         "## 必要文档", "",
         *summary,
-        f"**检查结果**　{overall_status(states, incomplete)}",
+        f"**检查结果**　{status}",
         "", f"**项目资料完整性**　{PENDING if incomplete else '已核对本轮相关资料'}",
         "", "### 已查范围", "",
         *(f"- {location}" for location in scope),
@@ -329,7 +331,7 @@ def render_report(record, *, as_json=False):
         lines.extend(["", "### 未核实的资料", "", *(f"- {note}" for note in notes)])
     if suggestions:
         lines.extend(["", "### 建议补写", *suggestions])
-    return inspection_output(lines, dispatched, answers, as_json, "必要文档")
+    return inspection_output(lines, dispatched, answers, as_json, "必要文档", status)
 
 
 def main():

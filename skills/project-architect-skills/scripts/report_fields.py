@@ -1,16 +1,18 @@
 """检查章节与覆盖记录共用的文本字段。"""
 
 
-def required_text(value, field):
+def required_text(value, field, *, preserve_lines=False):
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field} 需要非空文本")
+    if preserve_lines:
+        return value.replace("\r\n", "\n").replace("\r", "\n")
     return " ".join(value.strip().splitlines())
 
 
-def text_list(value, field):
+def text_list(value, field, *, preserve_lines=False):
     if not isinstance(value, list) or not value:
         raise ValueError(f"{field} 需要非空文本数组")
-    return [required_text(item, field) for item in value]
+    return [required_text(item, field, preserve_lines=preserve_lines) for item in value]
 
 
 def records(value, field):

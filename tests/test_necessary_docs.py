@@ -77,7 +77,7 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         packet = json.loads(result.stdout)
         self.assertEqual(set(packet), {"markdown", "results"})
-        self.assertEqual(packet["results"], [{**item, "status": "已查"}])
+        self.assertEqual(packet["results"], [{**item, "status": "已查", "verdict": "未通过"}])
         self.assertIn(verification_gap()["placement"], packet["markdown"])
         self.assertNotIn("#### 技术文档", packet["markdown"])
         record["unread"] = [{"source": "测试手册", "reason": "无法读取", "topics": ["verification"]}]
@@ -228,7 +228,7 @@ class NecessaryDocsTests(unittest.TestCase):
         result = run_report(record, "--json")
         self.assertEqual(result.returncode, 0, result.stderr)
         packet = json.loads(result.stdout)
-        self.assertEqual(packet["results"], [{**task, "status": "已查"}])
+        self.assertEqual(packet["results"], [{**task, "status": "已查", "verdict": "未通过"}])
         self.assertIn("| 架构决策记录（ADR） | 发现问题 |", packet["markdown"])
         self.assertIn(gap["placement"], packet["markdown"].split("### 建议补写\n")[1])
         self.assertNotIn("模块职责与依赖", packet["markdown"])
@@ -288,7 +288,7 @@ class NecessaryDocsTests(unittest.TestCase):
         result = run_report(record, "--json")
         self.assertEqual(result.returncode, 0, result.stderr)
         packet = json.loads(result.stdout)
-        self.assertEqual(packet["results"], [{**task, "status": "已查"}])
+        self.assertEqual(packet["results"], [{**task, "status": "已查", "verdict": "未通过"}])
         rows = [line for line in packet["markdown"].splitlines() if line.startswith("| 发现问题 |")]
         self.assertEqual(len(rows), 2)
         for row, comparison in zip(rows, (first, second)):
@@ -470,7 +470,7 @@ class NecessaryDocsTests(unittest.TestCase):
                     self.assertEqual(result.returncode, 0, result.stderr)
                     packet = json.loads(result.stdout)
                     self.assertIn(f"| 验证改动的方法 | {status} |", packet["markdown"])
-                    self.assertEqual(packet["results"], [{**task, "status": "部分已查", "reason": f"待核对{manual}"}])
+                    self.assertEqual(packet["results"], [{**task, "status": "部分已查", "verdict": "待确认", "reason": f"待核对{manual}"}])
 
     def test_unread_reference_only_affects_its_topic(self):
         record = local_tool()

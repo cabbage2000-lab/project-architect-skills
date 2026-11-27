@@ -117,19 +117,20 @@ def render_report(record, *, as_json=False):
         lines, state, reason = render_check(kind, checks[kind])
         sections.extend([*lines, ""])
         states.add(state)
-        answers[kind] = reason
+        answers[kind] = state, reason
         if reason:
             limits.append(f"{label}：{reason}")
 
+    status = overall_status(states, bool(limits))
     if BASIC in dispatched and answers:
-        answers[BASIC] = "、".join(limits)
+        answers[BASIC] = status, "、".join(limits)
     summary = project_summary(record["project"]) if "project" in record else []
     lines = [
         f"## {BASIC}", "", *summary,
-        f"**检查结果**　{overall_status(states, bool(limits))}", "",
+        f"**检查结果**　{status}", "",
         f"**入口**　{entry}", "", f"**选取依据**　{selection}", "", *sections,
     ]
-    return inspection_output(lines, dispatched, answers, as_json, BASIC)
+    return inspection_output(lines, dispatched, answers, as_json, BASIC, status)
 
 
 def main():

@@ -121,6 +121,8 @@ python3 -B -m unittest discover -s tests -v
 
 最后一行显示 `OK` 表示全部用例通过。`OK (skipped=N)` 表示有 N 项跳过，原因在对应的用例旁。例如 Python 3.9 会跳过模式匹配测试，找不到 Git 会跳过 Git 历史测试。
 
+双调用方交接样板附有可运行的订单、对账和旧版归档命令。观察员可以独立验收三个入口，并用同一基线组织五人试点。[运行样板和试点](docs/examples/order-handover/README.md)
+
 <details>
 <summary>在任一支持的工具中验证只读检查</summary>
 

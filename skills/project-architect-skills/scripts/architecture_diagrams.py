@@ -130,7 +130,7 @@ def render_report(record, *, as_json=False):
             "", "### 建议修订", "", f"**维护影响**　{impact}",
             "", f"**修订位置**　{placement}", "", *(f"- {change}" for change in changes),
         ])
-    return inspection_output(lines, selected, {"架构图": "、".join(gaps)}, as_json, "架构图")
+    return inspection_output(lines, selected, {"架构图": (status, "、".join(gaps))}, as_json, "架构图", status)
 
 
 def main():

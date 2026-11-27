@@ -129,7 +129,7 @@ class DirectoryStructureTests(unittest.TestCase):
         }
         record["artifacts"] = [artifact]
         packet = json.loads(run_report(record, "--json").stdout)
-        self.assertEqual(packet["results"], [{**scope, "status": "已查"}])
+        self.assertEqual(packet["results"], [{**scope, "status": "已查", "verdict": "未通过"}])
         self.assertIn(artifact["observed"], packet["markdown"])
         self.assertNotIn(MISPLACED_MODULE["path"], packet["markdown"])
         for key in artifact:

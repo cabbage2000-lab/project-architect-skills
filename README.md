@@ -119,6 +119,8 @@ python3 -B -m unittest discover -s tests -v
 
 The final line is `OK` when all tests pass. If it reads `OK (skipped=N)`, check the reasons next to the skipped cases. For example, Python 3.9 skips the pattern-matching test, and the Git history tests require Git.
 
+The [order handover exercise](docs/examples/order-handover/README.md) includes two CSV consumers, a historical archive, and an observer check for the five-person pilot.
+
 <details>
 <summary>Try a read-only documentation check</summary>
 

@@ -5,6 +5,17 @@ import json
 from report_fields import required_text, table_row
 
 
+VERDICTS = {
+    "范围内未发现": "通过", "发现问题": "未通过", "待确认": "待确认",
+    "不适用": "不适用", "部分已查": "待确认", "未查": "未查",
+}
+VERDICTS_BY_COVERAGE = {
+    "已查": ("通过", "未通过", "不适用"),
+    "部分已查": ("未通过", "待确认"),
+    "未查": ("未查",),
+}
+
+
 def indexed_units(rows, field):
     if not isinstance(rows, list):
         raise ValueError(f"coverage.{field} 需要数组")
@@ -33,19 +44,22 @@ def selected_checks(record, supported, basic):
     return selected
 
 
-def inspection_output(lines, selected, answers, as_json, basic):
-    results = []
+def inspection_result(check, unit, answer):
+    row = {"check": check, "unit": unit}
+    if answer is None:
+        return {**row, "status": "未查", "verdict": "未查", "reason": "未收到该范围的检查结果"}
+    state, reason = answer
+    if reason:
+        verdict = "未通过" if state == "发现问题" else "待确认"
+        return {**row, "status": "部分已查", "verdict": verdict, "reason": reason}
+    return {**row, "status": "已查", "verdict": VERDICTS[state]}
+
+
+def inspection_output(lines, selected, answers, as_json, basic, overall):
     if basic in selected and basic not in answers and answers:
-        answers[basic] = "、".join(dict.fromkeys(reason for reason in answers.values() if reason))
-    for check, unit in selected.items():
-        row = {"check": check, "unit": unit}
-        if check not in answers:
-            row.update(status="未查", reason="未收到该范围的检查结果")
-        elif answers[check]:
-            row.update(status="部分已查", reason=answers[check])
-        else:
-            row["status"] = "已查"
-        results.append(row)
+        reasons = dict.fromkeys(reason for _, reason in answers.values() if reason)
+        answers[basic] = overall, "、".join(reasons)
+    results = [inspection_result(check, unit, answers.get(check)) for check, unit in selected.items()]
     if selected:
         scope = [{"check": check, "unit": unit} for check, unit in selected.items()]
         lines.extend(["", "### 专项核对", "", *coverage_lines({"selected": scope, "results": results})])
@@ -53,6 +67,16 @@ def inspection_output(lines, selected, answers, as_json, basic):
     if as_json:
         return json.dumps({"markdown": markdown, "results": results}, ensure_ascii=False) + "\n"
     return markdown
+
+
+def validate_result(result):
+    status = result.get("status")
+    if not isinstance(status, str) or status not in VERDICTS_BY_COVERAGE:
+        raise ValueError("coverage.results.status 需要已查、部分已查或未查")
+    if "verdict" in result and result["verdict"] not in VERDICTS_BY_COVERAGE[status]:
+        raise ValueError("coverage.results.verdict 与核对范围不符")
+    if status != "已查":
+        required_text(result.get("reason"), "coverage.results.reason")
 
 
 def coverage_units(coverage):
@@ -66,11 +90,7 @@ def coverage_units(coverage):
     if excluded.keys() & selected.keys():
         raise ValueError("coverage.excluded 与选定范围重叠")
     for result in results.values():
-        status = result.get("status")
-        if status not in ("已查", "部分已查", "未查"):
-            raise ValueError("coverage.results.status 需要已查、部分已查或未查")
-        if status != "已查":
-            required_text(result.get("reason"), "coverage.results.reason")
+        validate_result(result)
     for item in excluded.values():
         required_text(item.get("reason"), "coverage.excluded.reason")
     return selected, results, excluded

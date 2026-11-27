@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import stat
 import sys
 import tempfile
@@ -30,6 +31,34 @@ SUMMARY_STATUSES = {
 }
 
 
+def combined_verdict(units, supplied):
+    verdicts = {row.get("verdict", "未查" if row["status"] == "未查" else None) for row in units.values()}
+    if "未通过" in verdicts:
+        return "未通过"
+    if verdicts == {"未查"}:
+        return "未查"
+    if None in verdicts:
+        # 全为旧版回传时沿用显式摘要。新旧混合不能用已查替代缺失的判定。
+        if any("verdict" in row for row in units.values()):
+            return "未通过" if supplied == "未通过" else PENDING
+        return supplied
+    if verdicts & {PENDING, "未查"}:
+        return PENDING
+    return PASSED if PASSED in verdicts else "不适用"
+
+
+def summary_status(entry, field, units):
+    supplied = required_text(entry["status"], f"{field}.status") if "status" in entry else None
+    derived = combined_verdict(units, supplied)
+    if supplied is not None and supplied != derived:
+        raise ValueError(f"{field}.status 与专家回传不符，应为{derived}")
+    if derived not in SUMMARY_STATUSES:
+        raise ValueError(f"{field}.status 需要通过、未通过、待确认、未查或不适用")
+    if derived in (PASSED, "不适用") and any(row["status"] != "已查" for row in units.values()):
+        raise ValueError(f"{field}.status 不能将部分已查或未查的范围标为{derived}")
+    return derived
+
+
 def render_summary(record):
     if not isinstance(record, dict):
         raise ValueError("质检摘要记录需要 JSON 对象")
@@ -43,16 +72,14 @@ def render_summary(record):
     for index, entry in enumerate(entries):
         field = f"summary[{index}]"
         check = required_text(entry.get("check"), f"{field}.check")
-        status = required_text(entry.get("status"), f"{field}.status")
         detail = required_text(entry.get("detail"), f"{field}.detail")
         if check in seen or check not in expected:
             raise ValueError(f"{field}.check 需要对应选定检查项，且同类结果合并一行")
-        if status not in SUMMARY_STATUSES:
-            raise ValueError(f"{field}.status 需要通过、未通过、待确认、未查或不适用")
-        if status in (PASSED, "不适用") and any(
-            results.get(key, {}).get("status") != "已查" for key in selected if key[0] == check
-        ):
-            raise ValueError(f"{field}.status 不能将部分已查或未查的范围标为{status}")
+        units = {unit: results.get((check, unit), {"status": "未查"}) for name, unit in selected if name == check}
+        status = summary_status(entry, field, units)
+        limits = [f"{unit}（{row['status']}）" for unit, row in units.items() if row["status"] != "已查"]
+        if limits:
+            detail += " 核对范围：" + "、".join(limits)
         seen.add(check)
         counts[status] = counts.get(status, 0) + 1
         rows.append(table_row((SUMMARY_LABELS.get(check, check), SUMMARY_STATUSES[status], detail)))
@@ -213,6 +240,19 @@ def guide_replay(record, root):
     return status, required_text(detail, "guide_replay"), lines
 
 
+def guide_steps(entry, field):
+    checks = text_list(entry.get("checks"), f"{field}.checks", preserve_lines=True)
+    for number, step in enumerate(checks, 1):
+        if "\n" not in step:
+            yield f"{number}. {step.strip()}"
+            continue
+        # 代码围栏顶格，复制 Markdown 源文中的 heredoc 也能保留原缩进。
+        longest_run = max((len(run) for run in re.findall(r"~+", step)), default=0)
+        fence = "~" * max(3, longest_run + 1)
+        body = step if step.endswith("\n") else step + "\n"
+        yield f"\n**步骤 {number}**\n\n{fence}\n{body}{fence}\n"
+
+
 def render_guide(record, passed, *, root=None):
     if not isinstance(record, dict):
         raise ValueError("维护导读记录需要 JSON 对象")
@@ -230,11 +270,10 @@ def render_guide(record, passed, *, root=None):
             required_text(entry.get(key), f"{field}.{key}") for key in ("task", "entry", "callers")
         )
         evidence = guide_sources(entry, field, root, location)
-        checks = text_list(entry.get("checks"), f"{field}.checks")
         lines.extend([
             "", f"### {task}", "", f"- **当前入口**　{location}",
             f"- **受影响的调用方**　{callers}", f"- **核对依据**　{'、'.join(evidence)}",
-            "", "自查步骤", "", *(f"{number}. {check}" for number, check in enumerate(checks, 1)),
+            "", "自查步骤", "", *guide_steps(entry, field),
         ])
     if not guide or "guide_limit" in record:
         limit = required_text(record.get("guide_limit"), "guide_limit")

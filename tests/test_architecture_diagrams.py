@@ -167,7 +167,7 @@ class ArchitectureDiagramTests(unittest.TestCase):
             result = run_report(record, "--json", cwd=root)
             self.assertEqual(result.returncode, 0, result.stderr)
             packet = json.loads(result.stdout)
-            self.assertEqual(packet["results"], [{**task, "status": "已查"}])
+            self.assertEqual(packet["results"], [{**task, "status": "已查", "verdict": "不适用"}])
             self.assertIn("**检查结果**　不适用", packet["markdown"])
             self.assertNotIn("### 建议修订", packet["markdown"])
 

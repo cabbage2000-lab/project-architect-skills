@@ -48,7 +48,7 @@ class BehaviorVerificationTests(unittest.TestCase):
     def test_correct_output_and_weak_assertion_are_independent(self):
         packet = self.packet(record())
         report = packet["markdown"]
-        self.assertEqual(packet["results"], [{**selected("行为验证")[0], "status": "已查"}])
+        self.assertEqual(packet["results"], [{**selected("行为验证")[0], "status": "已查", "verdict": "未通过"}])
         self.assertEqual(report.count("**范围内未发现**（已实跑）"), 2)
         self.assertIn("**发现问题**（仅静态核对）", report)
         self.assertIn("只断言文件存在", report)
@@ -92,7 +92,7 @@ class BehaviorVerificationTests(unittest.TestCase):
         self.assertIn("拒绝已承诺的旧字段", self.packet(data)["markdown"])
         data["selected"] = selected("retry")
         packet = self.packet(data)
-        self.assertEqual(packet["results"], [{**selected("retry")[0], "status": "已查"}])
+        self.assertEqual(packet["results"], [{**selected("retry")[0], "status": "已查", "verdict": "不适用"}])
         self.assertIn("当前入口没有写入或重试机制", packet["markdown"])
         self.assertNotIn("旧客户端", packet["markdown"])
         self.assertNotIn("最小运行可复现", packet["markdown"])

@@ -103,7 +103,7 @@ def check_rows(checks, found, selected):
             raise ValueError(f"checks.{kind}.status 需要与函数级证据一致")
         detail = required_text(check.get("detail"), f"checks.{kind}.detail")
         states.add(status)
-        answers[kind] = detail if status == PENDING else ""
+        answers[kind] = status, detail if status == PENDING else ""
         if status != GAP and "evidence" in check:
             evidence = text_list(check["evidence"], f"checks.{kind}.evidence")
             detail += f"（{'、'.join(evidence)}）"
@@ -115,6 +115,7 @@ def module_findings(entries, selected):
     if not isinstance(entries, list):
         raise ValueError("modules 需要数组")
     lines, states, answers = [], set(), {}
+    module_states = {}
     for item in entries:
         if not isinstance(item, dict) or item.get("status") not in STATUSES:
             raise ValueError("modules 的每项需要有效的检查状态")
@@ -142,9 +143,10 @@ def module_findings(entries, selected):
                 suggestion = required_text(item["suggestion"], "modules.suggestion")
                 lines.append(f"  - 建议　{suggestion}")
         states.add(status)
-        answers.setdefault(kind, "")
-        if status == PENDING:
-            answers[kind] = detail
+        seen = module_states.setdefault(kind, set())
+        seen.add(status)
+        reason = detail if status == PENDING else answers.get(kind, (None, ""))[1]
+        answers[kind] = overall_status(seen, PENDING in seen), reason
     return lines, states, answers
 
 
@@ -162,16 +164,17 @@ def render_report(record, *, as_json=False):
     answers.update(module_answers)
     states.update(module_states)
     if dispatched and notes:
-        for kind, reason in answers.items():
-            answers[kind] = reason or "尚未核对" + "、".join(notes)
+        for kind, (state, reason) in answers.items():
+            answers[kind] = state, reason or "尚未核对" + "、".join(notes)
     if selected.keys() - answers.keys():
         states.add("未查")
     coverage_incomplete = bool(notes) or PENDING in states
 
+    status = overall_status(states, coverage_incomplete)
     heading = "## 架构依赖检查" if selected.keys() == {"architecture_drift"} else "## 代码异味"
     lines = [
         heading, "", *summary,
-        f"**检查结果**　{overall_status(states, coverage_incomplete)}",
+        f"**检查结果**　{status}",
         "", "### 已查范围", "", *(f"- {source}" for source in scope),
     ]
     if rows:
@@ -183,7 +186,7 @@ def render_report(record, *, as_json=False):
         lines.extend(["", "### 模块层面关联诊断", "", *modules])
     if notes:
         lines.extend(["", "### 未核实的资料", "", *(f"- {note}。" for note in notes)])
-    return inspection_output(lines, dispatched, answers, as_json, "代码异味")
+    return inspection_output(lines, dispatched, answers, as_json, "代码异味", status)
 
 
 def main():

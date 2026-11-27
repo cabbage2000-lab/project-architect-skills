@@ -139,15 +139,15 @@ def render_report(record, *, as_json=False):
         states.update(artifact_states)
         limits.extend(artifact_limits)
         if artifacts:
-            answers[GENERATED] = "、".join([*artifact_limits, *notes])
-    if notes or states - {"未查"}:
-        answers[BASIC] = "、".join([*notes, *limits])
+            answers[GENERATED] = overall_status(artifact_states, bool(artifact_limits or notes)), "、".join([*artifact_limits, *notes])
     status = overall_status(states, bool(notes) or PENDING in states)
+    if notes or states - {"未查"}:
+        answers[BASIC] = status, "、".join([*notes, *limits])
     lines = [
         f"## {BASIC}", "", *summary, f"**检查结果**　{status}",
         "", "### 已查范围", "", *(f"- {item}" for item in scope), *lines,
     ]
-    return inspection_output(lines, selected, answers, as_json, BASIC)
+    return inspection_output(lines, selected, answers, as_json, BASIC, status)
 
 
 def main():

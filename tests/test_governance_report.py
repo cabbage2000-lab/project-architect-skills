@@ -1,4 +1,7 @@
 import json
+import re
+import shlex
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -170,6 +173,64 @@ class GovernanceReportTests(unittest.TestCase):
         self.assertIn("1 项未通过", self.report(record, "--summary"))
         self.assertFalse((self.root / REPORT).exists())
 
+    def test_expert_verdict_reaches_both_reports_through_the_plan(self):
+        example = SCRIPT.parents[1] / "references/examples/necessary-docs-record.json"
+        source = json.loads(example.read_text(encoding="utf-8"))
+        docs = {"check": "必要文档", "unit": "订单"}
+        source["selected"] = [docs]
+
+        def packet(script, record, *options):
+            output = subprocess.check_output(
+                [sys.executable, "-B", str(SCRIPT.with_name(script)), *options, "--json"],
+                input=json.dumps(record), text=True, cwd=self.root,
+            )
+            return json.loads(output)
+
+        expert = packet("necessary_docs.py", source)
+        self.assertIn("**检查结果**　发现问题", expert["markdown"])
+        coverage = {"selected": [docs, {**docs, "unit": "退款"}], "results": expert["results"]}
+        plan = packet("governance_plan.py", {"mode": "inspect", "candidates": [], "coverage": coverage}, "--preview")
+        record = report_record()
+        record.update(plan=plan["plan"], audit=[expert["markdown"]],
+                      summary=[{"check": "必要文档", "detail": "缺少验证说明。"}])
+        for options in (("--summary",), ()):
+            text = self.report(record, *options)
+            self.assertIn("❌ 未通过", text)
+            self.assertIn("退款（未查）", text)
+        record["summary"][0]["status"] = "通过"
+        self.invalid(record, "与专家回传不符")
+        result = run_report(record, self.root, "--summary")
+        self.assertEqual((result.returncode, result.stdout), (2, ""))
+
+    def test_verdict_aggregation_preserves_applicability_and_missing_modules(self):
+        for verdicts, expected in [
+            (["不适用", "不适用"], "不适用"), (["通过", "不适用"], "✅ 通过"),
+            (["通过", "待确认"], "待确认"), (["通过", "未查"], "待确认"),
+            (["未查", "未查"], "未查"), (["未通过", "待确认"], "❌ 未通过"),
+        ]:
+            with self.subTest(verdicts=verdicts):
+                record = self.summary_record("通过")
+                del record["summary"][0]["status"]
+                selected = [{"check": "必要文档", "unit": unit} for unit in ("订单", "退款")]
+                results = []
+                for unit, verdict in zip(selected, verdicts):
+                    if verdict == "未查":
+                        continue
+                    status = "部分已查" if verdict == "待确认" else "已查"
+                    results.append({**unit, "status": status, "verdict": verdict, "reason": "手册未读"})
+                record["plan"]["coverage"] = {"selected": selected, "results": results}
+                self.assertIn(f"| 必要文档 | {expected} |", self.report(record, "--summary"))
+
+    def test_known_failure_in_legacy_module_survives_new_successful_return(self):
+        record = self.summary_record("未通过")
+        coverage = record["plan"]["coverage"]
+        second = {"check": "必要文档", "unit": "退款"}
+        coverage["selected"].append(second)
+        coverage["results"].append({**second, "status": "已查", "verdict": "通过"})
+        self.assertIn("❌ 未通过", self.report(record, "--summary"))
+        del record["summary"][0]["status"]
+        self.assertIn("| 待确认 |", self.report(record, "--summary"))
+
     def test_summary_cannot_publish_or_bypass_full_report_publication_checks(self):
         record = self.summary_record("通过")
         record["guide"][0]["entry"] = "gone.py::download"
@@ -311,6 +372,25 @@ class GovernanceReportTests(unittest.TestCase):
         self.assertIn("自查步骤", report)
         self.assertNotIn("同意治理", report)
         self.assertEqual(before, {p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()})
+
+    @unittest.skipUnless(shutil.which("sh"), "需要 sh 重放多行导读命令")
+    def test_multiline_command_copied_from_each_guide_detects_wrong_output(self):
+        python = shlex.quote(sys.executable)
+        command = f"{python} -B export.py\n{python} -B - <<'PY'\nfrom export import download_orders\n" \
+                  "if download_orders() != 'Customer':\n    raise SystemExit(1)\n# ~~~~\nPY"
+        record = report_record(entries=[guide(checks=[command.replace("\n", "\r\n")])])
+        for options in (("--guide-only",), ()):
+            with self.subTest(options=options):
+                path = self.root / "export.py"
+                path.write_text("def download_orders(): return 'Customer'\n")
+                report = self.report(record, *options)
+                match = re.search(r"^(~{3,})\n(.*?)\n\1$", report, re.MULTILINE | re.DOTALL)
+                self.assertIsNotNone(match)
+                copied = match.group(2)
+                self.assertEqual(copied, command)
+                self.assertEqual(subprocess.run(["sh", "-c", copied], cwd=self.root).returncode, 0)
+                path.write_text("def download_orders(): return 'Other'\n")
+                self.assertEqual(subprocess.run(["sh", "-c", copied], cwd=self.root).returncode, 1)
 
     def test_standalone_guide_reports_visible_limits_and_cannot_publish_a_governance_report(self):
         record = {"guide": [], "guide_limit": "只读到 README，尚需核对业务入口。"}
