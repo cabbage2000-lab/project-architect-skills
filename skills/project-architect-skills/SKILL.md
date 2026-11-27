@@ -3,7 +3,7 @@ name: project-architect-skills
 license: MIT
 metadata:
   version: "0.0.3"
-description: 帮接手者定位改动入口、受影响的调用方和验证方法。「本次改动质检」按未提交改动或 Git 提交范围检查行为变化、调用方、文档和验证缺口。按项目大小推荐、补写关键文档和架构图。质检覆盖文档、架构图、目录、代码异味和行为验证，支持跨入口业务规则、生成产物同步和维护导读独立复验，可评估 SOLID 和设计模式。输入「项目评估」或 project-architect-skills 可做五项质检，按维护影响给出修复建议。回复「同意治理」可逐项修复并验收。
+description: 帮接手者定位改动入口、受影响的调用方和验证方法。「本次改动质检」按未提交改动或 Git 提交范围检查行为变化、调用方、文档和验证缺口。用户说「补文档」或「补架构图」时，根据实际用途和交接缺口推荐该补的章节或图件，并可按选择补写或绘制。质检覆盖文档、架构图、目录、代码异味和行为验证，支持跨入口业务规则、生成产物同步和维护导读独立复验，可评估 SOLID 和设计模式。输入「项目评估」或 project-architect-skills 可做五项质检，按维护影响给出修复建议。回复「同意治理」可逐项修复并验收。
 ---
 
 # 项目治理架构师
@@ -14,7 +14,11 @@ description: 帮接手者定位改动入口、受影响的调用方和验证方�
 
 「本次改动质检」「提交前看看这次改动漏了什么」或要求检查指定提交差异时，按[本次改动质检](references/change-check.md)直接交付只读结果。以实际差异为入口，核对行为、调用方、文档和验证缺口。默认取未提交改动，用户指定范围时取对应版本。
 
-「补文档」「补 ADR」或指定编写手册，走[工程文档专家](agents/engineering-documentation-expert.md)的[补文档流程](references/necessary-documents.md#补文档)。「该补哪些架构图」「帮我补架构图」或点名绘制某个视图，走[软件架构专家](agents/software-architecture-expert.md)的[补架构图流程](references/architecture-diagrams.md#补架构图)。同时请求图文时分别取证，共用同一份图源。专家只读取证和拟稿，主 Agent 按用户选择写入并验证。单独请求推荐或补全时，直接交付清单或选定的产物。质检时，各专家先核对[保密文档的 Git 忽略范围](references/necessary-documents.md#保密文档)，将边界传给涉及同一路径的检查项。
+「补文档」「不知道项目该写哪些文档」或点名补 PRD、ADR、手册，走[工程文档专家](agents/engineering-documentation-expert.md)的[补文档流程](references/necessary-documents.md#补文档)。泛问时先查项目，用日常语言说明最该补哪段内容及原因，供用户选择。
+
+「补架构图」「不知道项目该画什么图」或点名绘制某个视图，走[软件架构专家](agents/software-architecture-expert.md)的[补架构图流程](references/architecture-diagrams.md#补架构图)。泛问时先核对现有图和实现，推荐最能解决当前问题的图，用日常语言说明该修哪张或该在哪里新画。已有图或示例足够时直接说明。
+
+同时请求图文时分别取证，共用同一份图源。专家只读取证和拟稿，主 Agent 按用户选择写入并验证。单独请求推荐或补全时，直接交付清单或选定的产物。质检时，各专家先核对[保密文档的 Git 忽略范围](references/necessary-documents.md#保密文档)，将边界传给涉及同一路径的检查项。
 
 用户只问「从哪里改、影响谁、怎么验」时，主 Agent 沿当前业务入口取证，跨模块调用按需交给[软件架构专家](agents/software-architecture-expert.md)追踪。按[独立维护导读](references/execution-and-handover.md#独立维护导读)用 `governance_report.py --guide-only` 在会话直接交付。问「现有说明够不够」属于文档检查。同时要求诊断或修复时按下表分派，维护定位的结果并入同一份治理报告。
 

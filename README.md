@@ -82,11 +82,14 @@ Choose a prompt that matches what you need to do. In Codex or WorkBuddy, replace
 | Write a specific guide | `/project-architect-skills Write a local setup guide with steps to start the project and verify it works` |
 | Architecture diagram quality check | `/project-architect-skills Run an architecture diagram quality check` |
 | Check for missing architecture diagrams | `/project-architect-skills List the essential architecture diagrams this project is missing and explain why each should be added` |
-| Add an architecture diagram | `/project-architect-skills Use the source code to draw an architecture diagram showing the main modules and how they call one another` |
+| Get diagram recommendations | `/project-architect-skills Add architecture diagrams` |
+| Draw a specific diagram | `/project-architect-skills Use the source code to draw an architecture diagram showing the main modules and how they call one another` |
 | Project structure check | `/project-architect-skills Run a project structure check` |
 | Refactoring review | `/project-architect-skills Identify code worth refactoring, explain why, and suggest how to verify the changes` |
 
-When you ask to “Add documentation,” the assistant looks at your project and explains in plain language what to add first, why it matters, and where it belongs. It writes the additions you choose.
+Just ask to “Add documentation.” The assistant checks where someone would get stuck, explains which addition would help most, and suggests where to put it. A small tool might need one line in the README showing the expected output. If buyers and support staff follow different order cancellation rules, the assistant checks whether those rules belong in an existing guide or need a product requirements document for review. It writes the additions you choose and tells you when the existing guides already cover the task. [When the skill recommends each of the seven document types](skills/project-architect-skills/references/necessary-documents.md#补文档)
+
+You can also ask to “Add architecture diagrams.” If colleagues know how to request an export but cannot tell when the file is ready, the assistant traces the request and checks existing diagrams before recommending a view of the handoff. If an existing diagram only needs a corrected arrow, it identifies that edit. It draws the changes you choose or explains why the existing material is sufficient. [When the skill recommends each diagram type](skills/project-architect-skills/references/architecture-diagrams.md#补架构图)
 
 A change check reviews staged, unstaged, and non-ignored untracked files in read-only mode. It reports what behavior changed, which consumers or instructions are affected, and what still needs verification. Use `A..B` to compare two committed snapshots or `A...B` to review changes from the common ancestor to B.
 

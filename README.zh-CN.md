@@ -92,11 +92,14 @@ WorkBuddy 使用 `.codebuddy/` 项目级代码开发配置时，复制到 `.code
 | 补指定文档 | `/project-architect-skills 补一份本地启动指南，写清启动和验证步骤` |
 | 架构图质检 | `/project-architect-skills 架构图质检` |
 | 本项目缺失架构图检查 | `/project-architect-skills 本项目缺哪些必要架构图，列出建议补画的图和依据` |
-| 补架构图 | `/project-architect-skills 根据源码补一张架构图，画清主要模块及调用关系` |
+| 补架构图，请助手推荐 | `/project-architect-skills 补架构图` |
+| 画指定的图 | `/project-architect-skills 根据源码补一张架构图，画清主要模块及调用关系` |
 | 项目结构检查 | `/project-architect-skills 项目结构质检` |
 | 代码重构检查 | `/project-architect-skills 找出值得重构的代码，给出理由和验证方法` |
 
-只说「补文档」时，助手会先看你的项目，用简单的话说明建议先补什么、为什么、补在哪里。你选定后，助手再写入。
+只说「补文档」就可以。助手会先看项目，指出谁在哪一步会遇到困难、最值得补哪段、写在哪里。小工具可能只需在 README 加一行预期输出。如果买家和客服取消订单的规则不同，团队又需要一起验收，助手会说明该补现有章节，还是单独写一份产品需求文档（PRD）。你选定后再写入，已有说明够用时会直接告诉你。[七类文档分别在什么情况下推荐](skills/project-architect-skills/references/necessary-documents.md#补文档)
+
+只说「补架构图」也可以。比如，同事知道去哪里点「导出」，却不清楚提交后谁生成文件，助手会先核对入口、后台任务和已有图，再建议是否画出这段先后顺序。如果只是原图漏了一个环节，会指出该改哪张图、哪条线。你选定后再画，已有材料够用时会说明原因。[架构图分别在什么情况下推荐](skills/project-architect-skills/references/architecture-diagrams.md#补架构图)
 
 本次改动质检默认只读检查已暂存、未暂存和未被 Git 忽略的新文件。报告列出行为变化、受影响的位置和提交前还需执行的验证。指定 `A..B` 比较两个提交的内容，`A...B` 检查从共同祖先到 B 的改动。[本次改动质检](skills/project-architect-skills/references/change-check.md)
 
