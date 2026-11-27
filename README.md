@@ -104,7 +104,7 @@ By default, the conversation shows a compact table with each check, its pass sta
 
 The report uses `待确认` (needs confirmation) when evidence is missing. For example, if a test manual is inaccessible, the report identifies the steps that still need checking. When Git rules exclude confidential documents or diagrams from the checkout, their delivery check is marked `不适用` (not applicable). Verified errors in public instructions still appear as findings.
 
-Ask “Show the detailed report” to expand the evidence, or “Save this report” to keep the complete report. After approved repairs, it is saved to `docs/project-architect-report.md`; the conversation still shows only the check table, one-sentence conclusion, and file path. [Example from an earlier documentation review](docs/project-architect-report.md)
+Ask “Show the detailed report” to expand the evidence, or “Save this report” to keep the complete report. The assistant also saves the report by default after approved repairs. When saving succeeds, the reply includes the path `docs/project-architect-report.md`. If a manually maintained report already exists there, the assistant preserves it. If saving is unavailable, the assistant shares a summary in the conversation, where you can also ask for the full report. [Example from an earlier documentation review](docs/examples/necessary-docs-report.md)
 
 ## Testing
 
