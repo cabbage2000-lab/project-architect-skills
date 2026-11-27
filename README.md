@@ -26,9 +26,9 @@ The checks complement one another. For example, the structure reviewer can locat
 
 The behavior reviewer can compare the same rule across entry points, replay a data migration and recovery, exercise concurrent writes, verify access boundaries, or diagnose a controlled failure. The structure reviewer can rebuild a generated artifact and check what its consumer receives. At handover, a fresh documentation reviewer or the recipient can use the guide to locate a related change and run a check that would catch a regression.
 
-![Project quality checks, repair planning and approval, execution and verification, and maintenance handover.](docs/diagrams/product-functional-architecture.png)
+![Project quality checks, repair planning and approval, execution and verification, and maintenance handover.](docs/diagrams/product-functional-architecture.en.png)
 
-[Editable diagram](docs/diagrams/product-functional-architecture.drawio) · [Full workflow](skills/project-architect-skills/SKILL.md#治理流程)
+[Editable diagram](docs/diagrams/product-functional-architecture.en.drawio) · [Full workflow](skills/project-architect-skills/SKILL.md#治理流程)
 
 A full quality check covers all five areas; a focused request checks only the relevant modules or entry points. Inspection and planning stay read-only. The conversation shows a check table and a one-sentence conclusion, with proposed scope and acceptance criteria when repairs are needed. Changes require approval and are then verified individually. Inconclusive findings remain marked as needing confirmation.
 
