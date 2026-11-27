@@ -4,18 +4,10 @@ import argparse
 import itertools
 import json
 import os
-import subprocess
 from collections import defaultdict
 from pathlib import PurePosixPath
 
-
-def git(*arguments):
-    # Partial clones may try to fetch missing objects during rename detection.
-    environment = {**os.environ, "GIT_ALLOW_PROTOCOL": ""}
-    result = subprocess.run(["git", "--no-pager", *arguments], capture_output=True, env=environment)
-    if result.returncode:
-        raise ValueError(result.stderr.decode(errors="replace").strip() or "Git 命令失败")
-    return result.stdout
+from git_evidence import git
 
 
 def commit_changes(raw):

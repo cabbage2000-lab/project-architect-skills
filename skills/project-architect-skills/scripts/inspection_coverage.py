@@ -33,22 +33,8 @@ def selected_checks(record, supported, basic):
     return selected
 
 
-def assessment(criterion, status, detail, evidence, source, *, impact=None):
-    """保留专家已核实的结论，主 Agent 可以在汇总时补上根因和影响档位。"""
-    row = {"criterion": criterion, "status": status, "detail": detail, "evidence": list(evidence)}
-    if status == "发现问题":
-        row["impact"] = required_text(impact if impact is not None else source.get("impact"), "impact")
-        for field in ("root_id", "severity", "owner"):
-            if field in source:
-                row[field] = source[field]
-    if "resolves" in source and status in ("范围内未发现", "不适用"):
-        row["resolves"] = source["resolves"]
-    return row
-
-
-def inspection_output(lines, selected, answers, as_json, basic, observations):
+def inspection_output(lines, selected, answers, as_json, basic):
     results = []
-    assessments = []
     if basic in selected and basic not in answers and answers:
         answers[basic] = "、".join(dict.fromkeys(reason for reason in answers.values() if reason))
     for check, unit in selected.items():
@@ -60,18 +46,12 @@ def inspection_output(lines, selected, answers, as_json, basic, observations):
         else:
             row["status"] = "已查"
         results.append(row)
-        if as_json:
-            assessments.extend(
-                {"check": check, "unit": unit, **item} for item in observations
-                if check == basic or check == item["criterion"]
-            )
     if selected:
         scope = [{"check": check, "unit": unit} for check, unit in selected.items()]
         lines.extend(["", "### 专项核对", "", *coverage_lines({"selected": scope, "results": results})])
     markdown = "\n".join(lines).rstrip("\n") + "\n"
     if as_json:
-        return json.dumps({"markdown": markdown, "results": results, "assessments": assessments},
-                          ensure_ascii=False) + "\n"
+        return json.dumps({"markdown": markdown, "results": results}, ensure_ascii=False) + "\n"
     return markdown
 
 

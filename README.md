@@ -8,7 +8,7 @@
 
 Keep your codebase under control and easy to maintain as your AI-assisted development (vibe coding) project grows more complex.
 
-Project Architect is a skill for **Codex, Claude Code, and WorkBuddy**. It checks documentation, architecture diagrams, repository layout, and code quality against the source. Before a handover or a change, it helps you find where to start, which callers depend on the current behavior, and how to verify the result.
+Project Architect is a skill for **Codex, Claude Code, and WorkBuddy**. It checks documentation, architecture diagrams, repository layout, code quality, and the behavior of a representative user entry point. Before a handover or a change, it helps you find where to start, which callers depend on the current behavior, and how to verify the result.
 
 ## Quick start
 
@@ -24,7 +24,7 @@ Project Architect is a skill for **Codex, Claude Code, and WorkBuddy**. It check
 
 The Chinese prompt is `/project-architect-skills 项目体检`. In Codex or WorkBuddy, say “Use project-architect-skills to run a full project health check.”
 
-The first pass is read-only. You get scores for the areas assessed, evidence for each finding, and a proposed repair plan. Reply “Apply the proposed fixes” or `同意治理` to approve the plan. You can also name just the items you want fixed.
+The first pass is read-only. The behavior reviewer follows one user entry point through a minimal run, a documented business rule, and the relevant test assertions. The report identifies which checks ran and which relied on source inspection. The report shows the evidence for each finding, explains which maintenance task it affects, and suggests what to fix first. Reply “Apply the proposed fixes” or `同意治理` to approve the plan. You can also name just the items you want fixed.
 
 <details>
 <summary>Project-level installation paths</summary>
@@ -48,6 +48,9 @@ Choose a prompt that matches what you need to do. In Codex or WorkBuddy, replace
 | When to use it | Claude Code prompt |
 | --- | --- |
 | Full project health check | `/project-architect-skills Run a full project health check` |
+| Behavior verification | `/project-architect-skills Verify the empty-order export and check whether the normal test suite would catch a missing header` |
+| Pre-commit change check | `/project-architect-skills Check my uncommitted changes for affected callers, outdated docs, and missing tests` |
+| Review a commit range | `/project-architect-skills Check the changes in main...feature` |
 | Documentation health check | `/project-architect-skills Run a documentation health check` |
 | Check for missing documentation | `/project-architect-skills List the essential documents this project is missing and explain why each should be added` |
 | Add documentation | `/project-architect-skills Write a local setup guide with steps to start the project and verify it works` |
@@ -56,6 +59,8 @@ Choose a prompt that matches what you need to do. In Codex or WorkBuddy, replace
 | Add an architecture diagram | `/project-architect-skills Use the source code to draw an architecture diagram showing the main modules and how they call one another` |
 | Project structure check | `/project-architect-skills Run a project structure check` |
 | Refactoring review | `/project-architect-skills Identify code worth refactoring, explain why, and suggest how to verify the changes` |
+
+A change check reviews staged, unstaged, and non-ignored untracked files in read-only mode. It reports what behavior changed, which consumers or instructions are affected, and what still needs verification. Use `A..B` to compare two committed snapshots or `A...B` to review changes from the common ancestor to B.
 
 ## Project background
 
@@ -67,11 +72,9 @@ Software professionals build these engineering and architecture skills on a stro
 
 ## Reading the report
 
-When a project keeps confidential documents or diagrams at Git-ignored paths, their absence from the checkout carries no penalty. Independently verified errors in public instructions still count.
-
 Start with the operation you need to complete. If a README tells a new maintainer to run a deleted file, the report identifies the failing command and the step it blocks.
 
-A full check scores four areas, up to 25 points each. The total is normalized to 100 across applicable areas. A focused check scores only the requested areas. The report scripts use Chinese labels. For example, `待补查` means the reviewer needs more evidence to assign a score. [Scoring rules](skills/project-architect-skills/references/health-score.md)
+The report uses `待确认` (needs confirmation) when evidence is missing. For example, if a test manual is inaccessible, the report identifies the steps that still need checking. When Git rules exclude confidential documents or diagrams from the checkout, their delivery check is marked `不适用` (not applicable). Verified errors in public instructions still appear as findings.
 
 A read-only report appears in the conversation. Ask “Save this report” to keep a copy. After approved repairs, the default output is `docs/project-architect-report.md` in the target project. [Example report](docs/project-architect-report.md)
 
@@ -155,13 +158,13 @@ git -C "$governance_project" -c user.name=Fixture -c user.email=fixture@example.
 printf '%s\n' "$governance_project"
 ```
 
-Open the printed path in a writable Codex session and enter `project-architect-skills`. When the host supports subagents, check that all four reviewers load their definitions and return findings before the plan appears. The plan should identify `README.md` and `test_names.py`. At this point, `git status --short` in the temporary project should produce no output.
+Open the printed path in a writable Codex session and enter `project-architect-skills`. When the host supports subagents, check that all five reviewers load their definitions and return findings before the plan appears. The plan should identify `README.md` and `test_names.py`. At this point, `git status --short` in the temporary project should produce no output.
 
 Approve the two repairs in the same conversation. Verify each result in the temporary project.
 
 - `README.md` includes a verification command and its expected result. The test has moved to `tests/`.
 - `python3 -B names.py` still prints `Ada, Bob`. Running `python3 -B -m unittest discover -s tests` runs and passes one test.
-- `docs/project-architect-report.md` covers the four assessments, the baseline and verification result for each repair, and guidance for the next maintainer.
+- `docs/project-architect-report.md` covers the five assessments, the baseline and verification result for each repair, and guidance for the next maintainer.
 
 To check the decline path, create a fresh fixture and decline the proposed repairs. The session should deliver the findings and recommendations, and `git status --short` should still produce no output.
 

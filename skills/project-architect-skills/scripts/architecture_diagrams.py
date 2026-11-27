@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from inspection_coverage import assessment, inspection_output, selected_checks
+from inspection_coverage import inspection_output, selected_checks
 from necessary_docs import (
     COVERED, GAP, NOT_APPLICABLE, PENDING, ignored_document_absence, project_summary, required_text,
     table_row, text_list, unread_sources,
@@ -22,7 +22,7 @@ def diagram_rows(diagrams):
     if not isinstance(diagrams, list):
         raise ValueError("diagrams 需要数组，未找到图件时传入 []")
     rows = []
-    comparisons = []
+    comparisons = {}
     for diagram in diagrams:
         if not isinstance(diagram, dict):
             raise ValueError("diagrams 的每项需要图件记录")
@@ -47,7 +47,7 @@ def diagram_rows(diagrams):
             detail = required_text(check.get("detail"), "diagrams.checks.detail")
             evidence = text_list(check.get("evidence"), "diagrams.checks.evidence")
             rows.append(table_row((source, "实现视图", claim, result, detail, "、".join(evidence))))
-            comparisons.append((result, f"{claim}。{detail}", [source, *evidence], check))
+            comparisons.setdefault(result, []).append(f"{claim}。{detail}")
     return rows, comparisons
 
 
@@ -73,25 +73,6 @@ def assess_diagrams(need, results, has_diagrams, has_unread):
     return GAP, "已查范围内缺少实现视图。"
 
 
-def diagram_assessments(need, status, conclusion, comparisons, unread, repair, diagrams):
-    if status == NOT_APPLICABLE:
-        return [assessment("架构图", status, need["detail"], need["evidence"], need)]
-    observations = []
-    for result, detail, sources, check in comparisons:
-        if result == STALE or (result == OMISSION and not unread and need["status"] == REQUIRED):
-            observations.append(assessment("架构图", GAP, detail, sources, {**repair, **check}))
-        else:
-            outcome = COVERED if result == MATCH else PENDING
-            observations.append(assessment("架构图", outcome, detail, sources, check))
-    if not observations or need["status"] == PENDING:
-        # 缺图时，适用性依据和已检索的产品图支持这个范围的结论。
-        outcome = PENDING if need["status"] == PENDING else status
-        sources = [*need["evidence"], *(diagram["source"] for diagram in diagrams)]
-        observations.append(assessment("架构图", outcome, f"{need['detail']} {conclusion}", sources,
-                                       repair if outcome == GAP else need))
-    return observations
-
-
 def render_report(record, *, as_json=False):
     if not isinstance(record, dict):
         raise ValueError("检查记录需要 JSON 对象")
@@ -104,19 +85,24 @@ def render_report(record, *, as_json=False):
     detail = required_text(need.get("detail"), "need.detail")
     evidence = text_list(need.get("evidence"), "need.evidence")
     rows, comparisons = diagram_rows(record.get("diagrams"))
-    results = {item[0] for item in comparisons}
     ignored = ignored_document_absence(need) if need["status"] == REQUIRED else None
     private_path = Path(need["expected_path"]) if ignored else None
     if ignored:
         evidence.append(ignored)
     notes = [f"- {source}（{reason}）。" for _, source, reason in unread_sources(record.get("unread"))
              if Path(source) != private_path]
-    status, conclusion = assess_diagrams(need["status"], results, bool(rows), bool(notes))
+    status, conclusion = assess_diagrams(need["status"], comparisons, bool(rows), bool(notes))
     if ignored and status == GAP and not comparisons:
         status = NOT_APPLICABLE
         conclusion = "约定图件路径被 Git 忽略，免查其仓库交付情况。"
-        need = {**need, "evidence": evidence, "detail": f"{detail} {conclusion}"}
-    completeness = PENDING if notes or PENDING in results or status == PENDING else "已核对本轮相关资料"
+    gaps = list(notes)
+    if status != NOT_APPLICABLE:
+        gaps.extend(comparisons.get(PENDING, []))
+        if notes or need["status"] != REQUIRED:
+            gaps.extend(comparisons.get(OMISSION, []))
+        if need["status"] == PENDING:
+            gaps.append(detail)
+    completeness = PENDING if notes or PENDING in comparisons or status == PENDING else "已核对本轮相关资料"
 
     lines = [
         "## 架构图", "", *summary,
@@ -133,7 +119,6 @@ def render_report(record, *, as_json=False):
         ])
     if notes:
         lines.extend(["", "### 未核实的资料", "", *notes])
-    repair = {}
     if status == GAP:
         repair = record.get("repair")
         if not isinstance(repair, dict):
@@ -145,15 +130,13 @@ def render_report(record, *, as_json=False):
             "", "### 建议修订", "", f"**维护影响**　{impact}",
             "", f"**修订位置**　{placement}", "", *(f"- {change}" for change in changes),
         ])
-    observations = diagram_assessments(need, status, conclusion, comparisons, notes, repair, record["diagrams"])
-    gaps = [*notes, *(item["detail"] for item in observations if item["status"] == PENDING)]
-    return inspection_output(lines, selected, {"架构图": "、".join(gaps)}, as_json, "架构图", observations)
+    return inspection_output(lines, selected, {"架构图": "、".join(gaps)}, as_json, "架构图")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="检查记录 JSON，默认读取标准输入")
-    parser.add_argument("--json", action="store_true", help="返回章节、覆盖记录和评分依据")
+    parser.add_argument("--json", action="store_true", help="返回体检章节和检查范围记录")
     args = parser.parse_args()
     try:
         if args.record is None:

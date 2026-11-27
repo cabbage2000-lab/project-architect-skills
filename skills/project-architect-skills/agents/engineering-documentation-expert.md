@@ -19,4 +19,4 @@ description: 工程文档专家。按项目规模推荐或补全指定的交接�
 
 按[必要文档判据](../references/necessary-documents.md)整理记录，用 [necessary_docs.py](../scripts/necessary_docs.py) 生成「必要文档」章节，回传有出处和维护影响的补写或合并建议。
 
-评分时用原派发清单运行 `--json`。若手册步骤失效，实测约定入口及可用的替代步骤，供主 Agent 判定影响档位。[评分与回传](../references/health-score.md)
+若手册步骤失效，记录失败发生在哪一步，以及实际验证过的替代命令和结果。

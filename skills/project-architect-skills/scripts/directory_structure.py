@@ -5,7 +5,7 @@ import json
 import sys
 from pathlib import Path
 
-from inspection_coverage import assessment, inspection_output, selected_checks
+from inspection_coverage import inspection_output, selected_checks
 from necessary_docs import (
     COVERED, GAP, NOT_APPLICABLE, PENDING, overall_status, project_summary, required_text,
     table_row, text_list, unread_notes,
@@ -51,7 +51,8 @@ def assess_path(check):
     if status == GAP:
         impact = required_text(check.get("impact"), "checks.impact")
         suggestion = f"- **{path} → {expected}**　{impact}"
-    return assessment("目录结构", status, f"{path}：{detail}", evidence, check), row, suggestion
+    reason = f"{path}：{detail}" if status == PENDING else ""
+    return status, row, suggestion, reason
 
 
 def render_report(record, *, as_json=False):
@@ -65,17 +66,19 @@ def render_report(record, *, as_json=False):
     if not isinstance(checks, list) or not (checks or notes):
         raise ValueError("checks 需要路径对照数组，尚无可核对路径时须提供 unread")
 
-    observations = []
+    states = set()
+    gaps = list(notes)
     rows = []
     suggestions = []
     for check in checks:
-        observation, row, suggestion = assess_path(check)
-        observations.append(observation)
+        status, row, suggestion, reason = assess_path(check)
+        states.add(status)
+        if reason:
+            gaps.append(reason)
         rows.append(row)
         if suggestion:
             suggestions.append(suggestion)
 
-    states = {item["status"] for item in observations}
     status = overall_status(states, bool(notes) or PENDING in states)
     lines = [
         "## 目录结构", "", *summary,
@@ -92,14 +95,13 @@ def render_report(record, *, as_json=False):
         lines.extend(["", "### 未核实的资料", "", *notes])
     if suggestions:
         lines.extend(["", "### 建议调整", "", *suggestions])
-    gaps = [*notes, *(item["detail"] for item in observations if item["status"] == PENDING)]
-    return inspection_output(lines, selected, {"目录结构": "、".join(gaps)}, as_json, "目录结构", observations)
+    return inspection_output(lines, selected, {"目录结构": "、".join(gaps)}, as_json, "目录结构")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="检查记录 JSON，默认读取标准输入")
-    parser.add_argument("--json", action="store_true", help="返回章节、覆盖记录和评分依据")
+    parser.add_argument("--json", action="store_true", help="返回体检章节和检查范围记录")
     args = parser.parse_args()
     try:
         if args.record is None:

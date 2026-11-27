@@ -57,7 +57,7 @@
         <mxCell id="check-scripts" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
           <mxGeometry x="40" y="276" width="424" height="205" as="geometry" />
         </mxCell>
-        <mxCell id="checks-title" parent="check-scripts" vertex="1" value="四位只读专家与章节生成脚本" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=22;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
+        <mxCell id="checks-title" parent="check-scripts" vertex="1" value="五位只读专家与章节生成脚本" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=22;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
           <mxGeometry x="18" y="13" width="380" height="32" as="geometry" />
         </mxCell>
         <mxCell id="script-necessary-docs" parent="check-scripts" vertex="1" value="necessary_docs.py" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=13;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
@@ -72,11 +72,14 @@
         <mxCell id="script-smells" parent="check-scripts" vertex="1" value="code_smells.py" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=13;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
           <mxGeometry x="213" y="91" width="192" height="24" as="geometry" />
         </mxCell>
+        <mxCell id="script-behavior" parent="check-scripts" vertex="1" value="behavior_verification.py" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=Menlo;fontSize=13;fontStyle=0;fontColor=#202522;align=left;" connectable="0">
+          <mxGeometry x="18" y="118" width="300" height="24" as="geometry" />
+        </mxCell>
         <mxCell id="checks-result" parent="check-scripts" vertex="1" value="专家回传检查章节、治理候选及出处" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=15;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
-          <mxGeometry x="18" y="166" width="380" height="23" as="geometry" />
+          <mxGeometry x="18" y="173" width="380" height="23" as="geometry" />
         </mxCell>
         <mxCell id="script-python-signals" parent="check-scripts" vertex="1" value="python_smell_signals.py 扫描当前 Python 源码" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=13;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
-          <mxGeometry x="18" y="124" width="389" height="26" as="geometry" />
+          <mxGeometry x="18" y="144" width="389" height="26" as="geometry" />
         </mxCell>
         <mxCell id="governance-plan" parent="canvas" vertex="1" value="" style="rounded=1;absoluteArcSize=1;arcSize=16;strokeWidth=1;html=1;fillColor=#FFFFFF;strokeColor=#D8DDD9;container=1;collapsible=0;">
           <mxGeometry x="532" y="276" width="258" height="132" as="geometry" />
@@ -123,7 +126,7 @@
         <mxCell id="shared-title" parent="shared-helpers" vertex="1" value="共用校验与格式" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=22;fontStyle=1;fontColor=#202522;align=left;" connectable="0">
           <mxGeometry x="18" y="10" width="700" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="shared-explanation" parent="shared-helpers" vertex="1" value="其他五个汇总脚本从 necessary_docs.py 导入状态、校验或 Markdown 格式函数。" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=16;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
+        <mxCell id="shared-explanation" parent="shared-helpers" vertex="1" value="章节脚本共用检查状态、字段校验和覆盖记录，按所选入口回传核对范围。" style="text;html=1;whiteSpace=nowrap;fillColor=none;strokeColor=none;verticalAlign=middle;spacing=0;fontFamily=PingFang SC;fontSize=16;fontStyle=0;fontColor=#535C56;align=left;" connectable="0">
           <mxGeometry x="18" y="51" width="710" height="27" as="geometry" />
         </mxCell>
       </root>

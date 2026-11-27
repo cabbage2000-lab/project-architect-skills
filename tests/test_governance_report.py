@@ -97,6 +97,14 @@ class GovernanceReportTests(unittest.TestCase):
                   "checks": [check("structure", "核对入口", "调用新函数", "发现调用")]}
         self.invalid(report_record([code], [review]), "reviews[0].checks")
 
+    def test_historical_scoring_fields_do_not_change_report(self):
+        record = report_record()
+        expected = self.report(record)
+        legacy = {"version": 3, "scope": "full", "assessments": []}
+        record["plan"]["scoring"] = legacy
+        record["reassessment"] = legacy
+        self.assertEqual(self.report(record), expected)
+
     def test_structure_signal_observations_are_advisory_and_require_behavior_checks(self):
         code = candidate("export.py::download_orders", "提取 CSV 格式化")
         observation = "export.py::download_orders 的结构决策点由 8 增至 9。"

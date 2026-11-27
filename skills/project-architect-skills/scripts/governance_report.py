@@ -10,7 +10,6 @@ import tempfile
 from pathlib import Path
 
 from governance_plan import DEFERRED, UNVERIFIED, build_plan
-from health_score import prepare_score, score_section
 from necessary_docs import PENDING, required_text, table_row, text_list
 from plan_evidence import check_sources, location_issue
 from report_fields import records
@@ -152,23 +151,14 @@ def render_report(record):
     audit = record.get("audit")
     if not isinstance(audit, list) or any(not isinstance(item, str) or not item.strip() for item in audit):
         raise ValueError("audit 需要体检章节数组")
-    plan_record = record.get("plan")
-    plan, selected = build_plan(plan_record, replay=True, include_score=False)
+    plan, selected = build_plan(record.get("plan"), replay=True)
     if not audit:
         coverage = record["plan"].get("coverage", {})
         if not coverage.get("selected") or any(result["status"] != "未查" for result in coverage["results"]):
             raise ValueError("audit 缺少已查范围的体检章节")
     review, passed = render_reviews(record.get("reviews"), selected)
     guide = render_guide(record, passed)
-    scoring = ""
-    if "scoring" in plan_record:
-        score_record = plan_record["scoring"]
-        frozen = isinstance(score_record, dict) and score_record.get("evidence_checked") is True
-        _, baseline = prepare_score(score_record, plan_record.get("coverage"), root=None if frozen else Path.cwd())
-        scoring = score_section(baseline, record.get("reassessment"), root=Path.cwd(), expected=bool(selected))
-    elif "reassessment" in record:
-        raise ValueError("reassessment 需要与 plan.scoring 的体检基线对应")
-    sections = ["# 项目治理报告", scoring, *(item.strip() for item in audit), plan.rstrip(), review, guide]
+    sections = ["# 项目治理报告", *(item.strip() for item in audit), plan.rstrip(), review, guide]
     return "\n\n".join(section for section in sections if section) + "\n"
 
 

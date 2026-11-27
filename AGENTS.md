@@ -6,15 +6,17 @@
 
 ## 项目结构
 
-本项目提供一个可在 Codex、Claude Code 和 WorkBuddy 中使用的 Skill，用于核对交接文档、架构图、目录结构和代码异味。修改 Skill 时，请编辑 `skills/project-architect-skills/` 下的源文件。各工具的项目级入口都通过相对符号链接指向该目录，位置与调用方式见 [README 快速开始](README.zh-CN.md#快速开始)。
+本项目提供一个可在 Codex、Claude Code 和 WorkBuddy 中使用的 Skill，用于核对交接文档、架构图、目录结构、代码异味和关键行为。修改 Skill 时，请编辑 `skills/project-architect-skills/` 下的源文件。各工具的项目级入口都通过相对符号链接指向该目录，位置与调用方式见 [README 快速开始](README.zh-CN.md#快速开始)。
 
-- `SKILL.md` 定义检查流程，按检查项路由到 `agents/` 下的四份专家定义。专家定义说明职责、取证方法和回传内容。
+- `SKILL.md` 定义检查流程，按检查项路由到 `agents/` 下的五份专家定义。专家定义说明职责、取证方法和回传内容。
 - `references/necessary-documents.md` 定义文档类别、各类检查项、状态标签和 JSON 检查记录的格式。
 - `scripts/necessary_docs.py` 校验检查记录，并生成 Markdown 报告。
 - `references/architecture-diagrams.md` 定义图件取证、源码对照和修订流程。`scripts/architecture_diagrams.py` 校验对照记录并汇总架构图章节。
 - `references/directory-structure.md` 定义路径归属判据。`scripts/directory_structure.py` 汇总实际路径、适用约定和调整建议。
 - `references/code-smells.md` 定义异味和模块诊断判据。`scripts/python_smell_signals.py` 提取 Python 结构信号，`scripts/code_smells.py` 汇总证据和治理候选。
+- `references/behavior-verification.md` 定义运行、业务规则和回归断言的取证方法。`scripts/behavior_verification.py` 校验单入口记录并生成行为验证章节。
 - `references/git-change-history.md` 说明怎样用 `scripts/git_change_history.py` 提取本地热点和共变线索。
+- `references/change-check.md` 定义本次改动体检的取证与交付方式。`scripts/change_check.py` 列出未提交改动或指定 Git 提交范围。
 - `references/governance-plan.md` 定义候选排序与纳入条件。`scripts/governance_plan.py` 校验并汇总本轮计划。
 - `references/execution-and-handover.md` 定义复核、回退与导读。`scripts/governance_report.py` 汇总各阶段并交付报告。
 
@@ -27,7 +29,7 @@
 - `python3 -B -m unittest discover -s tests -v` 运行测试并显示每个用例的结果。全量通过时显示 `OK`。若显示 `OK (skipped=N)`，请核对 N 项跳过原因，见 [README 的验证说明](README.zh-CN.md#验证模块)。
 - `python3 -B skills/project-architect-skills/scripts/necessary_docs.py record.json` 读取检查记录并将报告写到标准输出。将 `record.json` 替换为实际文件路径，省略路径则从标准输入读取。可先运行[最小示例](skills/project-architect-skills/references/necessary-documents.md#最小可运行示例)。
 
-在项目会话中输入 `用 project-architect-skills 只读检查代码异味` 可查看单项诊断。单独调用此 Skill 时，助手会检查四项并展示拟修复事项。回复「同意治理」后，助手按获批范围执行和复核。
+在项目会话中输入 `用 project-architect-skills 只读检查代码异味` 可查看单项诊断。单独调用此 Skill 时，助手会检查五项并展示拟修复事项。回复「同意治理」后，助手按获批范围执行和复核。
 
 ## 编码风格与命名
 

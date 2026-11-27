@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from inspection_coverage import assessment, inspection_output, selected_checks
+from inspection_coverage import inspection_output, selected_checks
 from report_fields import records, required_text, table_row, text_list
 
 DOCUMENT_TOPICS = {
@@ -186,8 +186,7 @@ def assess_topic(key, item, unread_sources, tool=None):
         if gap_kind is not None:
             detail = f"**{GAP_KINDS[gap_kind]}**　{detail}"
         candidate = f"- **{label}**　{impact} **补写位置**　{placement}"
-    observation = assessment(key, status, f"【{tool}】{detail}" if tool else detail, evidence, item)
-    return observation, table_row((label, status, detail, "、".join(evidence))), candidate, reason
+    return status, table_row((label, status, detail, "、".join(evidence))), candidate, reason
 
 
 def topic_assessments(key, value, unread, notes):
@@ -216,7 +215,7 @@ def redundancy_section(comparisons, unread):
         "| 状态 | 对照内容与维护影响 | 核对依据 | 合并建议 |",
         "| --- | --- | --- | --- |",
     ]
-    observations = []
+    states = set()
     pending = ["待核对" + "、".join(unread)] if unread else []
     for comparison in comparisons:
         status, detail, evidence = assessment_fields("redundancy", comparison)
@@ -225,7 +224,6 @@ def redundancy_section(comparisons, unread):
         if unread_refs and (status == GAP or len(unread_refs) == len(evidence)):
             status = PENDING
             detail = f"{detail}（仍需核对{'、'.join(unread_refs)}）"
-        observation_detail = detail
         if status == GAP:
             if len(evidence) < 2 or len(set(evidence)) != len(evidence):
                 raise ValueError("redundancy.evidence 需要至少两处互不重复的正文位置")
@@ -235,9 +233,9 @@ def redundancy_section(comparisons, unread):
             suggestion = f"保留 {evidence[0]}。{placement}"
         elif status == PENDING:
             pending.append(detail)
-        observations.append(assessment("redundancy", status, observation_detail, evidence, comparison))
+        states.add(status)
         lines.append(table_row((status, detail, "、".join(evidence), suggestion)))
-    return lines, observations, " ".join(pending)
+    return lines, states, " ".join(pending)
 
 
 def overall_status(states, incomplete):
@@ -272,7 +270,6 @@ def render_report(record, *, as_json=False):
     suggestions = []
     states = set()
     answers = {}
-    observations = []
     for category, checks in DOCUMENT_TOPICS.items():
         rows = []
         candidates = []
@@ -285,9 +282,8 @@ def render_report(record, *, as_json=False):
                 rows.append(table_row((label, PENDING, "旧版记录未包含此项，需补查。", "—")))
                 continue
             reasons = []
-            for observation, row, candidate, reason in topic_assessments(key, topics[key], affected[key], notes):
-                observations.append(observation)
-                states.add(observation["status"])
+            for status, row, candidate, reason in topic_assessments(key, topics[key], affected[key], notes):
+                states.add(status)
                 rows.append(row)
                 if candidate:
                     candidates.append(candidate)
@@ -307,9 +303,8 @@ def render_report(record, *, as_json=False):
 
     redundancy = []
     if "redundancy" in topics and (not selected or "redundancy" in selected):
-        redundancy, comparisons, reason = redundancy_section(topics["redundancy"], affected["redundancy"])
-        observations.extend(comparisons)
-        states.update(item["status"] for item in comparisons)
+        redundancy, redundancy_states, reason = redundancy_section(topics["redundancy"], affected["redundancy"])
+        states.update(redundancy_states)
         answers["redundancy"] = reason
     elif not selected:
         states.add(PENDING)
@@ -334,13 +329,13 @@ def render_report(record, *, as_json=False):
         lines.extend(["", "### 未核实的资料", "", *(f"- {note}" for note in notes)])
     if suggestions:
         lines.extend(["", "### 建议补写", *suggestions])
-    return inspection_output(lines, dispatched, answers, as_json, "必要文档", observations)
+    return inspection_output(lines, dispatched, answers, as_json, "必要文档")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("record", nargs="?", type=Path, help="检查记录 JSON，默认读取标准输入")
-    parser.add_argument("--json", action="store_true", help="返回章节、覆盖记录和评分依据")
+    parser.add_argument("--json", action="store_true", help="返回体检章节和检查范围记录")
     parser.add_argument(
         "--project-size", nargs=2, metavar=("UNITS", "FILES"),
         help="按独立维护单元数和自维护文件数判断规模，未知值用 -",

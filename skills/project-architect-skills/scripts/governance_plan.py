@@ -5,7 +5,6 @@ import json
 import sys
 from pathlib import Path
 
-from health_score import prepare_score, score_section
 from inspection_coverage import coverage_lines
 from necessary_docs import PENDING, required_text, table_row, text_list
 from plan_evidence import check_sources
@@ -77,7 +76,7 @@ def select_candidates(candidates, mode, root=None):
     return selected, deferred, checked
 
 
-def prepare_plan(record, *, preview=False, root=None, include_score=True):
+def prepare_plan(record, *, preview=False, root=None):
     if not isinstance(record, dict):
         raise ValueError("治理计划记录需要 JSON 对象")
     mode = record.get("mode")
@@ -119,17 +118,13 @@ def prepare_plan(record, *, preview=False, root=None, include_score=True):
             lines.append("- C. **逐项选择**　分别决定本轮执行哪些事项。")
     titles = {target: title for target, (title, _) in selected.items()}
     checked_plan = {**record, "candidates": checked}
-    if include_score and "scoring" in record:
-        checked_plan["scoring"], baseline = prepare_score(record["scoring"], record.get("coverage"), root=root)
-        if root is not None:
-            checked_plan["scoring"]["evidence_checked"] = True
-        lines = [score_section(baseline), "", *lines]
+    checked_plan.pop("scoring", None)
     return "\n".join(lines) + "\n", titles, checked_plan
 
 
-def build_plan(record, *, preview=False, replay=False, include_score=True):
+def build_plan(record, *, preview=False, replay=False):
     root = None if replay else Path.cwd()
-    report, titles, _ = prepare_plan(record, preview=preview, root=root, include_score=include_score)
+    report, titles, _ = prepare_plan(record, preview=preview, root=root)
     return report, titles
 
 

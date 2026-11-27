@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -75,6 +76,7 @@ class NecessaryDocsTests(unittest.TestCase):
         result = run_report(record, "--json")
         self.assertEqual(result.returncode, 0, result.stderr)
         packet = json.loads(result.stdout)
+        self.assertEqual(set(packet), {"markdown", "results"})
         self.assertEqual(packet["results"], [{**item, "status": "已查"}])
         self.assertIn(verification_gap()["placement"], packet["markdown"])
         self.assertNotIn("#### 技术文档", packet["markdown"])
@@ -227,7 +229,6 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         packet = json.loads(result.stdout)
         self.assertEqual(packet["results"], [{**task, "status": "已查"}])
-        self.assertEqual(packet["assessments"][0]["criterion"], "architecture_decision")
         self.assertIn("| 架构决策记录（ADR） | 发现问题 |", packet["markdown"])
         self.assertIn(gap["placement"], packet["markdown"].split("### 建议补写\n")[1])
         self.assertNotIn("模块职责与依赖", packet["markdown"])
@@ -237,7 +238,7 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         packet = json.loads(result.stdout)
         self.assertEqual(packet["results"][0]["status"], "部分已查")
-        self.assertEqual(packet["assessments"][0]["status"], "待确认")
+        self.assertIn("| 架构决策记录（ADR） | 待确认 |", packet["markdown"])
         self.assertNotIn("### 建议补写", packet["markdown"])
 
     def test_focused_agent_instructions_keep_independent_tool_findings(self):
@@ -255,8 +256,9 @@ class NecessaryDocsTests(unittest.TestCase):
                 result = run_report(record, "--json")
                 self.assertEqual(result.returncode, 0, result.stderr)
                 packet = json.loads(result.stdout)
-                expected = ["待确认" if unread else "发现问题", "发现问题"]
-                self.assertEqual([item["status"] for item in packet["assessments"]], expected)
+                claude_status = "待确认" if unread else "发现问题"
+                self.assertIn(f"| Claude Code 项目指引 | {claude_status} |", packet["markdown"])
+                self.assertIn("| Codex 项目指引 | 发现问题 |", packet["markdown"])
                 self.assertEqual(packet["results"][0]["status"], "部分已查" if unread else "已查")
                 self.assertNotIn("验证改动的方法", packet["markdown"])
                 suggestions = packet["markdown"].split("### 建议补写")[1]
@@ -418,6 +420,29 @@ class NecessaryDocsTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertEqual(result.stdout, "")
         self.assertIn("verification.gap_kind", result.stderr)
+
+    @unittest.skipUnless(shutil.which("git"), "Git is required to verify ignore rules")
+    def test_only_effectively_ignored_missing_documents_are_exempt(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            docs = root / "docs"
+            docs.mkdir()
+            tracked = docs / "tracked.md"
+            tracked.write_text("验收\n", encoding="utf-8")
+            subprocess.run(["git", "add", "--", "docs/tracked.md"], cwd=root, check=True)
+            tracked.unlink()
+            (docs / ".gitignore").write_text("*.md\n!public.md\n", encoding="utf-8")
+            for name, expected in (("保密手册.md", "不适用"), ("tracked.md", "发现问题"), ("public.md", "发现问题")):
+                with self.subTest(name=name):
+                    record = local_tool()
+                    record["topics"]["verification"] = {
+                        **verification_gap(), "gap_kind": "missing", "expected_path": f"docs/{name}",
+                    }
+                    result = run_report(record, cwd=root)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertIn(f"| 验证改动的方法 | {expected} |", result.stdout)
+                    self.assertEqual("### 建议补写" in result.stdout, expected == "发现问题")
 
     def test_unread_manual_cannot_be_the_only_evidence_for_verification(self):
         manual = "docs/验收手册.md"

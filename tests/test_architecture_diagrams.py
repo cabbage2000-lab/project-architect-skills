@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -50,12 +51,13 @@ REPAIR = {
 }
 
 
-def run_report(record, *args):
+def run_report(record, *args, cwd=None):
     return subprocess.run(
         [sys.executable, "-B", str(SCRIPT), *args],
         input=json.dumps(record, ensure_ascii=False),
         capture_output=True,
         text=True,
+        cwd=cwd,
     )
 
 
@@ -150,6 +152,35 @@ class ArchitectureDiagramTests(unittest.TestCase):
         report = self.report(record)
         self.assertIn("**检查结果**　待确认", report)
         self.assertNotIn("### 建议修订", report)
+
+    @unittest.skipUnless(shutil.which("git"), "Git is required to verify ignore rules")
+    def test_ignored_private_diagram_preserves_independent_public_findings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            (root / ".gitignore").write_text("private.drawio\n", encoding="utf-8")
+            record = architecture_record()
+            task = {"check": "架构图", "unit": "订单导出"}
+            record["selected"] = [task]
+            record["need"]["expected_path"] = "private.drawio"
+            record["unread"] = [{"source": "./private.drawio", "reason": "保密图未随仓库交付"}]
+            result = run_report(record, "--json", cwd=root)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            packet = json.loads(result.stdout)
+            self.assertEqual(packet["results"], [{**task, "status": "已查"}])
+            self.assertIn("**检查结果**　不适用", packet["markdown"])
+            self.assertNotIn("### 建议修订", packet["markdown"])
+
+            record["diagrams"] = [implementation_diagram(("export → cache", "与实现不符", "实际调用 orders。"))]
+            record["repair"] = REPAIR
+            record["unread"].append(UNREAD_REFERENCE)
+            result = run_report(record, "--json", cwd=root)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            packet = json.loads(result.stdout)
+            self.assertEqual(packet["results"][0]["status"], "部分已查")
+            self.assertIn(UNREAD_REFERENCE["source"], packet["results"][0]["reason"])
+            self.assertIn("export → cache | 与实现不符", packet["markdown"])
+            self.assertIn(REPAIR["changes"][0], packet["markdown"])
 
     def test_single_entry_without_module_boundary_is_not_applicable(self):
         record = architecture_record()

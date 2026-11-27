@@ -91,6 +91,14 @@ class GovernancePlanTests(unittest.TestCase):
             with self.subTest(field=field):
                 self.assertIn(selected[field], plan)
 
+    def test_preview_discards_retired_scoring_from_saved_plans(self):
+        item = ready("补写验证说明", "README.md#验证")
+        options = {"preview": True, "as_json": True}
+        expected = json.loads(self.report(self.run_plan(item, **options)))
+        legacy = {"version": 3, "scope": "full", "assessments": []}
+        replay = json.loads(self.report(self.run_plan(item, scoring=legacy, **options)))
+        self.assertEqual(replay, expected)
+
     def test_preview_preserves_plan_and_prompts_for_consent(self):
         candidates = (
             ready("补写验证说明", "README.md#验证"),
