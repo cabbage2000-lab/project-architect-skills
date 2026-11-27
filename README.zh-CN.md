@@ -1,5 +1,9 @@
 # 项目治理架构师
 
+[![最新版本](https://img.shields.io/github/v/release/cabbage2000-lab/project-architect-skills)](https://github.com/cabbage2000-lab/project-architect-skills/releases/latest)
+[![MIT 许可证](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+[![支持 Codex、Claude Code 和 WorkBuddy](https://img.shields.io/badge/Tools-Codex%20%7C%20Claude%20Code%20%7C%20WorkBuddy-0f766e)](#快速开始)
+
 [English](README.md) | **简体中文**
 
 专门解决 AI 辅助开发（Vibe Coding）进入深水区后，项目容易失控、难以维护的痛点。

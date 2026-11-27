@@ -1,5 +1,9 @@
 # Project Architect Skills
 
+[![Latest release](https://img.shields.io/github/v/release/cabbage2000-lab/project-architect-skills)](https://github.com/cabbage2000-lab/project-architect-skills/releases/latest)
+[![MIT License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+[![Supports Codex, Claude Code, and WorkBuddy](https://img.shields.io/badge/Tools-Codex%20%7C%20Claude%20Code%20%7C%20WorkBuddy-0f766e)](#quick-start)
+
 **English** | [简体中文](README.zh-CN.md)
 
 Keep your codebase under control and easy to maintain as your AI-assisted development (vibe coding) project grows more complex.
